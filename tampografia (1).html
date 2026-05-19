@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia — Quotes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f0;
+    --muted: #888;
+    --accent: #FF5C5C;
+    --accent-dim: rgba(255,92,92,0.12);
+    --accent-hover: #ff7070;
+    --green: #3ecf8e;
+    --green-dim: rgba(62,207,142,0.12);
+    --purple: #6B4EFF;
+    --purple-dim: rgba(107,78,255,0.12);
+    --amber: #f0a500;
+    --amber-dim: rgba(240,165,0,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font: 'Sora', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; }
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .main { padding: 32px; }
+  .logo { padding: 0 20px 28px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .logo-title { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+  .nav-group { padding: 8px 12px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; font-family: var(--mono); padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: var(--radius); cursor: pointer; color: var(--muted); font-size: 13px; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .nav-item i { font-size: 16px; }
+  .sidebar-bottom { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid var(--border); }
+  .profile-chip { display: flex; align-items: center; gap: 10px; padding: 8px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--accent); }
+  .view { display: none; }
+  .view.active { display: block; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; font-family: var(--font); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; font-family: var(--mono); }
+  .badge-pending { background: var(--amber-dim); color: var(--amber); }
+  .badge-done { background: var(--green-dim); color: var(--green); }
+  .badge-active { background: var(--accent-dim); color: var(--accent); }
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+  .empty i { font-size: 36px; margin-bottom: 12px; display: block; opacity: 0.4; }
+  .empty p { font-size: 13px; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; z-index: 999; display: flex; align-items: center; gap: 10px; transform: translateY(80px); opacity: 0; transition: all 0.25s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* CHAMADOS LIST */
+  .chamados-grid { display: flex; flex-direction: column; gap: 10px; }
+  .chamado-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: border-color 0.15s; }
+  .chamado-card:hover { border-color: var(--border2); }
+  .chamado-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; cursor: pointer; }
+  .chamado-num { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent); }
+  .chamado-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .chamado-body { border-top: 1px solid var(--border); padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.2s; }
+  .chamado-body.open { max-height: 600px; padding: 16px 20px 20px; }
+
+  /* ITENS CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .check-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--surface2); border-radius: var(--radius); border: 1px solid var(--border); transition: all 0.15s; }
+  .check-item.done { opacity: 0.5; border-color: rgba(62,207,142,0.2); background: var(--green-dim); }
+  .check-left { display: flex; align-items: center; gap: 12px; }
+  .check-box { width: 20px; height: 20px; border-radius: 4px; border: 1.5px solid var(--border2); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+  .check-box.checked { background: var(--green); border-color: var(--green); }
+  .check-box.checked i { color: #000; font-size: 13px; }
+  .check-box i { font-size: 13px; color: transparent; }
+  .check-code { font-family: var(--mono); font-weight: 500; font-size: 13px; }
+  .check-code.done-text { text-decoration: line-through; color: var(--muted); }
+  .check-qtd { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 16px; }
+  .progress-top { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; }
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.3s; }
+
+  /* PRAZO */
+  .prazo-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-family: var(--mono); }
+  .prazo-ok { background: var(--green-dim); color: var(--green); }
+  .prazo-warn { background: var(--amber-dim); color: var(--amber); }
+  .prazo-late { background: var(--accent-dim); color: var(--accent); }
+
+  /* CONFIG */
+  .config-form { display: grid; gap: 14px; max-width: 480px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  input[type=text], input[type=password] { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--font); font-size: 14px; padding: 10px 12px; outline: none; transition: border-color 0.15s; width: 100%; }
+  input[type=text]:focus, input[type=password]:focus { border-color: var(--accent); }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-mini { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -1px; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 28px; width: 580px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
+  .modal-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
+  .modal-stat { background: var(--surface2); border-radius: var(--radius); padding: 12px 16px; }
+  .modal-stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .modal-stat-value { font-size: 15px; font-weight: 500; }
+  .purple-dim { color: #a08fff; }
+
+  .login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center; }
+  .login-screen.hidden { display: none; }
+  .login-box { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 36px 32px; width: 380px; }
+  .login-logo { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .login-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 28px; }
+  .login-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .login-label { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .login-input { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--font); font-size: 14px; padding: 10px 12px; outline: none; transition: border-color 0.15s; width: 100%; }
+  .login-input:focus { border-color: var(--accent); }
+  .login-btn { width: 100%; margin-top: 8px; justify-content: center; }
+  .login-error { font-size: 12px; color: var(--coral); margin-top: 10px; min-height: 18px; font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">Tampografia</div>
+      <div class="logo-sub">painel / quotes</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Principal</div>
+      <button class="nav-item active" onclick="showView('chamados')"><i class="ti ti-paint"></i> Chamados ativos</button>
+      <button class="nav-item" onclick="showView('historico')"><i class="ti ti-history"></i> Histórico</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Config</div>
+      <button class="nav-item" onclick="showView('config')"><i class="ti ti-settings"></i> Configurações</button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:8px;justify-content:center" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
+      <div class="profile-chip">
+        <div class="avatar">QT</div>
+        <div>
+          <div style="font-size:12px;font-weight:500">Quotes</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">tampografia@vxcase</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- CHAMADOS ATIVOS -->
+    <div id="view-chamados" class="view active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Chamados ativos</div>
+          <div class="page-sub">Marque os itens conforme forem sendo concluídos</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadChamados()"><i class="ti ti-refresh"></i> Atualizar</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-mini">
+          <div class="stat-label">Chamados abertos</div>
+          <div class="stat-value" style="color:var(--accent)" id="st-abertos">—</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-label">Itens pendentes</div>
+          <div class="stat-value" style="color:var(--amber)" id="st-pendentes">—</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-label">Concluídos hoje</div>
+          <div class="stat-value" style="color:var(--green)" id="st-hoje">—</div>
+        </div>
+      </div>
+
+      <div class="chamados-grid" id="chamados-list">
+        <div class="empty"><i class="ti ti-paint-off"></i><p>Nenhum chamado ativo</p></div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="view-historico" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Histórico</div>
+          <div class="page-sub">Chamados finalizados</div>
+        </div>
+      </div>
+      <div id="hist-list">
+        <div class="empty"><i class="ti ti-history"></i><p>Nenhum chamado finalizado</p></div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="view-config" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Configurações</div></div>
+      </div>
+      <div class="card" style="max-width:480px;margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Supabase</span></div>
+        <div class="config-form">
+          <div class="form-group"><label>Supabase URL</label><input type="text" id="cfg-url" placeholder="https://xxxx.supabase.co"></div>
+          <div class="form-group"><label>Anon Key</label><input type="password" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIs..."></div>
+          <button class="btn btn-primary" style="align-self:start" onclick="salvarConfig()"><i class="ti ti-device-floppy"></i> Salvar e conectar</button>
+        </div>
+      </div>
+      <div class="card" style="max-width:480px">
+        <div class="card-header"><span class="card-title">WhatsApp (notificação de conclusão)</span></div>
+        <div class="config-form">
+          <div class="form-group"><label>Número da analista (com DDI)</label><input type="text" id="cfg-wa" placeholder="5571999990000"></div>
+          <button class="btn btn-primary" style="align-self:start" onclick="salvarConfigWa()"><i class="ti ti-device-floppy"></i> Salvar</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL DETALHE CHAMADO HISTÓRICO -->
+<div class="modal-backdrop" id="modal-tamp-hist">
+  <div class="modal">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:16px;font-weight:600;font-family:var(--mono);color:var(--green)" id="modal-tamp-titulo">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px" id="modal-tamp-nota">—</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modal-tamp-hist').classList.remove('open')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="modal-stat-label">Prazo</div><div class="modal-stat-value" id="modal-tamp-prazo">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Concluído em</div><div class="modal-stat-value" id="modal-tamp-conclusao">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Resultado</div><div class="modal-stat-value" id="modal-tamp-resultado">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Itens</div><div class="modal-stat-value" id="modal-tamp-total">—</div></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Código</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Qtd</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Status</th>
+          </tr>
+        </thead>
+        <tbody id="modal-tamp-body"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-tamp-hist').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Tampografia</div>
+    <div class="login-sub" id="login-perfil-label">painel / tampografia</div>
+    <div class="login-group">
+      <label class="login-label">Email</label>
+      <input class="login-input" type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <div class="login-group">
+      <label class="login-label">Senha</label>
+      <input class="login-input" type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <button class="btn btn-primary login-btn" onclick="fazerLogin()" id="login-btn">
+      <i class="ti ti-login"></i> Entrar
+    </button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toast-msg">Salvo</span></div>
+
+<script>
+const SB_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+let WA_ANALISTA = localStorage.getItem('wa_analista') || '';
+let sb = null;
+
+sb = supabase.createClient(SB_URL, SB_KEY);
+
+// realtime subscription
+function subscribeRealtime() {
+  if (!sb) return;
+  sb.channel('chamados-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, () => loadChamados())
+    .subscribe();
+}
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const map = { chamados: 0, historico: 1, config: 2 };
+  document.querySelectorAll('.nav-item')[map[v] ?? 0].classList.add('active');
+  if (v === 'chamados') loadChamados();
+  if (v === 'historico') loadHistorico();
+  if (v === 'config') loadConfig();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function prazoChip(prazoISO) {
+  if (!prazoISO) return '';
+  const diff = Math.ceil((new Date(prazoISO) - new Date()) / 86400000);
+  if (diff < 0) return `<span class="prazo-chip prazo-late"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Atrasado ${Math.abs(diff)}d</span>`;
+  if (diff <= 1) return `<span class="prazo-chip prazo-warn"><i class="ti ti-clock" style="font-size:11px"></i> Vence hoje</span>`;
+  return `<span class="prazo-chip prazo-ok"><i class="ti ti-calendar" style="font-size:11px"></i> ${diff}d restantes</span>`;
+}
+
+async function loadChamados() {
+  if (!sb) {
+    document.getElementById('chamados-list').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i><p>Configure o Supabase em Configurações</p></div>';
+    return;
+  }
+
+  const { data: chamados } = await sb.from('chamados')
+    .select('*, notas(numero, fornecedor), chamado_itens(*)')
+    .eq('status', 'aberto')
+    .order('created_at');
+
+  const { count: hoje } = await sb.from('chamados').select('*', { count: 'exact' })
+    .eq('status', 'concluido')
+    .gte('data_conclusao', new Date().toISOString().split('T')[0]);
+
+  document.getElementById('st-abertos').textContent = chamados?.length || 0;
+  document.getElementById('st-hoje').textContent = hoje || 0;
+
+  let totalPendentes = 0;
+  (chamados || []).forEach(ch => {
+    totalPendentes += (ch.chamado_itens || []).filter(ci => !ci.concluido).length;
+  });
+  document.getElementById('st-pendentes').textContent = totalPendentes;
+
+  const c = document.getElementById('chamados-list');
+  if (!chamados || chamados.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-paint-off"></i><p>Nenhum chamado ativo no momento</p></div>';
+    return;
+  }
+
+  c.innerHTML = chamados.map(ch => {
+    const itens = ch.chamado_itens || [];
+    const done = itens.filter(ci => ci.concluido).length;
+    const pct = itens.length ? Math.round(done / itens.length * 100) : 0;
+    return `<div class="chamado-card" id="card-${ch.id}">
+      <div class="chamado-header" onclick="toggleCard('${ch.id}')">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="chamado-num">${ch.numero}</span>
+            ${prazoChip(ch.prazo)}
+          </div>
+          <div class="chamado-meta">Nota ${ch.notas?.numero || '—'} · ${ch.notas?.fornecedor || ''} · ${done}/${itens.length} itens concluídos</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="badge ${pct === 100 ? 'badge-done' : 'badge-active'}">${pct}%</span>
+          <i class="ti ti-chevron-down" style="color:var(--muted);transition:transform 0.2s" id="chevron-${ch.id}"></i>
+        </div>
+      </div>
+      <div class="chamado-body" id="body-${ch.id}">
+        <div class="progress-wrap">
+          <div class="progress-top"><span>Progresso</span><span>${done}/${itens.length}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="checklist">
+          ${itens.sort((a,b) => a.ordem - b.ordem).map(ci => `
+            <div class="check-item ${ci.concluido ? 'done' : ''}" id="ci-${ci.id}">
+              <div class="check-left">
+                <div class="check-box ${ci.concluido ? 'checked' : ''}" onclick="toggleItem('${ci.id}','${ch.id}',${ci.concluido})" id="cb-${ci.id}">
+                  <i class="ti ti-check"></i>
+                </div>
+                <div>
+                  <div class="check-code ${ci.concluido ? 'done-text' : ''}">${ci.codigo}</div>
+                  <div class="check-qtd">${ci.qtd_enviada} unidades</div>
+                </div>
+              </div>
+              ${ci.concluido ? '<span class="badge badge-done" style="font-size:10px"><i class="ti ti-check" style="font-size:11px"></i> Concluído</span>' : '<span class="badge badge-pending" style="font-size:10px">Pendente</span>'}
+            </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--border)">
+          <button class="btn btn-success" onclick="finalizarChamado('${ch.id}','${ch.numero}')" id="btn-fin-${ch.id}" ${pct < 100 ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>
+            <i class="ti ti-check-all"></i> Finalizar chamado
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(id) {
+  const body = document.getElementById('body-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.chamado-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('[id^="chevron-"]').forEach(c => c.style.transform = '');
+  if (!isOpen) {
+    body.classList.add('open');
+    chevron.style.transform = 'rotate(180deg)';
+  }
+}
+
+async function toggleItem(ciId, chamadoId, atualConcluido) {
+  if (!sb) return;
+  const novoConcluido = !atualConcluido;
+  await sb.from('chamado_itens').update({ concluido: novoConcluido }).eq('id', ciId);
+
+  const el = document.getElementById('ci-' + ciId);
+  const cb = document.getElementById('cb-' + ciId);
+  el.classList.toggle('done', novoConcluido);
+  cb.classList.toggle('checked', novoConcluido);
+
+  // Atualiza badge do item
+  const badge = el.querySelector('.badge');
+  if (novoConcluido) badge.innerHTML = '<i class="ti ti-check" style="font-size:11px"></i> Concluído', badge.className = 'badge badge-done', badge.style.fontSize = '10px';
+  else badge.innerHTML = 'Pendente', badge.className = 'badge badge-pending', badge.style.fontSize = '10px';
+
+  // Recalcula progresso
+  const { data: allItens } = await sb.from('chamado_itens').select('concluido').eq('chamado_id', chamadoId);
+  const done = allItens.filter(i => i.concluido).length;
+  const pct = Math.round(done / allItens.length * 100);
+
+  const body = document.getElementById('body-' + chamadoId);
+  const progressFill = body.querySelector('.progress-fill');
+  const progressTop = body.querySelector('.progress-top span:last-child');
+  if (progressFill) progressFill.style.width = pct + '%';
+  if (progressTop) progressTop.textContent = `${done}/${allItens.length}`;
+
+  const card = document.getElementById('card-' + chamadoId);
+  const pctBadge = card.querySelector('.chamado-header .badge');
+  if (pctBadge) { pctBadge.textContent = pct + '%'; pctBadge.className = 'badge ' + (pct === 100 ? 'badge-done' : 'badge-active'); }
+
+  const meta = card.querySelector('.chamado-meta');
+  if (meta) {
+    const txt = meta.textContent.split('·');
+    if (txt.length >= 3) meta.textContent = `${txt[0].trim()} · ${txt[1].trim()} · ${done}/${allItens.length} itens concluídos`;
+  }
+
+  const btnFin = document.getElementById('btn-fin-' + chamadoId);
+  if (btnFin) { btnFin.disabled = pct < 100; btnFin.style.opacity = pct < 100 ? '0.4' : '1'; btnFin.style.cursor = pct < 100 ? 'not-allowed' : 'pointer'; }
+
+  document.getElementById('st-pendentes').textContent = parseInt(document.getElementById('st-pendentes').textContent || 0) + (novoConcluido ? -1 : 1);
+}
+
+async function finalizarChamado(chamadoId, numeroChamado) {
+  if (!sb) return;
+  const agora = new Date().toISOString();
+  await sb.from('chamados').update({ status: 'concluido', data_conclusao: agora }).eq('id', chamadoId);
+  await sb.from('notas').update({ status: 'concluida' }).in('id',
+    (await sb.from('chamados').select('nota_id').eq('id', chamadoId)).data?.map(c => c.nota_id) || []
+  );
+
+  toast(`Chamado ${numeroChamado} finalizado!`);
+
+  // Notifica analista via WhatsApp
+  if (WA_ANALISTA) {
+    const msg = encodeURIComponent(`✅ Chamado *${numeroChamado}* finalizado!\n\nTodas as capas estão prontas para coleta. 🎉`);
+    window.open(`https://wa.me/${WA_ANALISTA}?text=${msg}`, '_blank');
+  }
+
+  setTimeout(loadChamados, 800);
+}
+
+async function loadHistorico() {
+  if (!sb) return;
+  const { data } = await sb.from('chamados')
+    .select('*, notas(numero), chamado_itens(*)')
+    .in('status', ['concluido', 'coletado'])
+    .order('data_conclusao', { ascending: false });
+
+  const c = document.getElementById('hist-list');
+  if (!data || data.length === 0) { c.innerHTML = '<div class="empty"><i class="ti ti-history"></i><p>Nenhum chamado finalizado</p></div>'; return; }
+
+  c.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` +
+    data.map(ch => {
+      const itens = ch.chamado_itens || [];
+      const prazo = ch.prazo ? new Date(ch.prazo) : null;
+      const conclusao = ch.data_conclusao ? new Date(ch.data_conclusao) : null;
+      let prazoChipHtml = '';
+      if (prazo && conclusao) {
+        const diff = Math.round((prazo - conclusao) / 86400000);
+        if (diff > 0) prazoChipHtml = `<span class="badge badge-done" style="font-size:10px">${diff}d antes</span>`;
+        else if (diff === 0) prazoChipHtml = `<span class="badge badge-done" style="font-size:10px">No prazo</span>`;
+        else prazoChipHtml = `<span class="badge" style="background:var(--accent-dim);color:var(--accent);font-size:10px">${Math.abs(diff)}d atraso</span>`;
+      }
+      return `<div class="chamado-card" onclick="verDetalheChamadoHist('${ch.id}')" style="cursor:pointer">
+        <div class="chamado-header" style="cursor:pointer">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="chamado-num" style="color:var(--green)">${ch.numero}</span>
+              <span class="badge badge-done">Concluído</span>
+              ${prazoChipHtml}
+            </div>
+            <div class="chamado-meta">Nota ${ch.notas?.numero || '—'} · Finalizado em ${formatDate(ch.data_conclusao)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">${itens.length} itens</div>
+            <i class="ti ti-chevron-right" style="color:var(--muted)"></i>
+          </div>
+        </div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+async function verDetalheChamadoHist(chamadoId) {
+  if (!sb) return;
+  const { data: ch } = await sb.from('chamados').select('*, notas(numero, fornecedor), chamado_itens(*)').eq('id', chamadoId).single();
+  if (!ch) return;
+
+  const prazo = ch.prazo ? new Date(ch.prazo) : null;
+  const conclusao = ch.data_conclusao ? new Date(ch.data_conclusao) : null;
+  let prazoResultado = '—';
+  let prazoColor = 'var(--muted)';
+  if (prazo && conclusao) {
+    const diff = Math.round((prazo - conclusao) / 86400000);
+    if (diff > 0) { prazoResultado = diff + ' dia(s) de antecedência'; prazoColor = 'var(--green)'; }
+    else if (diff === 0) { prazoResultado = 'No prazo'; prazoColor = 'var(--green)'; }
+    else { prazoResultado = Math.abs(diff) + ' dia(s) de atraso'; prazoColor = 'var(--accent)'; }
+  }
+
+  const itens = ch.chamado_itens || [];
+  const rows = itens.map(ci => `
+    <tr>
+      <td style="padding:10px 12px;font-family:var(--mono);font-weight:500;color:var(--purple-dim) ">${ci.codigo}</td>
+      <td style="padding:10px 12px;font-family:var(--mono)">${ci.qtd_enviada}</td>
+      <td style="padding:10px 12px"><span class="badge badge-done" style="font-size:10px"><i class="ti ti-check" style="font-size:11px"></i> Concluído</span></td>
+    </tr>`).join('');
+
+  document.getElementById('modal-tamp-titulo').textContent = ch.numero;
+  document.getElementById('modal-tamp-nota').textContent = 'Nota ' + (ch.notas?.numero || '—') + (ch.notas?.fornecedor ? ' · ' + ch.notas.fornecedor : '');
+  document.getElementById('modal-tamp-prazo').textContent = prazo ? formatDate(ch.prazo) : '—';
+  document.getElementById('modal-tamp-conclusao').textContent = conclusao ? formatDate(ch.data_conclusao) : '—';
+  document.getElementById('modal-tamp-resultado').textContent = prazoResultado;
+  document.getElementById('modal-tamp-resultado').style.color = prazoColor;
+  document.getElementById('modal-tamp-total').textContent = itens.length + ' itens';
+  document.getElementById('modal-tamp-body').innerHTML = rows;
+  document.getElementById('modal-tamp-hist').classList.add('open');
+}
+
+function loadConfig() {
+  document.getElementById('cfg-url').value = SB_URL;
+  document.getElementById('cfg-key').value = SB_KEY;
+  document.getElementById('cfg-wa').value = WA_ANALISTA;
+}
+
+function salvarConfig() {
+  SB_URL = document.getElementById('cfg-url').value.trim();
+  SB_KEY = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('sb_url_qt', SB_URL);
+  localStorage.setItem('sb_key_qt', SB_KEY);
+  sb = supabase.createClient(SB_URL, SB_KEY);
+  subscribeRealtime();
+  toast('Supabase conectado!');
+}
+
+function salvarConfigWa() {
+  WA_ANALISTA = document.getElementById('cfg-wa').value.trim();
+  localStorage.setItem('wa_analista', WA_ANALISTA);
+  toast('WhatsApp salvo!');
+}
+
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '—'; }
+
+
+// ============================================================
+// AUTH
+// ============================================================
+const _PERFIL_ESPERADO = 'tampografia';
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) await validarPerfil(session.user);
+}
+
+async function validarPerfil(user) {
+  const { data: perfil } = await sb.from('perfis').select('*').eq('id', user.id).single();
+  if (!perfil || perfil.perfil !== _PERFIL_ESPERADO) {
+    await sb.auth.signOut();
+    mostrarErro('Acesso não autorizado para este painel.');
+    return;
+  }
+  const nomeEl = document.querySelector('.profile-name');
+  if (nomeEl) nomeEl.textContent = perfil.nome;
+  const emailEl = document.querySelector('.profile-role');
+  if (emailEl) emailEl.textContent = user.email;
+  document.getElementById('login-screen').classList.add('hidden');
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const btn = document.getElementById('login-btn');
+  if (!email || !senha) { mostrarErro('Preencha email e senha.'); return; }
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Entrando...';
+  btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  if (error) {
+    mostrarErro('Email ou senha incorretos.');
+    btn.innerHTML = '<i class="ti ti-login"></i> Entrar';
+    btn.disabled = false;
+    return;
+  }
+  await validarPerfil(data.user);
+  btn.innerHTML = '<i class="ti ti-login"></i> Entrar';
+  btn.disabled = false;
+}
+
+async function fazerLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+function mostrarErro(msg) {
+  document.getElementById('login-error').textContent = msg;
+}
+
+document.addEventListener('DOMContentLoaded', initAuth);
+
+// DOMContentLoaded gerenciado pelo initAuth
+
+</script>
+</body>
+</html>
