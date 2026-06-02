@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZCNEVGRiIvPjxyZWN0IHg9IjkiIHk9IjQiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOCIgcng9IjIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PHJlY3QgeD0iNyIgeT0iNyIgd2lkdGg9IjE0IiBoZWlnaHQ9IjEyIiByeD0iMS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuOCIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMjQiIHI9IjQiIGZpbGw9IiNGRjVDNUMiLz48cGF0aCBkPSJNMjIgMjAuNSBDMjIgMjAuNSAxOSAyMyAxOSAyNSBDMTkgMjYuNiAyMC4zIDI4IDIyIDI4IEMyMy43IDI4IDI1IDI2LjYgMjUgMjUgQzI1IDIzIDIyIDIwLjUgMjIgMjAuNVoiIGZpbGw9IndoaXRlIi8+PC9zdmc+">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia — Analista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f0;
+    --muted: #888;
+    --accent: #6B4EFF;
+    --accent-dim: rgba(107,78,255,0.15);
+    --accent-hover: #7f65ff;
+    --coral: #FF5C5C;
+    --coral-dim: rgba(255,92,92,0.12);
+    --green: #3ecf8e;
+    --green-dim: rgba(62,207,142,0.12);
+    --amber: #f0a500;
+    --amber-dim: rgba(240,165,0,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font: 'Sora', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; }
+
+  /* LAYOUT */
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .main { padding: 32px; overflow-y: auto; }
+
+  /* SIDEBAR */
+  .logo { padding: 0 20px 28px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .logo-title { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+  .nav-group { padding: 8px 12px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; font-family: var(--mono); padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: var(--radius); cursor: pointer; color: var(--muted); font-size: 13px; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .nav-item i { font-size: 16px; }
+  .sidebar-bottom { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid var(--border); }
+  .profile-chip { display: flex; align-items: center; gap: 10px; padding: 8px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--accent); }
+  .profile-info { flex: 1; }
+  .profile-name { font-size: 12px; font-weight: 500; }
+  .profile-role { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* PAGE HEADER */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; font-family: var(--font); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: var(--coral-dim); color: var(--coral); border: 1px solid rgba(255,92,92,0.2); }
+  .btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+
+  /* STATS ROW */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -1px; }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .stat-accent { color: var(--accent); }
+  .stat-coral { color: var(--coral); }
+  .stat-green { color: var(--green); }
+  .stat-amber { color: var(--amber); }
+
+  /* NOTAS LIST */
+  .notas-grid { display: flex; flex-direction: column; gap: 10px; }
+  .nota-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; transition: border-color 0.15s; }
+  .nota-row:hover { border-color: var(--border2); }
+  .nota-num { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent); }
+  .nota-info { }
+  .nota-data { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .nota-itens { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; font-family: var(--mono); }
+  .badge-pending { background: var(--amber-dim); color: var(--amber); }
+  .badge-triagem { background: rgba(107,78,255,0.15); color: var(--accent); }
+  .badge-tamp { background: var(--coral-dim); color: var(--coral); }
+  .badge-done { background: var(--green-dim); color: var(--green); }
+
+  /* FORM NOVA NOTA */
+  .form-grid { display: grid; gap: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--font); font-size: 14px; padding: 10px 12px; outline: none; transition: border-color 0.15s; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ITENS TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+  tbody td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-code { font-family: var(--mono); font-weight: 500; color: var(--accent); }
+  .td-drag { cursor: grab; color: var(--muted); }
+  .priority-badge { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-dim); color: var(--accent); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: var(--mono); }
+
+  /* ITEM ADD ROW */
+  .add-item-row { display: grid; grid-template-columns: 1fr 1fr 120px auto; gap: 10px; align-items: end; padding: 16px; background: var(--surface2); border-radius: var(--radius); border: 1px dashed var(--border2); }
+
+  /* WHATSAPP PREVIEW */
+  .wa-preview { background: #0d1117; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .wa-bubble { background: #1f4a30; border-radius: 0 12px 12px 12px; padding: 12px 14px; max-width: 85%; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: var(--mono); color: #e0ffe0; }
+  .wa-time { font-size: 10px; color: var(--muted); text-align: right; margin-top: 6px; }
+
+  /* HISTORICO */
+  .hist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .hist-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .hist-code { font-family: var(--mono); font-weight: 500; font-size: 15px; color: var(--text); margin-bottom: 10px; }
+  .hist-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+  .hist-row span:first-child { color: var(--muted); }
+  .hist-row .good { color: var(--green); font-family: var(--mono); font-weight: 500; }
+  .hist-row .bad { color: var(--coral); font-family: var(--mono); font-weight: 500; }
+
+  /* SEARCH BAR */
+  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .search-bar input { flex: 1; }
+
+  /* CHAMADO DETAIL */
+  .chamado-detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+  .chamado-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .chamado-num { font-family: var(--mono); font-size: 20px; font-weight: 600; color: var(--accent); }
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-item { display: flex; gap: 16px; padding-bottom: 20px; position: relative; }
+  .timeline-item:not(:last-child)::before { content: ''; position: absolute; left: 15px; top: 32px; bottom: 0; width: 1px; background: var(--border); }
+  .tl-dot { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tl-dot.done { background: var(--green-dim); border-color: rgba(62,207,142,0.3); }
+  .tl-dot.active { background: var(--accent-dim); border-color: rgba(107,78,255,0.3); }
+  .tl-dot i { font-size: 15px; color: var(--muted); }
+  .tl-dot.done i { color: var(--green); }
+  .tl-dot.active i { color: var(--accent); }
+  .tl-content { flex: 1; padding-top: 6px; }
+  .tl-title { font-size: 13px; font-weight: 500; }
+  .tl-date { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+  /* MODAL */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 28px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  /* DIVIDER */
+  .section-divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* DRAGGABLE */
+  .dragging { opacity: 0.4; }
+  .drag-over { border-top: 2px solid var(--accent); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; z-index: 999; display: flex; align-items: center; gap: 10px; transform: translateY(80px); opacity: 0; transition: all 0.25s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(62,207,142,0.3); }
+  .toast.success i { color: var(--green); }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+  .empty i { font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.4; }
+  .empty p { font-size: 13px; }
+
+  .ls-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+  .ls-screen.hidden{display:none}
+  .ls-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:36px 32px;width:360px}
+  .ls-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .ls-title{font-size:18px;font-weight:600}
+  .ls-sub{font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:28px}
+  .ls-grp{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .ls-lbl{font-size:12px;color:var(--muted);font-family:var(--mono)}
+  .ls-inp{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:14px;padding:10px 12px;outline:none;transition:border-color .15s;width:100%}
+  .ls-inp:focus{border-color:var(--accent)}
+  .ls-err{font-size:12px;color:#FF5C5C;margin-top:10px;min-height:18px;font-family:var(--mono)}
+
+  body.light { --bg:#f5f5f5; --surface:#ffffff; --surface2:#f0f0f0; --border:rgba(0,0,0,0.1); --border2:rgba(0,0,0,0.18); --text:#111; --muted:#666; }
+</style>
+</head>
+<body>
+<div class="ls-screen" id="ls" style="position:fixed;inset:0;background:#0f0f0f;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:36px 32px;width:360px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <div style="color:var(--accent,#6B4EFF)"><svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="18" height="24" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="3" y="5" width="22" height="18" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="7" y="4" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/><rect x="7" y="22" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/></svg></div>
+      <div style="font-size:18px;font-weight:600;font-family:Sora,sans-serif">Tampografia</div>
+    </div>
+    <div style="font-size:12px;color:#888;font-family:monospace;margin-bottom:28px">painel / analista</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <label style="font-size:12px;color:#888;font-family:monospace">Senha</label>
+      <input id="ls-pw" type="password" placeholder="••••••••"
+        style="background:#222;border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#f0f0f0;font-size:14px;padding:10px 12px;outline:none;width:100%"
+        onkeydown="if(event.key==='Enter')lsLogin()">
+    </div>
+    <button onclick="lsLogin()"
+      style="width:100%;padding:10px;background:var(--accent,#6B4EFF);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:Sora,sans-serif">
+      Entrar
+    </button>
+    <div id="ls-err" style="font-size:12px;color:#FF5C5C;margin-top:10px;min-height:18px;font-family:monospace"></div>
+  </div>
+</div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div style="padding:8px 12px 0;display:flex;justify-content:flex-end">
+      <button onclick="toggleTheme()" title="Alternar fundo" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 8px;font-size:11px;font-family:var(--mono)">🌓 Tema</button>
+    </div>
+    <div class="logo">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="color:var(--accent);width:22px;height:22px;flex-shrink:0"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="5" y="2" width="18" height="24" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+  <rect x="3" y="5" width="22" height="18" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+  <rect x="7" y="4" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/>
+  <rect x="7" y="22" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/>
+</svg></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="color:var(--accent)"><svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="18" height="24" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="3" y="5" width="22" height="18" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="7" y="4" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/><rect x="7" y="22" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/></svg></div>
+      <div class="logo-title">Tampografia</div>
+    </div>
+      
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Principal</div>
+      <button class="nav-item active" onclick="showView('dashboard')">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </button>
+      <button class="nav-item" onclick="showView('notas')">
+        <i class="ti ti-file-invoice"></i> Notas
+      </button>
+      <button class="nav-item" onclick="showView('nova-nota')">
+        <i class="ti ti-plus"></i> Nova nota
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Consultas</div>
+      <button class="nav-item" onclick="showView('historico')">
+        <i class="ti ti-chart-bar"></i> Histórico por código
+      </button>
+      <button class="nav-item" onclick="showView('chamados')">
+        <i class="ti ti-ticket"></i> Chamados
+      </button>
+      <button class="nav-item" onclick="showView('performance')">
+        <i class="ti ti-chart-dots"></i> Performance
+      </button>
+      <button class="nav-item" onclick="showView('trocas')">
+        <i class="ti ti-arrows-exchange"></i> Trocas
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Config</div>
+      <button class="nav-item" onclick="showView('config')">
+        <i class="ti ti-settings"></i> Configurações
+      </button>
+      <button class="nav-item" onclick="document.getElementById('modal-reset').classList.add('open')" style="color:var(--coral)">
+        <i class="ti ti-trash"></i> Reset
+      </button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:8px;justify-content:center" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
+      <div class="profile-chip">
+        <div class="avatar">AN</div>
+        <div class="profile-info">
+          <div class="profile-name">Analista</div>
+          <div class="profile-role">analista@vxcase</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Visão geral</div>
+          <div class="page-sub">Segunda-feira, 18 de maio de 2026</div>
+        </div>
+        <button class="btn btn-primary" onclick="showView('nova-nota')">
+          <i class="ti ti-plus"></i> Nova nota
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Notas abertas</div>
+          <div class="stat-value stat-accent" id="stat-abertas">—</div>
+          <div class="stat-sub">aguardando ação</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Em tampografia</div>
+          <div class="stat-value stat-coral" id="stat-tamp">—</div>
+          <div class="stat-sub">chamados ativos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Concluídos hoje</div>
+          <div class="stat-value stat-green" id="stat-done">—</div>
+          <div class="stat-sub">chamados finalizados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Itens em triagem</div>
+          <div class="stat-value stat-amber" id="stat-triagem">—</div>
+          <div class="stat-sub">aguardando estoque</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Notas recentes</span>
+          <button class="btn btn-ghost btn-sm" onclick="showView('notas')">Ver todas <i class="ti ti-arrow-right"></i></button>
+        </div>
+        <div id="dashboard-notas-list">
+          <div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota aberta</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTA DE NOTAS -->
+    <div id="view-notas" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Notas fiscais</div>
+          <div class="page-sub">Todas as notas registradas</div>
+        </div>
+        <button class="btn btn-primary" onclick="showView('nova-nota')">
+          <i class="ti ti-plus"></i> Nova nota
+        </button>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar por número da nota..." id="search-nota" oninput="filterNotas()">
+        <select id="filter-status" onchange="filterNotas()" style="width:180px">
+          <option value="">Todos os status</option>
+          <option value="aberta">Aberta</option>
+          <option value="triagem">Em triagem</option>
+          <option value="tampografia">Em tampografia</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
+      <div class="notas-grid" id="notas-list">
+        <div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota encontrada</p></div>
+      </div>
+    </div>
+
+    <!-- NOVA NOTA -->
+    <div id="view-nova-nota" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Nova nota</div>
+          <div class="page-sub">Registre os itens recebidos e defina a ordem de prioridade</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Dados da nota</span></div>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Número da nota *</label>
+              <input type="text" id="nota-numero" placeholder="Ex: NF-2026-0041">
+            </div>
+            <div class="form-group">
+              <label>Tipo de nota *</label>
+              <select id="nota-tipo" onchange="togglePrazoField()">
+                <option value="capa">Capa</option>
+                <option value="pelicula">Película</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Data de recebimento *</label>
+              <input type="date" id="nota-data">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fornecedor</label>
+              <input type="text" id="nota-fornecedor" placeholder="Nome do fornecedor">
+            </div>
+            <div class="form-group" id="prazo-group">
+              <label>Prazo para produção (dias)</label>
+              <input type="number" id="nota-prazo" placeholder="Ex: 3" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Observações</label>
+            <textarea id="nota-obs" placeholder="Informações adicionais sobre esta nota..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <span class="card-title">Itens da nota</span>
+          <span style="font-size:11px;color:var(--muted);font-family:var(--mono)" id="itens-count">0 itens</span>
+        </div>
+
+        <div class="add-item-row" style="margin-bottom:16px">
+          <div class="form-group">
+            <label>Código da capa</label>
+            <input type="text" id="item-codigo" placeholder="Ex: CAP-0123">
+          </div>
+          <div class="form-group">
+            <label>Qtd recebida</label>
+            <input type="number" id="item-qtd" placeholder="0" min="1">
+          </div>
+          <div class="form-group">
+            <label>Prioridade?</label>
+            <select id="item-tem-prioridade" onchange="toggleMotivo()">
+              <option value="nao">Não</option>
+              <option value="sim">Sim</option>
+            </select>
+          </div>
+          <div class="form-group" id="motivo-group" style="display:none">
+            <label>Motivo</label>
+            <select id="item-prioridade">
+              <option value="zerado">Zerado há muito tempo</option>
+              <option value="demanda">Alta demanda</option>
+              <option value="vendas">Vendas pendentes</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="addItem()"><i class="ti ti-plus"></i> Adicionar</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="itens-table">
+            <thead>
+              <tr>
+                <th style="width:40px"></th>
+                <th style="width:36px">#</th>
+                <th>Código</th>
+                <th>Qtd recebida</th>
+                <th>Prioridade</th>
+                <th>Histórico vida toda</th>
+                <th style="width:60px"></th>
+              </tr>
+            </thead>
+            <tbody id="itens-tbody">
+              <tr><td colspan="7" class="empty" style="padding:32px;text-align:center;color:var(--muted)"><i class="ti ti-box-off" style="font-size:24px;display:block;margin-bottom:8px;opacity:0.4"></i>Adicione itens acima</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--mono)"><i class="ti ti-drag-drop" style="font-size:13px;vertical-align:-2px"></i> Arraste as linhas para reordenar a prioridade</p>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="showView('notas')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarNota()">
+          <i class="ti ti-device-floppy"></i> Salvar nota
+        </button>
+      </div>
+    </div>
+
+    <!-- DETALHE DA NOTA -->
+    <div id="view-detalhe-nota" class="view">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn btn-ghost btn-sm" onclick="showView('notas')"><i class="ti ti-arrow-left"></i></button>
+          <div>
+            <div class="page-title" id="detalhe-titulo">Nota NF-2026-0041</div>
+            <div class="page-sub" id="detalhe-sub">Aberta em 18/05/2026 · 8 itens</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-success" id="btn-gerar-chamado" onclick="gerarChamado()">
+            <i class="ti ti-send"></i> Gerar chamado e enviar
+          </button>
+        </div>
+      </div>
+
+      <!-- Triagem summary cards -->
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+        <div class="stat-card">
+          <div class="stat-label">Recebido</div>
+          <div class="stat-value" id="detalhe-recebido">—</div>
+          <div class="stat-sub">unidades na nota</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Boas (pós-triagem)</div>
+          <div class="stat-value stat-green" id="detalhe-boas">—</div>
+          <div class="stat-sub">vão para tampografia</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Devoluções</div>
+          <div class="stat-value stat-coral" id="detalhe-ruins">—</div>
+          <div class="stat-sub">retornam ao fornecedor</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Itens por prioridade</span>
+              <span id="detalhe-badge" class="badge badge-pending">aguardando triagem</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Código</th>
+                    <th>Recebido</th>
+                    <th>Boas</th>
+                    <th>Ruins</th>
+                    <th>Prioridade</th>
+                    <th>Vida toda ✓</th>
+                    <th>Vida toda ✗</th>
+                    <th>Troca</th>
+                  </tr>
+                </thead>
+                <tbody id="detalhe-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHATSAPP PANEL -->
+        <div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Mensagem WhatsApp</span></div>
+            <div class="wa-preview" style="margin-bottom:14px">
+              <div class="wa-bubble" id="wa-msg-preview">Gerando prévia...</div>
+              <div class="wa-time" id="wa-time">—</div>
+            </div>
+            <button class="btn btn-success" style="width:100%" id="btn-wa" onclick="enviarWhatsapp()">
+              <i class="ti ti-brand-whatsapp"></i> Enviar para grupo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO POR CÓDIGO -->
+    <div id="view-historico" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Histórico por código</div>
+          <div class="page-sub">Acumulado de boas e ruins por capa em toda a vida do sistema</div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-hist" placeholder="Buscar código..." oninput="filterHistorico()">
+      </div>
+      <div class="hist-grid" id="hist-grid">
+        <div class="empty"><i class="ti ti-chart-off"></i><p>Nenhum dado encontrado</p></div>
+      </div>
+    </div>
+
+    <!-- CHAMADOS -->
+    <div id="view-chamados" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Chamados</div>
+          <div class="page-sub">Busque pelo número do chamado para ver o registro completo</div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-chamado" placeholder="Ex: CHAMADO-20260518-001" oninput="buscarChamado()">
+      </div>
+      <div id="chamados-result">
+        <div class="notas-grid" id="chamados-list">
+          <div class="empty"><i class="ti ti-ticket-off"></i><p>Nenhum chamado encontrado</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="view-config" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configurações</div>
+          <div class="page-sub">Supabase e WhatsApp</div>
+        </div>
+      </div>
+      <div style="display:grid;gap:16px;max-width:600px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Supabase</span></div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Supabase URL</label>
+              <input type="text" id="cfg-sb-url" placeholder="https://xxxx.supabase.co">
+            </div>
+            <div class="form-group">
+              <label>Anon Key</label>
+              <input type="password" id="cfg-sb-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+            </div>
+            <button class="btn btn-primary" style="align-self:start" onclick="salvarConfig()">
+              <i class="ti ti-device-floppy"></i> Salvar e conectar
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">WhatsApp</span></div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Número do grupo / contato (com DDI)</label>
+              <input type="text" id="cfg-wa-number" placeholder="5571999990000">
+            </div>
+            <div class="form-group">
+              <label>Nome do responsável (para a mensagem)</label>
+              <input type="text" id="cfg-wa-nome" placeholder="Ex: João — Tampografia">
+            </div>
+            <button class="btn btn-primary" style="align-self:start" onclick="salvarConfigWa()">
+              <i class="ti ti-device-floppy"></i> Salvar
+            </button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><span class="card-title">Gerenciar usuários</span></div>
+          <div style="display:grid;gap:14px;max-width:600px">
+            <div id="usuarios-list" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="form-group"><label>Email do usuário</label><input type="email" id="usr-email" placeholder="usuario@email.com"></div>
+              <div class="form-group"><label>Nova senha</label><input type="password" id="usr-senha" placeholder="mínimo 6 caracteres"></div>
+            </div>
+            <button class="btn btn-primary" style="align-self:start" onclick="alterarSenhaUsuario()"><i class="ti ti-key"></i> Alterar senha</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TROCAS -->
+    <div id="view-trocas" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Trocas de código</div>
+          <div class="page-sub">Itens identificados com código trocado durante a triagem</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadTrocas()"><i class="ti ti-refresh"></i> Atualizar</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-trocas" placeholder="Buscar por código..." oninput="filterTrocas()">
+      </div>
+      <div id="trocas-list">
+        <div class="empty"><i class="ti ti-arrows-exchange"></i><p>Nenhuma troca registrada</p></div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div id="view-performance" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Performance de prazos</div>
+          <div class="page-sub">Histórico de cumprimento de prazos nos chamados finalizados</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadPerformance()"><i class="ti ti-refresh"></i> Atualizar</button>
+      </div>
+      <div class="stats-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-label">No prazo</div>
+          <div class="stat-value stat-green" id="perf-noprazo">—</div>
+          <div class="stat-sub">chamados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Com antecedência</div>
+          <div class="stat-value stat-accent" id="perf-antes">—</div>
+          <div class="stat-sub" id="perf-antes-media">média — dias antes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Em atraso</div>
+          <div class="stat-value stat-coral" id="perf-atraso">—</div>
+          <div class="stat-sub" id="perf-atraso-media">média — dias de atraso</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total finalizado</div>
+          <div class="stat-value" id="perf-total">—</div>
+          <div class="stat-sub">chamados</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Detalhe por chamado</span></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Chamado</th>
+                <th>Nota</th>
+                <th>Prazo</th>
+                <th>Concluído em</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="perf-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL DETALHE CHAMADO -->
+<div class="modal-backdrop" id="modal-chamado">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-chamado-titulo">Chamado CHAMADO-20260518-001</span>
+      <button class="modal-close" onclick="closeModal('modal-chamado')"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-chamado-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-chamado')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR NOTA -->
+<div class="modal-backdrop" id="modal-editar-nota">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Editar nota</span>
+      <button class="modal-close" onclick="closeModal('modal-editar-nota')"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="display:grid;gap:14px">
+      <input type="hidden" id="edit-nota-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group"><label>Número da nota</label><input type="text" id="edit-numero"></div>
+        <div class="form-group"><label>Fornecedor</label><input type="text" id="edit-fornecedor"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group"><label>Data de recebimento</label><input type="date" id="edit-data"></div>
+        <div class="form-group"><label>Prazo (dias)</label><input type="number" id="edit-prazo" min="1"></div>
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="edit-obs" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:14px;padding:10px 12px;outline:none;width:100%;resize:vertical;min-height:80px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-editar-nota')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEdicaoNota()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUIR -->
+<div class="modal-backdrop" id="modal-excluir-nota">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">Excluir nota</span>
+      <button class="modal-close" onclick="closeModal('modal-excluir-nota')"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Tem certeza que deseja excluir a nota <strong id="excluir-nota-num" style="color:var(--text)"></strong>?</p>
+    <p style="font-size:12px;color:var(--coral)"><i class="ti ti-alert-triangle" style="font-size:13px;vertical-align:-2px"></i> Isso também excluirá todos os itens, triagem e chamados vinculados.</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-excluir-nota')">Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirmar-excluir" onclick="excluirNota()"><i class="ti ti-trash"></i> Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESET -->
+<div class="modal-backdrop" id="modal-reset">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <span class="modal-title" style="color:var(--coral)"><i class="ti ti-alert-triangle" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i> Reset do sistema</span>
+      <button class="modal-close" onclick="closeModal('modal-reset')"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Isso apagará <strong style="color:var(--coral)">todos os dados</strong> do sistema — notas, itens, triagens, chamados e histórico de códigos.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Digite <strong style="color:var(--text)">RESET</strong> para confirmar:</p>
+    <input type="text" id="reset-confirm-input" placeholder="RESET" style="margin-bottom:4px">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reset')">Cancelar</button>
+      <button class="btn btn-danger" onclick="executarReset()"><i class="ti ti-trash"></i> Apagar tudo</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="ti ti-check"></i>
+  <span id="toast-msg">Salvo com sucesso</span>
+</div>
+
+<script>
+// ============================================================
+// CONFIG LOCAL
+// ============================================================
+let SB_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+let SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+let WA_NUMBER = localStorage.getItem('wa_number') || '';
+let WA_NOME = localStorage.getItem('wa_nome') || 'Tampografia';
+let supabaseClient = null;
+
+supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+const _sb = supabaseClient;
+
+// ============================================================
+// STATE
+// ============================================================
+let itensNota = [];
+let notasCache = [];
+let currentNotaId = null;
+let dragSrcIdx = null;
+
+// ============================================================
+// NAV
+// ============================================================
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const navMap = {
+    'dashboard': 0, 'notas': 1, 'nova-nota': 2,
+    'historico': 3, 'chamados': 4, 'performance': 5, 'trocas': 6, 'config': 7, 'detalhe-nota': 1
+  };
+  const navItems = document.querySelectorAll('.nav-item');
+  if (navMap[v] !== undefined) navItems[navMap[v]].classList.add('active');
+
+  if (v === 'dashboard') loadDashboard();
+  if (v === 'notas') loadNotas();
+  if (v === 'historico') loadHistorico();
+  if (v === 'chamados') loadChamados();
+  if (v === 'performance') loadPerformance();
+  if (v === 'trocas') loadTrocas();
+  if (v === 'config') { loadConfig(); loadUsuarios(); }
+  if (v === 'nova-nota') resetNovaNotaForm();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ============================================================
+// SUPABASE HELPERS
+// ============================================================
+async function dbSelect(table, query='') {
+  if (!supabaseClient) return { data: [], error: 'Supabase não configurado' };
+  let q = supabaseClient.from(table).select(query || '*');
+  return q;
+}
+
+async function dbInsert(table, data) {
+  if (!supabaseClient) { toast('Configure o Supabase primeiro', 'error'); return null; }
+  const { data: d, error } = await supabaseClient.from(table).insert(data).select();
+  if (error) { toast('Erro: ' + error.message, 'error'); return null; }
+  return d;
+}
+
+async function dbUpdate(table, match, data) {
+  if (!supabaseClient) return null;
+  const { data: d, error } = await supabaseClient.from(table).update(data).match(match).select();
+  if (error) { toast('Erro: ' + error.message, 'error'); return null; }
+  return d;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  if (!supabaseClient) {
+    document.getElementById('stat-abertas').textContent = '—';
+    return;
+  }
+  const { data: notas } = await supabaseClient.from('notas').select('*, itens_nota(count)').order('created_at', { ascending: false }).limit(5);
+  if (!notas) return;
+
+  const abertas = notas.filter(n => n.status === 'aberta').length;
+  const tamp = notas.filter(n => n.status === 'tampografia').length;
+
+  document.getElementById('stat-abertas').textContent = abertas;
+  document.getElementById('stat-tamp').textContent = tamp;
+
+  const { count: done } = await supabaseClient.from('chamados').select('*', { count: 'exact' }).eq('status', 'concluido').gte('created_at', new Date().toISOString().split('T')[0]);
+  document.getElementById('stat-done').textContent = done || 0;
+
+  const { count: triagem } = await supabaseClient.from('itens_nota').select('*', { count: 'exact' }).eq('status', 'triagem');
+  document.getElementById('stat-triagem').textContent = triagem || 0;
+
+  renderNotasList(notas.slice(0, 5), 'dashboard-notas-list', true);
+}
+
+// ============================================================
+// NOTAS
+// ============================================================
+async function loadNotas() {
+  if (!supabaseClient) {
+    document.getElementById('notas-list').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i><p>Configure o Supabase em Configurações</p></div>';
+    return;
+  }
+  const { data: notas } = await supabaseClient.from('notas').select('*').order('created_at', { ascending: false });
+  notasCache = notas || [];
+  renderNotasList(notasCache, 'notas-list');
+}
+
+function renderNotasList(notas, containerId, compact=false) {
+  const c = document.getElementById(containerId);
+  if (!notas || notas.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota encontrada</p></div>';
+    return;
+  }
+  const statusMap = {
+    'aberta': ['badge-pending', 'Aberta'],
+    'triagem': ['badge-triagem', 'Em triagem'],
+    'tampografia': ['badge-tamp', 'Em tampografia'],
+    'concluida': ['badge-done', 'Concluída'],
+  };
+  c.innerHTML = notas.map(n => {
+    const [cls, label] = statusMap[n.status] || ['badge-pending', n.status];
+    return `<div class="nota-row" onclick="abrirNota('${n.id}')">
+      <div class="nota-info">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span class="nota-num">${n.numero}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-family:var(--mono);font-weight:600;${n.tipo==='pelicula'?'background:rgba(240,165,0,0.15);color:#f0a500':'background:rgba(107,78,255,0.15);color:#6B4EFF'}">${n.tipo==='pelicula'?'PELÍCULA':'CAPA'}</span>
+          <span class="badge ${cls}" style="font-size:10px">${label}</span>
+        </div>
+        <div style="font-weight:500;font-size:13px">${n.fornecedor || 'Fornecedor não informado'}</div>
+        <div class="nota-data">${formatDate(n.created_at)} · ${n.qtd_itens || 0} itens</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" onclick="editarNota('${n.id}')" title="Editar"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="confirmarExcluirNota('${n.id}','${n.numero}')" title="Excluir"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterNotas() {
+  const q = document.getElementById('search-nota').value.toLowerCase();
+  const s = document.getElementById('filter-status').value;
+  const filtered = notasCache.filter(n => {
+    const matchQ = !q || n.numero.toLowerCase().includes(q);
+    const matchS = !s || n.status === s;
+    return matchQ && matchS;
+  });
+  renderNotasList(filtered, 'notas-list');
+}
+
+// ============================================================
+// NOVA NOTA — ITENS
+// ============================================================
+function togglePrazoField() {
+  const tipo = document.getElementById('nota-tipo').value;
+  document.getElementById('prazo-group').style.display = tipo === 'capa' ? 'block' : 'none';
+}
+
+function resetNovaNotaForm() {
+  itensNota = [];
+  document.getElementById('nota-numero').value = '';
+  document.getElementById('nota-fornecedor').value = '';
+  document.getElementById('nota-obs').value = '';
+  document.getElementById('nota-prazo').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('nota-data').value = today;
+  document.getElementById('nota-tipo').value = 'capa';
+  document.getElementById('prazo-group').style.display = 'block';
+  renderItensTable();
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+
+function toggleMotivo() {
+  const v = document.getElementById('item-tem-prioridade').value;
+  document.getElementById('motivo-group').style.display = v === 'sim' ? 'block' : 'none';
+}
+
+function addItem() {
+  const codigo = document.getElementById('item-codigo').value.trim().toUpperCase();
+  const qtd = parseInt(document.getElementById('item-qtd').value);
+  const temPrio = document.getElementById('item-tem-prioridade').value;
+  const prioridade = temPrio === 'sim' ? document.getElementById('item-prioridade').value : 'nao';
+  if (!codigo || !qtd) { toast('Preencha código e quantidade', 'error'); return; }
+  if (itensNota.find(i => i.codigo === codigo)) { toast('Código já adicionado', 'error'); return; }
+  itensNota.push({ codigo, qtd_recebida: qtd, motivo_prioridade: prioridade, ordem: itensNota.length + 1 });
+  document.getElementById('item-codigo').value = '';
+  document.getElementById('item-qtd').value = '';
+  renderItensTable();
+}
+
+function removeItem(idx) {
+  itensNota.splice(idx, 1);
+  itensNota.forEach((it, i) => it.ordem = i + 1);
+  renderItensTable();
+}
+
+const motivoLabel = { zerado: 'Zerado há muito tempo', demanda: 'Alta demanda', vendas: 'Vendas pendentes', outro: 'Outro', nao: '—' };
+
+function renderItensTable() {
+  const tbody = document.getElementById('itens-tbody');
+  document.getElementById('itens-count').textContent = itensNota.length + ' itens';
+  if (itensNota.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty" style="padding:32px;text-align:center;color:var(--muted)"><i class="ti ti-box-off" style="font-size:24px;display:block;margin-bottom:8px;opacity:0.4"></i>Adicione itens acima</td></tr>';
+    return;
+  }
+  tbody.innerHTML = itensNota.map((it, i) => `
+    <tr draggable="true" data-idx="${i}" ondragstart="dragStart(event,${i})" ondragover="dragOver(event)" ondrop="dragDrop(event,${i})" ondragleave="dragLeave(event)">
+      <td class="td-drag"><i class="ti ti-grip-vertical" style="font-size:16px"></i></td>
+      <td><div class="priority-badge">${i + 1}</div></td>
+      <td class="td-code">${it.codigo}</td>
+      <td style="font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td><span class="badge badge-pending" style="font-size:10px">${motivoLabel[it.motivo_prioridade] || it.motivo_prioridade}</span></td>
+      <td style="font-size:11px;color:var(--muted)">carregando...</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})"><i class="ti ti-trash"></i></button></td>
+    </tr>
+  `).join('');
+}
+
+// DRAG & DROP
+function dragStart(e, idx) { dragSrcIdx = idx; e.currentTarget.classList.add('dragging'); }
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dragDrop(e, toIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragSrcIdx === null || dragSrcIdx === toIdx) return;
+  const moved = itensNota.splice(dragSrcIdx, 1)[0];
+  itensNota.splice(toIdx, 0, moved);
+  itensNota.forEach((it, i) => it.ordem = i + 1);
+  dragSrcIdx = null;
+  renderItensTable();
+}
+
+// ============================================================
+// SALVAR NOTA
+// ============================================================
+async function salvarNota() {
+  const numero = document.getElementById('nota-numero').value.trim();
+  const data = document.getElementById('nota-data').value;
+  const fornecedor = document.getElementById('nota-fornecedor').value.trim();
+  const obs = document.getElementById('nota-obs').value.trim();
+  const prazo = parseInt(document.getElementById('nota-prazo').value) || 3;
+  const tipo = document.getElementById('nota-tipo').value;
+
+  if (!numero || !data) { toast('Número e data são obrigatórios', 'error'); return; }
+  if (itensNota.length === 0) { toast('Adicione pelo menos um item', 'error'); return; }
+
+  const notaData = await dbInsert('notas', [{
+    numero, data_recebimento: data, fornecedor, obs, prazo_dias: prazo, tipo,
+    status: 'aberta', qtd_itens: itensNota.length
+  }]);
+  if (!notaData) return;
+
+  const notaId = notaData[0].id;
+  const itensData = itensNota.map(it => ({
+    nota_id: notaId, codigo: it.codigo, qtd_recebida: it.qtd_recebida,
+    motivo_prioridade: it.motivo_prioridade, ordem: it.ordem, status: 'triagem'
+  }));
+  await supabaseClient.from('itens_nota').insert(itensData);
+
+  // Enviar mensagem para o Estoque
+  const msgEstoque = tipo === 'pelicula'
+    ? `Olá, Estoque!\n\nTemos uma nova nota de películas para triagem referente à nota ${numero}.\n\nQualquer dúvida, estou à disposição. 👋`
+    : `Olá, Estoque!\n\nTemos uma nova nota de capas para triagem referente à nota ${numero}.\n\nQualquer dúvida, estou à disposição. 👋`;
+
+  try {
+    await fetch(`https://whatsapp.vxcaseloja.com/message/sendText/TAMPOGRAFIA`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': 'D4739ACF77AFE9FBBA868E7EE2F37' },
+      body: JSON.stringify({ number: '120363028837269627@g.us', options: { delay: 0 }, textMessage: { text: msgEstoque } })
+    });
+  } catch(e) { console.warn('Erro ao notificar estoque:', e); }
+
+  toast('Nota salva com sucesso!');
+  setTimeout(() => abrirNota(notaId), 500);
+}
+
+// ============================================================
+// DETALHE NOTA
+// ============================================================
+async function abrirNota(notaId) {
+  if (!supabaseClient) return;
+  currentNotaId = notaId;
+
+  const { data: nota } = await supabaseClient.from('notas').select('*').eq('id', notaId).single();
+  const { data: itens } = await supabaseClient.from('itens_nota').select('*').eq('nota_id', notaId).order('ordem');
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+  itens.forEach(it => { it._triagem = triagemMap[it.id] || null; });
+
+  document.getElementById('detalhe-titulo').textContent = 'Nota ' + nota.numero;
+  // Buscar data de conclusão da triagem
+  const triagemDates = (triagemData || []).map(t => t.created_at).filter(Boolean).sort();
+  const triagemFim = triagemDates.length > 0 ? triagemDates[triagemDates.length - 1] : null;
+  let triagemInfo = '';
+  if (triagemFim) {
+    const diasTriagem = Math.round((new Date(triagemFim) - new Date(nota.created_at)) / 86400000);
+    triagemInfo = ` · Triagem: ${formatDate(triagemFim)} (${diasTriagem === 0 ? 'mesmo dia' : diasTriagem + ' dia(s)'})`;
+  }
+  document.getElementById('detalhe-sub').textContent = `Aberta em ${formatDate(nota.created_at)} · ${itens.length} itens · Prazo: ${nota.prazo_dias} dias${triagemInfo}`;
+
+  const totalRecebido = itens.reduce((s, it) => s + (it.qtd_recebida || 0), 0);
+  const totalBoas = itens.reduce((s, it) => s + (it._triagem?.qtd_boa || 0), 0);
+  const totalRuins = itens.reduce((s, it) => s + (it._triagem?.qtd_ruim || 0), 0);
+  const triagemFeita = itens.some(it => it._triagem);
+
+  document.getElementById('detalhe-recebido').textContent = totalRecebido;
+  document.getElementById('detalhe-boas').textContent = triagemFeita ? totalBoas : '—';
+  document.getElementById('detalhe-ruins').textContent = triagemFeita ? totalRuins : '—';
+
+  const statusBadge = { aberta: ['badge-pending','aguardando triagem'], triagem: ['badge-triagem','em triagem'], tampografia: ['badge-tamp','em tampografia'], concluida: ['badge-done','concluída'] };
+  const [badgeCls, badgeLbl] = statusBadge[nota.status] || ['badge-pending', nota.status];
+  // Mostrar/ocultar botão gerar chamado baseado no tipo
+  const btnChamado = document.getElementById('btn-gerar-chamado');
+  if (btnChamado) btnChamado.style.display = nota.tipo === 'pelicula' ? 'none' : 'inline-flex';
+  // Adicionar badge de tipo no título
+  const tipoTag = nota.tipo === 'pelicula' ? ' <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:var(--mono)">PELÍCULA</span>' : ' <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:var(--mono)">CAPA</span>';
+  document.getElementById('detalhe-titulo').innerHTML = 'Nota ' + nota.numero + tipoTag;
+  document.getElementById('detalhe-badge').className = 'badge ' + badgeCls;
+  document.getElementById('detalhe-badge').textContent = badgeLbl;
+
+  // Buscar histórico vida toda por código
+  const codigos = itens.map(it => it.codigo);
+  let histMap = {};
+  if (codigos.length > 0) {
+    const { data: hist } = await supabaseClient.from('historico_codigo').select('*').in('codigo', codigos);
+    (hist || []).forEach(h => { histMap[h.codigo] = h; });
+  }
+
+  document.getElementById('detalhe-tbody').innerHTML = itens.map((it, i) => {
+    const t = it._triagem || {};
+    const h = histMap[it.codigo] || {};
+    return `<tr>
+      <td><div class="priority-badge">${it.ordem}</div></td>
+      <td class="td-code">${it.codigo}</td>
+      <td style="font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td style="font-family:var(--mono);color:var(--green)">${t.qtd_boa !== undefined ? t.qtd_boa : '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-family:var(--mono);color:var(--coral)">${t.qtd_ruim !== undefined ? t.qtd_ruim : '<span style="color:var(--muted)">—</span>'}</td>
+      <td><span class="badge badge-pending" style="font-size:10px">${motivoLabel[it.motivo_prioridade] || it.motivo_prioridade}</span></td>
+      <td style="font-family:var(--mono);color:var(--green)">${h.total_boa !== undefined ? h.total_boa : '—'}</td>
+      <td style="font-family:var(--mono);color:var(--coral)">${h.total_ruim !== undefined ? h.total_ruim : '—'}</td>
+      <td>${t.capa_trocada ? `<span style="font-size:11px;background:rgba(240,165,0,0.15);color:#f0a500;padding:3px 8px;border-radius:20px;font-family:var(--mono)">⇄ ${t.codigo_trocado || 'sem código'}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  gerarPreviewWa(nota, itens);
+  showView('detalhe-nota');
+}
+
+// ============================================================
+// WHATSAPP PREVIEW
+// ============================================================
+function gerarPreviewWa(nota, itens) {
+  const prazoDate = new Date();
+  prazoDate.setDate(prazoDate.getDate() + (nota.prazo_dias || 3));
+  const prazoStr = prazoDate.toLocaleDateString('pt-BR');
+  let msg;
+  if (nota.tipo === 'pelicula') {
+    msg = `Olá, Estoque!\n\nTemos uma triagem de películas em aberto referente à nota ${nota.numero}:\n\nPrazo de entrega: ${prazoStr}\n\nQualquer dúvida, estou à disposição. 👋`;
+  } else {
+    msg = `Olá, Tampografia!\n\nAbrimos um chamado para produção de capas referente à nota ${nota.numero}:\n\nPrazo de entrega: ${prazoStr}\n\nQualquer dúvida, estou à disposição. 👋`;
+  }
+  document.getElementById('wa-msg-preview').textContent = msg;
+  document.getElementById('wa-time').textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('btn-wa').dataset.msg = encodeURIComponent(msg);
+}
+
+async function enviarWhatsapp() {
+  const msg = decodeURIComponent(document.getElementById('btn-wa').dataset.msg || '');
+  if (!msg) return;
+
+  const EVO_URL = 'https://whatsapp.vxcaseloja.com';
+  const EVO_KEY = 'D4739ACF77AFE9FBBA868E7EE2F37';
+  const EVO_INSTANCE = 'TAMPOGRAFIA';
+  const GRUPO_CAPA = '557196600870-1538745701@g.us';
+  const GRUPO_PELICULA = '120363028837269627@g.us';
+
+  // Pegar tipo da nota atual
+  const notaTitulo = document.getElementById('detalhe-titulo').textContent || '';
+  const isPelicula = notaTitulo.toLowerCase().includes('pel') ||
+    document.getElementById('detalhe-badge')?.textContent?.toLowerCase().includes('pel');
+
+  // Buscar tipo da nota pelo currentNotaId
+  let groupId = GRUPO_CAPA;
+  if (currentNotaId) {
+    const { data: nota } = await supabaseClient.from('notas').select('tipo').eq('id', currentNotaId).single();
+    if (nota?.tipo === 'pelicula') groupId = GRUPO_PELICULA;
+  }
+
+  const btn = document.getElementById('btn-wa');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Enviando...';
+
+  try {
+    const res = await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': EVO_KEY
+      },
+      body: JSON.stringify({
+        number: groupId,
+        options: { delay: 0 },
+        textMessage: { text: msg }
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast('Mensagem enviada para o grupo!');
+      btn.innerHTML = '<i class="ti ti-check"></i> Enviado!';
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-brand-whatsapp"></i> Enviar para grupo'; btn.disabled = false; }, 3000);
+    } else {
+      throw new Error(data.message || 'Erro ao enviar');
+    }
+  } catch (err) {
+    toast('Erro ao enviar: ' + err.message);
+    btn.innerHTML = '<i class="ti ti-brand-whatsapp"></i> Enviar para grupo';
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// GERAR CHAMADO
+// ============================================================
+async function gerarChamado() {
+  if (!supabaseClient || !currentNotaId) return;
+
+  const { data: nota } = await supabaseClient.from('notas').select('*').eq('id', currentNotaId).single();
+  const { data: itens } = await supabaseClient.from('itens_nota').select('*').eq('nota_id', currentNotaId).order('ordem');
+  const itemIds2 = itens.map(it => it.id);
+  const { data: triagemData2 } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds2);
+  const triagemMap2 = {};
+  (triagemData2 || []).forEach(t => { triagemMap2[t.item_id] = t; });
+  itens.forEach(it => { it._triagem = triagemMap2[it.id] || null; });
+
+  const hoje = new Date();
+  const yyyymmdd = hoje.toISOString().slice(0,10).replace(/-/g,'');
+  const { count } = await supabaseClient.from('chamados').select('*', { count: 'exact' }).like('numero', `CHAMADO-${yyyymmdd}%`);
+  const seq = String((count || 0) + 1).padStart(3, '0');
+  const numeroChamado = `CHAMADO-${yyyymmdd}-${seq}`;
+
+  const prazoDate = new Date();
+  prazoDate.setDate(prazoDate.getDate() + (nota.prazo_dias || 3));
+
+  const chamadoData = await dbInsert('chamados', [{
+    numero: numeroChamado, nota_id: currentNotaId, status: 'aberto',
+    prazo: prazoDate.toISOString()
+  }]);
+  if (!chamadoData) return;
+
+  const chamadoId = chamadoData[0].id;
+  const chamadoItens = itens.map(it => ({
+    chamado_id: chamadoId, item_id: it.id, codigo: it.codigo,
+    qtd_enviada: it._triagem?.qtd_boa || it.qtd_recebida, concluido: false
+  }));
+  await supabaseClient.from('chamado_itens').insert(chamadoItens);
+  await dbUpdate('notas', { id: currentNotaId }, { status: 'tampografia' });
+
+  toast(`Chamado ${numeroChamado} gerado!`);
+  setTimeout(() => enviarWhatsapp(), 500);
+}
+
+// ============================================================
+// HISTÓRICO
+// ============================================================
+async function loadHistorico() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.from('historico_codigo').select('*').order('codigo');
+  renderHistorico(data || []);
+}
+
+function renderHistorico(data) {
+  const c = document.getElementById('hist-grid');
+  if (!data.length) { c.innerHTML = '<div class="empty"><i class="ti ti-chart-off"></i><p>Sem dados</p></div>'; return; }
+  c.innerHTML = data.map(h => `
+    <div class="hist-card">
+      <div class="hist-code">${h.codigo}</div>
+      <div class="hist-row"><span>Total recebido</span><span style="font-family:var(--mono)">${(h.total_boa||0)+(h.total_ruim||0)}</span></div>
+      <div class="hist-row"><span>Boas (vida toda)</span><span class="good">+${h.total_boa||0}</span></div>
+      <div class="hist-row"><span>Ruins (vida toda)</span><span class="bad">-${h.total_ruim||0}</span></div>
+      <div class="hist-row"><span>Taxa aprovação</span><span style="font-family:var(--mono)">${h.total_boa ? Math.round(h.total_boa/((h.total_boa||0)+(h.total_ruim||0))*100) : 0}%</span></div>
+    </div>
+  `).join('');
+}
+
+function filterHistorico() {
+  const q = document.getElementById('search-hist').value.toLowerCase();
+  if (!q) { loadHistorico(); return; }
+  supabaseClient.from('historico_codigo').select('*').ilike('codigo', `%${q}%`).then(({ data }) => renderHistorico(data || []));
+}
+
+// ============================================================
+// CHAMADOS
+// ============================================================
+async function loadChamados() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.from('chamados').select('*, notas(numero)').order('created_at', { ascending: false });
+  renderChamadosList(data || []);
+}
+
+async function buscarChamado() {
+  if (!supabaseClient) return;
+  const q = document.getElementById('search-chamado').value.trim();
+  if (!q) { loadChamados(); return; }
+  const { data } = await supabaseClient.from('chamados').select('*, notas(numero)').ilike('numero', `%${q}%`);
+  renderChamadosList(data || []);
+}
+
+function renderChamadosList(data) {
+  const c = document.getElementById('chamados-list');
+  if (!data.length) { c.innerHTML = '<div class="empty"><i class="ti ti-ticket-off"></i><p>Nenhum chamado encontrado</p></div>'; return; }
+  const statusMap = { aberto: ['badge-tamp','Aberto'], concluido: ['badge-done','Concluído'], coletado: ['badge-done','Coletado'] };
+  c.innerHTML = data.map(ch => {
+    const [cls, lbl] = statusMap[ch.status] || ['badge-pending', ch.status];
+    return `<div class="nota-row" onclick="verChamado('${ch.id}')">
+      <div class="nota-num">${ch.numero}</div>
+      <div class="nota-info">
+        <div style="font-weight:500;font-size:13px">Nota: ${ch.notas?.numero || '—'}</div>
+        <div class="nota-data">Aberto em ${formatDate(ch.created_at)} · Prazo: ${ch.prazo ? formatDate(ch.prazo) : '—'}</div>
+      </div>
+      <span class="badge ${cls}">${lbl}</span>
+      <i class="ti ti-chevron-right" style="color:var(--muted)"></i>
+    </div>`;
+  }).join('');
+}
+
+let _chamadoAtivo = null;
+
+async function verChamado(chamadoId) {
+  if (!supabaseClient) return;
+  _chamadoAtivo = chamadoId;
+
+  const { data: ch } = await supabaseClient.from('chamados').select('*, notas(*), chamado_itens(*)').eq('id', chamadoId).single();
+  if (!ch) return;
+
+  const { data: logs } = await supabaseClient.from('chamado_log').select('*').eq('chamado_id', chamadoId).order('created_at', { ascending: false });
+
+  document.getElementById('modal-chamado-titulo').textContent = ch.numero;
+
+  const itensRows = (ch.chamado_itens || []).map(ci => `
+    <tr>
+      <td class="td-code">${ci.codigo}</td>
+      <td style="font-family:var(--mono)">${ci.qtd_enviada}</td>
+      <td>${ci.concluido ? '<span class="badge badge-done">Concluído</span>' : '<span class="badge badge-pending">Pendente</span>'}</td>
+      <td onclick="event.stopPropagation()">
+        ${ch.status === 'aberto' ? `<button class="btn btn-danger btn-sm" onclick="removerItemChamado('${ci.id}','${ci.codigo}','${chamadoId}')"><i class="ti ti-trash"></i></button>` : ''}
+      </td>
+    </tr>`).join('');
+
+  const logsRows = (logs || []).map(l => `
+    <tr>
+      <td style="font-size:11px;color:var(--muted);font-family:var(--mono);padding:8px 12px">${formatDate(l.created_at)} ${new Date(l.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</td>
+      <td style="padding:8px 12px"><span class="badge ${l.acao === 'ADICIONADO' ? 'badge-done' : 'badge-tamp'}" style="font-size:10px">${l.acao}</span></td>
+      <td style="font-family:var(--mono);font-size:12px;padding:8px 12px">${l.codigo || '—'}</td>
+      <td style="font-family:var(--mono);font-size:12px;padding:8px 12px">${l.quantidade || '—'}</td>
+      <td style="font-size:12px;padding:8px 12px">${l.motivo}</td>
+    </tr>`).join('');
+
+  const addForm = ch.status === 'aberto' ? `
+    <div style="background:var(--surface2);border-radius:var(--radius);padding:14px;margin-bottom:16px;border:1px dashed var(--border2)">
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:10px;text-transform:uppercase">Adicionar item ao chamado</div>
+      <div style="display:grid;grid-template-columns:1fr 100px 1fr auto;gap:10px;align-items:end">
+        <div><label style="font-size:11px;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:4px">Código</label>
+          <input id="add-item-codigo" type="text" placeholder="EX: 28586" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;width:100%" oninput="this.value=this.value.toUpperCase()"></div>
+        <div><label style="font-size:11px;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:4px">Qtd</label>
+          <input id="add-item-qtd" type="number" min="1" placeholder="0" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;width:100%"></div>
+        <div><label style="font-size:11px;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:4px">Motivo</label>
+          <input id="add-item-motivo" type="text" placeholder="INFORME O MOTIVO" spellcheck="true" lang="pt-BR" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;width:100%;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+        <button class="btn btn-primary btn-sm" onclick="adicionarItemChamado('${chamadoId}')"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>` : '';
+
+  document.getElementById('modal-chamado-body').innerHTML = `
+    <div class="timeline" style="margin-bottom:20px">
+      <div class="timeline-item">
+        <div class="tl-dot done"><i class="ti ti-file-invoice"></i></div>
+        <div class="tl-content"><div class="tl-title">Nota registrada</div><div class="tl-date">Nota ${ch.notas?.numero} · ${formatDate(ch.notas?.created_at)}</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot done"><i class="ti ti-package"></i></div>
+        <div class="tl-content"><div class="tl-title">Triagem concluída</div><div class="tl-date">${formatDate(ch.created_at)}</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot ${ch.status !== 'aberto' ? 'done' : 'active'}"><i class="ti ti-paint"></i></div>
+        <div class="tl-content"><div class="tl-title">Em produção</div><div class="tl-date">Prazo: ${ch.prazo ? formatDate(ch.prazo) : '—'}</div></div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot ${ch.status === 'coletado' ? 'done' : ''}"><i class="ti ti-truck"></i></div>
+        <div class="tl-content">
+          <div class="tl-title">Coletado pelo estoque</div>
+          <div class="tl-date">${ch.data_conclusao ? formatDate(ch.data_conclusao) : '—'}</div>
+          ${ch.data_conclusao && ch.prazo ? prazoChipModal(ch.prazo, ch.data_conclusao) : ''}
+        </div>
+      </div>
+    </div>
+    ${addForm}
+    <table style="width:100%;margin-bottom:20px">
+      <thead><tr><th>Código</th><th>Qtd</th><th>Status</th><th style="width:50px"></th></tr></thead>
+      <tbody>${itensRows}</tbody>
+    </table>
+    ${logs && logs.length > 0 ? `
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:10px">Histórico de alterações</div>
+      <table style="width:100%">
+        <thead><tr>
+          <th style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:6px 12px;text-align:left">Data</th>
+          <th style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:6px 12px;text-align:left">Ação</th>
+          <th style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:6px 12px;text-align:left">Código</th>
+          <th style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:6px 12px;text-align:left">Qtd</th>
+          <th style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:6px 12px;text-align:left">Motivo</th>
+        </tr></thead>
+        <tbody>${logsRows}</tbody>
+      </table>
+    </div>` : ''}`;
+
+  document.getElementById('modal-chamado').classList.add('open');
+}
+
+async function adicionarItemChamado(chamadoId) {
+  const codigo = document.getElementById('add-item-codigo').value.trim().toUpperCase();
+  const qtd = parseInt(document.getElementById('add-item-qtd').value);
+  const motivo = document.getElementById('add-item-motivo').value.trim().toUpperCase();
+  if (!codigo || !qtd || !motivo) { toast('Preencha código, quantidade e motivo'); return; }
+
+  await supabaseClient.from('chamado_itens').insert({ chamado_id: chamadoId, codigo, qtd_enviada: qtd, concluido: false });
+  await supabaseClient.from('chamado_log').insert({ chamado_id: chamadoId, acao: 'ADICIONADO', codigo, quantidade: qtd, motivo });
+
+  toast('Item adicionado ao chamado');
+  verChamado(chamadoId);
+}
+
+async function removerItemChamado(itemId, codigo, chamadoId) {
+  const motivo = prompt('INFORME O MOTIVO DA REMOÇÃO (LETRAS MAIÚSCULAS):');
+  if (!motivo || !motivo.trim()) return;
+
+  await supabaseClient.from('chamado_itens').delete().eq('id', itemId);
+  await supabaseClient.from('chamado_log').insert({ chamado_id: chamadoId, acao: 'REMOVIDO', codigo, motivo: motivo.toUpperCase() });
+
+  toast('Item removido do chamado');
+  verChamado(chamadoId);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ============================================================
+// CONFIG
+// ============================================================
+function loadConfig() {
+  document.getElementById('cfg-sb-url').value = SB_URL;
+  document.getElementById('cfg-sb-key').value = SB_KEY;
+  document.getElementById('cfg-wa-number').value = WA_NUMBER;
+  document.getElementById('cfg-wa-nome').value = WA_NOME;
+}
+
+function salvarConfig() {
+  SB_URL = document.getElementById('cfg-sb-url').value.trim();
+  SB_KEY = document.getElementById('cfg-sb-key').value.trim();
+  localStorage.setItem('sb_url', SB_URL);
+  localStorage.setItem('sb_key', SB_KEY);
+  supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+  toast('Supabase conectado!');
+}
+
+function salvarConfigWa() {
+  WA_NUMBER = document.getElementById('cfg-wa-number').value.trim();
+  WA_NOME = document.getElementById('cfg-wa-nome').value.trim();
+  localStorage.setItem('wa_number', WA_NUMBER);
+  localStorage.setItem('wa_nome', WA_NOME);
+  toast('WhatsApp salvo!');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+
+// ============================================================
+// NOTIFICAÇÕES
+// ============================================================
+function pedirPermissaoNotif() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function notificar(titulo, corpo) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(titulo, { body: corpo, icon: '' });
+  }
+}
+
+// Polling a cada 30s para verificar mudanças de status
+let _statusCache = {};
+async function verificarMudancasStatus() {
+  if (!supabaseClient) return;
+  const { data: notas } = await supabaseClient.from('notas').select('id, numero, status').in('status', ['triagem','tampografia','concluida']);
+  if (!notas) return;
+  notas.forEach(n => {
+    const prev = _statusCache[n.id];
+    if (prev && prev !== n.status) {
+      if (n.status === 'triagem' && n.tipo === 'capa') {
+        notificar('Triagem concluída', `Nota ${n.numero} (capa) foi triada e aguarda envio para produção.`);
+        enviarWaAnalista(`✅ Triagem concluída!\n\nNota ${n.numero} (capa) foi triada pelo estoque e aguarda envio para produção.`);
+      }
+      if (n.status === 'concluida' && n.tipo === 'capa') {
+        notificar('Produção finalizada ✅', `Nota ${n.numero} foi concluída pela tampografia. Pronta para coleta!`);
+        enviarWaAnalista(`✅ Produção finalizada!\n\nNota ${n.numero} foi concluída pela tampografia. Pronta para coleta! 🎉`);
+      }
+      if (n.status === 'concluida' && n.tipo === 'pelicula') {
+        notificar('Película concluída ✅', `Nota ${n.numero} (película) foi finalizada pelo estoque. Pronta para coleta!`);
+        enviarWaAnalista(`✅ Triagem finalizada!\n\nNota ${n.numero} (película) foi finalizada pelo estoque. Pronta para coleta! 🎉`);
+      }
+    }
+    _statusCache[n.id] = n.status;
+  });
+}
+
+
+// ============================================================
+// TROCAS DE CÓDIGO
+// ============================================================
+let _trocasCache = [];
+
+async function loadTrocas() {
+  if (!supabaseClient) return;
+
+  // 1. Busca triagens com troca
+  const { data: triagens } = await supabaseClient
+    .from('triagem')
+    .select('*')
+    .eq('capa_trocada', true)
+    .order('created_at', { ascending: false });
+
+  if (!triagens || triagens.length === 0) { _trocasCache = []; renderTrocas([]); return; }
+
+  // 2. Busca itens
+  const itemIds = triagens.map(t => t.item_id);
+  const { data: itens } = await supabaseClient.from('itens_nota').select('id, codigo, nota_id').in('id', itemIds);
+
+  // 3. Busca notas
+  const notaIds = [...new Set((itens || []).map(it => it.nota_id))];
+  const { data: notas } = await supabaseClient.from('notas').select('id, numero, fornecedor, created_at').in('id', notaIds);
+
+  // 4. Montar mapa e combinar
+  const itensMap = {};
+  (itens || []).forEach(it => { itensMap[it.id] = it; });
+  const notasMap = {};
+  (notas || []).forEach(n => { notasMap[n.id] = n; });
+
+  _trocasCache = triagens.map(t => {
+    const item = itensMap[t.item_id] || {};
+    const nota = notasMap[item.nota_id] || {};
+    return { ...t, _codigo: item.codigo, _nota: nota };
+  });
+
+  renderTrocas(_trocasCache);
+}
+
+function renderTrocas(data) {
+  const c = document.getElementById('trocas-list');
+  if (!data || data.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-arrows-exchange"></i><p>Nenhuma troca registrada</p></div>';
+    return;
+  }
+  c.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` +
+    data.map(t => {
+      const nota = t._nota || {};
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;display:grid;grid-template-columns:1fr 1fr 1fr auto;align-items:center;gap:16px">
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px">Código recebido</div>
+          <div style="font-family:var(--mono);font-weight:600;font-size:14px;color:var(--coral)">${t._codigo || '—'}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px">Código correto</div>
+          <div style="font-family:var(--mono);font-weight:600;font-size:14px;color:#f0a500">${t.codigo_trocado || '—'}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px">Nota</div>
+          <div style="font-size:13px;font-weight:500">${nota.numero || '—'}</div>
+          <div style="font-size:11px;color:var(--muted)">${formatDate(nota.created_at)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${nota.fornecedor || '—'}</div>
+          <span style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:var(--mono)">⇄ TROCA</span>
+        </div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+function filterTrocas() {
+  const q = document.getElementById('search-trocas').value.toLowerCase();
+  if (!q) { renderTrocas(_trocasCache); return; }
+  const filtered = _trocasCache.filter(t => {
+    const it = t.itens_nota || {};
+    return (t._codigo || '').toLowerCase().includes(q) || (t.codigo_trocado || '').toLowerCase().includes(q);
+  });
+  renderTrocas(filtered);
+}
+
+
+// ============================================================
+// WA ANALISTA (notificações de conclusão)
+// ============================================================
+async function enviarWaAnalista(msg) {
+  try {
+    await fetch('https://whatsapp.vxcaseloja.com/message/sendText/TAMPOGRAFIA', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': '098202E8F51A-4244-898C-B26B892F480C' },
+      body: JSON.stringify({ number: '5571988220976', options: { delay: 0 }, textMessage: { text: msg } })
+    });
+  } catch(e) { console.warn('WA analista erro:', e); }
+}
+
+// ============================================================
+// PRAZO CHIP MODAL
+// ============================================================
+function prazoChipModal(prazoISO, conclusaoISO) {
+  const prazo = new Date(prazoISO);
+  const conclusao = new Date(conclusaoISO);
+  const diff = Math.round((prazo - conclusao) / 86400000);
+  if (diff > 0) return `<span class="badge badge-done" style="margin-top:4px;display:inline-flex"><i class="ti ti-trending-up" style="font-size:11px"></i> ${diff} dia(s) de antecedência</span>`;
+  if (diff === 0) return `<span class="badge badge-done" style="margin-top:4px;display:inline-flex"><i class="ti ti-check" style="font-size:11px"></i> No prazo</span>`;
+  return `<span class="badge badge-tamp" style="margin-top:4px;display:inline-flex"><i class="ti ti-trending-down" style="font-size:11px"></i> ${Math.abs(diff)} dia(s) de atraso</span>`;
+}
+
+// ============================================================
+// PERFORMANCE
+// ============================================================
+async function loadPerformance() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.from('chamados')
+    .select('*, notas(numero)')
+    .in('status', ['concluido', 'coletado'])
+    .not('data_conclusao', 'is', null)
+    .not('prazo', 'is', null)
+    .order('data_conclusao', { ascending: false });
+
+  if (!data || data.length === 0) {
+    document.getElementById('perf-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">Nenhum chamado finalizado ainda</td></tr>';
+    ['perf-noprazo','perf-antes','perf-atraso','perf-total'].forEach(id => document.getElementById(id).textContent = '0');
+    return;
+  }
+
+  let noPrazo = 0, antes = 0, atraso = 0;
+  let somaAntes = 0, somaAtraso = 0;
+
+  const rows = data.map(ch => {
+    const prazo = new Date(ch.prazo);
+    const conclusao = new Date(ch.data_conclusao);
+    const diff = Math.round((prazo - conclusao) / 86400000);
+    let badge, label;
+    if (diff > 0) {
+      antes++;
+      somaAntes += diff;
+      badge = 'badge-done';
+      label = `<i class="ti ti-trending-up" style="font-size:11px"></i> ${diff} dia(s) antes`;
+    } else if (diff === 0) {
+      noPrazo++;
+      badge = 'badge-done';
+      label = `<i class="ti ti-check" style="font-size:11px"></i> No prazo`;
+    } else {
+      atraso++;
+      somaAtraso += Math.abs(diff);
+      badge = 'badge-tamp';
+      label = `<i class="ti ti-trending-down" style="font-size:11px"></i> ${Math.abs(diff)} dia(s) de atraso`;
+    }
+    return `<tr>
+      <td style="font-family:var(--mono);font-weight:500;color:var(--accent)">${ch.numero}</td>
+      <td style="font-family:var(--mono)">${ch.notas?.numero || '—'}</td>
+      <td style="font-family:var(--mono)">${formatDate(ch.prazo)}</td>
+      <td style="font-family:var(--mono)">${formatDate(ch.data_conclusao)}</td>
+      <td><span class="badge ${badge}" style="font-size:11px">${label}</span></td>
+    </tr>`;
+  });
+
+  document.getElementById('perf-noprazo').textContent = noPrazo;
+  document.getElementById('perf-antes').textContent = antes;
+  document.getElementById('perf-atraso').textContent = atraso;
+  document.getElementById('perf-total').textContent = data.length;
+  document.getElementById('perf-antes-media').textContent = antes > 0 ? `média ${Math.round(somaAntes/antes)} dia(s) antes` : 'nenhum';
+  document.getElementById('perf-atraso-media').textContent = atraso > 0 ? `média ${Math.round(somaAtraso/atraso)} dia(s) de atraso` : 'nenhum';
+  document.getElementById('perf-tbody').innerHTML = rows.join('');
+}
+
+// ============================================================
+// EDITAR NOTA
+// ============================================================
+async function editarNota(notaId) {
+  if (!supabaseClient) return;
+  const { data: nota } = await supabaseClient.from('notas').select('*').eq('id', notaId).single();
+  document.getElementById('edit-nota-id').value = nota.id;
+  document.getElementById('edit-numero').value = nota.numero || '';
+  document.getElementById('edit-fornecedor').value = nota.fornecedor || '';
+  document.getElementById('edit-data').value = nota.data_recebimento || '';
+  document.getElementById('edit-prazo').value = nota.prazo_dias || 3;
+  document.getElementById('edit-obs').value = nota.obs || '';
+  document.getElementById('modal-editar-nota').classList.add('open');
+}
+
+async function salvarEdicaoNota() {
+  const id = document.getElementById('edit-nota-id').value;
+  const numero = document.getElementById('edit-numero').value.trim();
+  const fornecedor = document.getElementById('edit-fornecedor').value.trim();
+  const data = document.getElementById('edit-data').value;
+  const prazo = parseInt(document.getElementById('edit-prazo').value) || 3;
+  const obs = document.getElementById('edit-obs').value.trim();
+  if (!numero) { toast('Número é obrigatório'); return; }
+  await dbUpdate('notas', { id }, { numero, fornecedor, data_recebimento: data, prazo_dias: prazo, obs });
+  closeModal('modal-editar-nota');
+  toast('Nota atualizada!');
+  loadNotas();
+}
+
+// ============================================================
+// EXCLUIR NOTA
+// ============================================================
+let notaParaExcluir = null;
+
+function confirmarExcluirNota(notaId, numero) {
+  notaParaExcluir = notaId;
+  document.getElementById('excluir-nota-num').textContent = numero;
+  document.getElementById('modal-excluir-nota').classList.add('open');
+}
+
+async function excluirNota() {
+  if (!supabaseClient || !notaParaExcluir) return;
+  const id = notaParaExcluir;
+
+  // 1. Buscar itens da nota para reverter historico_codigo
+  const { data: itens } = await supabaseClient.from('itens_nota').select('id, codigo').eq('nota_id', id);
+  if (itens && itens.length > 0) {
+    const itemIds = itens.map(it => it.id);
+    const { data: triagens } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds);
+    if (triagens && triagens.length > 0) {
+      for (const t of triagens) {
+        const item = itens.find(i => i.id === t.item_id);
+        if (!item) continue;
+        const { data: hist } = await supabaseClient.from('historico_codigo').select('*').eq('codigo', item.codigo).single();
+        if (hist) {
+          const novaBoa = Math.max(0, (hist.total_boa || 0) - (t.qtd_boa || 0));
+          const novaRuim = Math.max(0, (hist.total_ruim || 0) - (t.qtd_ruim || 0));
+          if (novaBoa === 0 && novaRuim === 0) {
+            await supabaseClient.from('historico_codigo').delete().eq('codigo', item.codigo);
+          } else {
+            await supabaseClient.from('historico_codigo').update({ total_boa: novaBoa, total_ruim: novaRuim }).eq('codigo', item.codigo);
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Apagar na ordem certa
+  const { data: chamados } = await supabaseClient.from('chamados').select('id').eq('nota_id', id);
+  if (chamados && chamados.length > 0) {
+    const chamadoIds = chamados.map(ch => ch.id);
+    await supabaseClient.from('chamado_itens').delete().in('chamado_id', chamadoIds);
+  }
+  await supabaseClient.from('chamados').delete().eq('nota_id', id);
+  await supabaseClient.from('triagem').delete().eq('nota_id', id);
+  await supabaseClient.from('itens_nota').delete().eq('nota_id', id);
+  await supabaseClient.from('notas').delete().eq('id', id);
+
+  notaParaExcluir = null;
+  closeModal('modal-excluir-nota');
+  toast('Nota excluída e histórico atualizado.');
+  loadNotas();
+}
+
+// ============================================================
+// RESET
+// ============================================================
+async function executarReset() {
+  const input = document.getElementById('reset-confirm-input').value.trim();
+  if (input !== 'RESET') { toast('Digite RESET para confirmar'); return; }
+  if (!supabaseClient) return;
+  await supabaseClient.from('chamado_itens').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('chamados').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('triagem').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('itens_nota').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('notas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('historico_codigo').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  document.getElementById('reset-confirm-input').value = '';
+  closeModal('modal-reset');
+  toast('Sistema resetado. Todos os dados foram apagados.');
+  loadDashboard();
+}
+
+
+// ============================================================
+// GERENCIAR USUÁRIOS (só analista)
+// ============================================================
+async function loadUsuarios() {
+  const { data } = await supabaseClient.from('perfis').select('*').order('perfil');
+  if (!data) return;
+  const perfilLabel = { analista: 'Analista', estoque: 'Estoque', tampografia: 'Tampografia' };
+  const perfilBadge = { analista: 'badge-pending', estoque: 'badge-done', tampografia: 'badge-tamp' };
+  document.getElementById('usuarios-list').innerHTML = data.map(u => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:500">${u.nome}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${u.email}</div>
+      </div>
+      <span class="badge ${perfilBadge[u.perfil] || 'badge-pending'}">${perfilLabel[u.perfil] || u.perfil}</span>
+    </div>`).join('');
+}
+
+async function alterarSenhaUsuario() {
+  const email = document.getElementById('usr-email').value.trim();
+  const senha = document.getElementById('usr-senha').value;
+  if (!email || !senha) { toast('Preencha email e nova senha'); return; }
+  if (senha.length < 6) { toast('Senha deve ter ao menos 6 caracteres'); return; }
+  // Usa Admin API via edge function não disponível no client — orienta o usuário
+  toast('Para alterar senha: Supabase → Authentication → Users → clique no usuário → Reset Password');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  if(localStorage.getItem('theme')==='light') document.body.classList.add('light');
+  pedirPermissaoNotif();
+  setInterval(verificarMudancasStatus, 30000);
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('nota-data').value = today;
+  document.getElementById('nota-tipo').value = 'capa';
+  document.getElementById('prazo-group').style.display = 'block';
+  loadDashboard();
+});
+
+
+
+
+
+
+
+
+
+var LS_PW='Analista26';
+function lsLogin(){var p=document.getElementById('ls-pw').value;if(p===LS_PW){sessionStorage.setItem('_a','1');document.getElementById('ls').style.display='none';loadDashboard();}else{document.getElementById('ls-err').textContent='Senha incorreta.';document.getElementById('ls-pw').value='';}}
+function fazerLogout(){sessionStorage.removeItem('_a');location.reload();}
+document.addEventListener('DOMContentLoaded',function(){if(sessionStorage.getItem('_a')==='1'){document.getElementById('ls').style.display='none';loadDashboard();}else{document.getElementById('ls').style.display='flex';}});
+</script>
+</body>
+</html>
