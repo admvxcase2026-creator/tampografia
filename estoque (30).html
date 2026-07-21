@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZCNEVGRiIvPjxyZWN0IHg9IjkiIHk9IjQiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOCIgcng9IjIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PHJlY3QgeD0iNyIgeT0iNyIgd2lkdGg9IjE0IiBoZWlnaHQ9IjEyIiByeD0iMS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuOCIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMjQiIHI9IjQiIGZpbGw9IiNGRjVDNUMiLz48cGF0aCBkPSJNMjIgMjAuNSBDMjIgMjAuNSAxOSAyMyAxOSAyNSBDMTkgMjYuNiAyMC4zIDI4IDIyIDI4IEMyMy43IDI4IDI1IDI2LjYgMjUgMjUgQzI1IDIzIDIyIDIwLjUgMjIgMjAuNVoiIGZpbGw9IndoaXRlIi8+PC9zdmc+">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia — Estoque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #111111;
+    --surface: #1c1c1c;
+    --surface2: #242424;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #ebebeb;
+    --muted: #777;
+    --accent: #5B6AF0;
+    --accent-dim: rgba(91,106,240,0.12);
+    --accent-hover: #6b7af5;
+    --coral: #E05C5C;
+    --coral-dim: rgba(224,92,92,0.1);
+    --green: #3abf85;
+    --green-dim: rgba(58,191,133,0.1);
+    --amber: #d49400;
+    --amber-dim: rgba(212,148,0,0.1);
+    --purple: #7C6FF0;
+    --purple-dim: rgba(124,111,240,0.1);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --font: 'Sora', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; }
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .main { padding: 32px; }
+  .logo { padding: 0 20px 28px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .logo-title { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+  .nav-group { padding: 8px 12px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; font-family: var(--mono); padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: var(--radius); cursor: pointer; color: var(--muted); font-size: 13px; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .nav-item i { font-size: 16px; }
+  .sidebar-bottom { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid var(--border); }
+  .profile-chip { display: flex; align-items: center; gap: 10px; padding: 8px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--accent); }
+  .profile-name { font-size: 12px; font-weight: 500; }
+  .profile-role { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .view { display: none; }
+  .view.active { display: block; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; font-family: var(--font); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; font-family: var(--mono); }
+  .badge-pending { background: var(--amber-dim); color: var(--amber); }
+  .badge-done { background: var(--accent-dim); color: var(--accent); }
+  .badge-tamp { background: var(--coral-dim); color: var(--coral); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+  tbody td { padding: 14px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  tbody tr:last-child td { border-bottom: none; }
+  .td-code { font-family: var(--mono); font-weight: 500; color: var(--text); }
+  .priority-badge { width: 24px; height: 24px; border-radius: 50%; background: var(--purple-dim); color: var(--purple); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: var(--mono); }
+  .triagem-input { display: flex; align-items: center; gap: 6px; }
+  .triagem-input input { width: 72px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 10px; outline: none; transition: border-color 0.15s; text-align: center; }
+  .triagem-input input:focus { border-color: var(--accent); }
+  .triagem-input input.ruim:focus { border-color: var(--coral); }
+  .input-label { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .nota-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .nota-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.15s; }
+  .nota-card:hover { border-color: var(--border2); }
+  .nota-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .nota-num { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--accent); }
+  .nota-info-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat-mini { background: var(--surface2); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+  .empty i { font-size: 36px; margin-bottom: 12px; display: block; opacity: 0.4; }
+  .empty p { font-size: 13px; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; z-index: 999; display: flex; align-items: center; gap: 10px; transform: translateY(80px); opacity: 0; transition: all 0.25s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  input[type=number] { -moz-appearance: textfield; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .sum-row { background: var(--surface2); }
+  .sum-row td { font-weight: 600; font-family: var(--mono); }
+  .config-form { display: grid; gap: 14px; max-width: 480px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  input[type=text], input[type=password] { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--font); font-size: 14px; padding: 10px 12px; outline: none; transition: border-color 0.15s; width: 100%; }
+  input[type=text]:focus, input[type=password]:focus { border-color: var(--accent); }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 28px; width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .modal-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+  .modal-stat { background: var(--surface2); border-radius: var(--radius); padding: 12px 16px; }
+  .modal-stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .modal-stat-value { font-size: 20px; font-weight: 600; font-family: var(--mono); }
+
+  .ls-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+  .ls-screen.hidden{display:none}
+  .ls-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:36px 32px;width:360px}
+  .ls-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .ls-title{font-size:18px;font-weight:600}
+  .ls-sub{font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:28px}
+  .ls-grp{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .ls-lbl{font-size:12px;color:var(--muted);font-family:var(--mono)}
+  .ls-inp{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:14px;padding:10px 12px;outline:none;transition:border-color .15s;width:100%}
+  .ls-inp:focus{border-color:var(--accent)}
+  .ls-err{font-size:12px;color:#FF5C5C;margin-top:10px;min-height:18px;font-family:var(--mono)}
+
+  body.light { --bg:#f2f2f0; --surface:#ffffff; --surface2:#f7f7f5; --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14); --text:#1a1a1a; --muted:#888; --accent:#4a58d4; --accent-dim:rgba(74,88,212,0.1); --coral:#c94f4f; --coral-dim:rgba(201,79,79,0.08); --green:#2ea872; --green-dim:rgba(46,168,114,0.08); --amber:#b87e00; --amber-dim:rgba(184,126,0,0.08); }
+</style>
+</head>
+<body>
+<div class="ls-screen" id="ls" style="position:fixed;inset:0;background:#0f0f0f;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:36px 32px;width:360px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <div style="color:var(--accent,#6B4EFF)"><svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="18" height="24" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="3" y="5" width="22" height="18" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="7" y="4" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/><rect x="7" y="22" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/></svg></div>
+      <div style="font-size:18px;font-weight:600;font-family:Sora,sans-serif">Tampografia</div>
+    </div>
+    <div style="font-size:12px;color:#888;font-family:monospace;margin-bottom:28px">painel / estoque</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <label style="font-size:12px;color:#888;font-family:monospace">Senha</label>
+      <input id="ls-pw" type="password" placeholder="••••••••"
+        style="background:#222;border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#f0f0f0;font-size:14px;padding:10px 12px;outline:none;width:100%"
+        onkeydown="if(event.key==='Enter')lsLogin()">
+    </div>
+    <button onclick="lsLogin()"
+      style="width:100%;padding:10px;background:var(--accent,#6B4EFF);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:Sora,sans-serif">
+      Entrar
+    </button>
+    <div id="ls-err" style="font-size:12px;color:#FF5C5C;margin-top:10px;min-height:18px;font-family:monospace"></div>
+  </div>
+</div>
+<div class="shell">
+  <aside class="sidebar">
+    <div style="padding:8px 12px 0;display:flex;justify-content:flex-end">
+      <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 8px;font-size:11px;font-family:var(--mono)">🌓 Tema</button>
+    </div>
+    <div class="logo">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="color:var(--accent);width:22px;height:22px;flex-shrink:0"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="5" y="2" width="18" height="24" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+  <rect x="3" y="5" width="22" height="18" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+  <rect x="7" y="4" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/>
+  <rect x="7" y="22" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/>
+</svg></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="color:var(--accent)"><svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="18" height="24" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="3" y="5" width="22" height="18" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/><rect x="7" y="4" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/><rect x="7" y="22" width="14" height="2" rx="1" fill="currentColor" opacity="0.4"/></svg></div>
+      <div class="logo-title">Tampografia</div>
+    </div>
+      
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Principal</div>
+      <button class="nav-item active" onclick="showView('triagem')"><i class="ti ti-package"></i> Triagem</button>
+      <button class="nav-item" onclick="showView('historico')"><i class="ti ti-history"></i> Histórico</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Config</div>
+
+    </div>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:8px;justify-content:center" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
+      <div class="profile-chip">
+        <div class="avatar">ES</div>
+        <div>
+          <div class="profile-name">Estoque</div>
+          <div class="profile-role">estoque@vxcase</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- TRIAGEM -->
+    <div id="view-triagem" class="view active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Triagem de capas</div>
+          <div class="page-sub">Selecione uma nota e preencha as quantidades boas e ruins</div>
+        </div>
+      </div>
+
+      <div id="notas-pendentes">
+        <div class="empty"><i class="ti ti-package"></i><p>Carregando notas...</p></div>
+      </div>
+
+      <div id="triagem-panel" style="display:none">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title" id="triagem-nota-label">Nota —</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-pending" id="triagem-progress-label">0 / 0 preenchidos</span>
+              <button class="btn btn-ghost btn-sm" onclick="voltarSelecao()"><i class="ti ti-arrow-left"></i> Voltar</button>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-mini">
+              <div class="stat-label">Total recebido</div>
+              <div class="stat-value" id="t-recebido">—</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-label">Boas</div>
+              <div class="stat-value" style="color:var(--accent)" id="t-boas">0</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-label">Ruins / devolução</div>
+              <div class="stat-value" style="color:var(--coral)" id="t-ruins">0</div>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px">#</th>
+                  <th>Código</th>
+                  <th>Qtd recebida</th>
+                  <th>Boas ✓</th>
+                  <th>Ruins ✗</th>
+                  <th id="th-trocada">Capa trocada?</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="triagem-tbody"></tbody>
+              <tfoot>
+                <tr class="sum-row">
+                  <td colspan="2" style="padding:12px;font-size:12px;color:var(--muted)">TOTAL</td>
+                  <td id="sum-recebido" style="padding:12px"></td>
+                  <td id="sum-boas" style="padding:12px;color:var(--accent)"></td>
+                  <td id="sum-ruins" style="padding:12px;color:var(--coral)"></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+            <button class="btn btn-ghost" onclick="voltarSelecao()">Cancelar</button>
+            <button class="btn btn-ghost" onclick="salvarParcial()">
+              <i class="ti ti-device-floppy"></i> Salvar parcial (sem finalizar)
+            </button>
+            <button class="btn btn-primary" id="btn-salvar-triagem" onclick="salvarTriagem()">
+              <i class="ti ti-device-floppy"></i> Salvar triagem
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="view-historico" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Histórico de triagens</div>
+          <div class="page-sub">Notas já triadas</div>
+        </div>
+      </div>
+      <div id="historico-list">
+        <div class="empty"><i class="ti ti-history"></i><p>Nenhuma triagem registrada</p></div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="view-config" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Configurações</div></div>
+      </div>
+      <div class="card" style="max-width:480px">
+        <div class="card-header"><span class="card-title">Supabase</span></div>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Supabase URL</label>
+            <input type="text" id="cfg-url" placeholder="https://xxxx.supabase.co">
+          </div>
+          <div class="form-group">
+            <label>Anon Key</label>
+            <input type="password" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+          </div>
+          <button class="btn btn-primary" style="align-self:start" onclick="salvarConfig()">
+            <i class="ti ti-device-floppy"></i> Salvar e conectar
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL DETALHE TRIAGEM -->
+<div class="modal-backdrop" id="modal-hist">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-hist-titulo">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="modal-hist-sub">—</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modal-hist').classList.remove('open')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="modal-stat-label">Total recebido</div><div class="modal-stat-value" id="modal-hist-recebido">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Boas</div><div class="modal-stat-value" style="color:var(--accent)" id="modal-hist-boas">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Ruins</div><div class="modal-stat-value" style="color:var(--coral)" id="modal-hist-ruins">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Trocas</div><div class="modal-stat-value" style="color:#f0a500" id="modal-hist-trocas">—</div></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">#</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Código</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Recebido</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Boas ✓</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Ruins ✗</th>
+            <th style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left">Troca</th>
+          </tr>
+        </thead>
+        <tbody id="modal-hist-body"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-hist').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <i class="ti ti-check"></i>
+  <span id="toast-msg">Salvo</span>
+</div>
+
+<script>
+const SB_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+let sb = null;
+let notaAtiva = null;
+let itensAtivos = [];
+
+sb = supabase.createClient(SB_URL, SB_KEY);
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const map = { triagem: 0, historico: 1, config: 2 };
+  document.querySelectorAll('.nav-item')[map[v] ?? 0].classList.add('active');
+  if (v === 'triagem') loadNotasPendentes();
+  if (v === 'historico') loadHistorico();
+  if (v === 'config') loadConfig();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function loadNotasPendentes() {
+  const c = document.getElementById('notas-pendentes');
+  document.getElementById('triagem-panel').style.display = 'none';
+  c.style.display = 'block';
+
+  if (!sb) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i><p>Configure o Supabase em Configurações</p></div>';
+    return;
+  }
+
+  const { data: notas } = await sb.from('notas').select('*, itens_nota(id, qtd_recebida)').in('status', ['aberta','triagem']).order('created_at');
+
+  if (!notas || notas.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-package-off"></i><p>Nenhuma nota aguardando triagem</p></div>';
+    return;
+  }
+
+  // Agrupar por numero+fornecedor usando as notas retornadas
+  const grupos = {};
+  notas.forEach(n => {
+    const key = (n.numero||'') + '|' + (n.fornecedor||'').toLowerCase();
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(n);
+  });
+
+  const gruposArr = await Promise.all(Object.values(grupos).map(async g => {
+    g.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const principal = g[0];
+    // Buscar irmãs concluídas para somar itens
+    const { data: irmas } = await sb.from('notas').select('*, itens_nota(id, qtd_recebida)')
+      .eq('numero', principal.numero).eq('fornecedor', principal.fornecedor);
+    const todasG = irmas || g;
+    todasG.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const totalItens = todasG.reduce((s, n) => s + (n.itens_nota?.length || 0), 0);
+    const totalUnidades = todasG.reduce((s, n) => s + (n.itens_nota?.reduce((ss, it) => ss + (it.qtd_recebida||0), 0) || 0), 0);
+    const todosIds = todasG.map(n => n.id);
+    return { principal: todasG[0], totalItens, totalUnidades, qtd: todasG.length, todosIds, tipo: todasG[0].tipo };
+  }));
+
+  const tipoBadgeFn = (tipo) => tipo === 'pelicula'
+    ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:monospace;font-weight:600">PELÍCULA</span>'
+    : '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:monospace;font-weight:600">CAPA</span>';
+
+  c.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;font-family:var(--mono)">${gruposArr.length} nota(s) aguardando triagem — clique para iniciar</p>
+    <div class="nota-selector">
+      ${gruposArr.map(g => {
+        const entradaBadge = g.qtd > 1
+          ? `<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--muted);font-family:monospace;border:1px solid var(--border2)">${g.qtd} ENTRADAS</span>`
+          : '';
+        const gIdx = gruposArr.indexOf(g);
+        window._gruposTriagem = window._gruposTriagem || {};
+        window._gruposTriagem[gIdx] = g.todosIds;
+        return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;cursor:pointer;transition:border-color 0.15s" onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'" onclick="selecionarNotaAgrupada(window._gruposTriagem[${gIdx}])">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:var(--text);font-family:var(--mono);margin-bottom:2px">${(g.principal.fornecedor||'Fornecedor não informado').toUpperCase()}</div>
+              <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:8px">${g.principal.numero}</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:8px;border-top:1px solid var(--border)">
+                <div style="text-align:center">
+                  <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-weight:500;margin-bottom:2px">PRODUTO</div>
+                  <div style="font-size:12px;color:var(--text)">${g.tipo==='pelicula'?'PELÍCULA':'CAPA'}</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-weight:500;margin-bottom:2px">ITENS</div>
+                  <div style="font-size:12px;color:var(--text)">${g.totalItens}</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-weight:500;margin-bottom:2px">DATA</div>
+                  <div style="font-size:12px;color:var(--text)">${formatDate(g.principal.created_at)}</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:12px;flex-shrink:0">
+              <span style="font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-weight:500;background:rgba(240,165,0,0.1);color:var(--amber)">AGUARDANDO TRIAGEM</span>
+              ${g.qtd > 1 ? `<span style="font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-weight:500;background:var(--surface2);color:var(--muted);border:1px solid var(--border2)">${g.qtd} ENTRADAS</span>` : ''}
+              <i class="ti ti-chevron-right" style="color:var(--muted)"></i>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function selecionarNotaAgrupada(ids) {
+  if (!sb || !ids || !ids.length) return;
+  // Usa a primeira nota como principal
+  const { data: nota } = await sb.from('notas').select('*').eq('id', ids[0]).single();
+
+  // Busca TODAS as notas com mesmo numero+fornecedor independente de status
+  const { data: notasIrmas } = await sb.from('notas').select('id')
+    .eq('numero', nota.numero).eq('fornecedor', nota.fornecedor);
+  const todosIds = (notasIrmas || []).map(n => n.id);
+
+  // Busca itens de todas as entradas
+  const { data: itens } = await sb.from('itens_nota').select('*').in('nota_id', todosIds).order('ordem');
+
+  // Busca triagem de todos os itens
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await sb.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  notaAtiva = { ...nota, _todosIds: ids };
+  itensAtivos = itens.map(it => {
+    const t = triagemMap[it.id];
+    return {
+      ...it,
+      input_boa: t?.qtd_boa ?? '',
+      input_ruim: t?.qtd_ruim ?? '',
+      input_trocada: t?.capa_trocada ?? false,
+      input_codigo_trocado: t?.codigo_trocado ?? '',
+      _jaSalvo: !!t
+    };
+  });
+
+  const tipoBadgeTriagem = nota.tipo === 'pelicula'
+    ? ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:monospace;font-weight:600">PELÍCULA</span>'
+    : ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:monospace;font-weight:600">CAPA</span>';
+  document.getElementById('triagem-nota-label').innerHTML = 'Nota ' + nota.numero + tipoBadgeTriagem;
+  document.getElementById('th-trocada').textContent = nota.tipo === 'pelicula' ? 'Película trocada?' : 'Capa trocada?';
+  document.getElementById('btn-salvar-triagem').innerHTML = nota.tipo === 'pelicula'
+    ? '<i class="ti ti-device-floppy"></i> Finalizar triagem'
+    : '<i class="ti ti-device-floppy"></i> Salvar triagem';
+
+  document.getElementById('notas-pendentes').style.display = 'none';
+  document.getElementById('triagem-panel').style.display = 'block';
+  renderTriagemTabela();
+}
+
+async function selecionarNota(notaId) {
+  if (!sb) return;
+  const { data: nota } = await sb.from('notas').select('*').eq('id', notaId).single();
+  const { data: itens } = await sb.from('itens_nota').select('*').eq('nota_id', notaId).order('ordem');
+
+  // Buscar triagem separadamente (join aninhado do Supabase é inconsistente)
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await sb.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  notaAtiva = nota;
+  itensAtivos = itens.map(it => {
+    const t = triagemMap[it.id];
+    return {
+      ...it,
+      input_boa: t?.qtd_boa ?? '',
+      input_ruim: t?.qtd_ruim ?? '',
+      input_trocada: t?.capa_trocada ?? false,
+      input_codigo_trocado: t?.codigo_trocado ?? '',
+      _jaSalvo: !!t
+    };
+  });
+
+  const tipoBadgeTriagem = nota.tipo === 'pelicula'
+    ? ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:monospace;font-weight:600">PELÍCULA</span>'
+    : ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:monospace;font-weight:600">CAPA</span>';
+  document.getElementById('triagem-nota-label').innerHTML = 'Nota ' + nota.numero + tipoBadgeTriagem;
+  document.getElementById('th-trocada').textContent = nota.tipo === 'pelicula' ? 'Película trocada?' : 'Capa trocada?';
+  document.getElementById('btn-salvar-triagem').innerHTML = nota.tipo === 'pelicula'
+    ? '<i class="ti ti-device-floppy"></i> Finalizar triagem'
+    : '<i class="ti ti-device-floppy"></i> Salvar triagem';
+  document.getElementById('notas-pendentes').style.display = 'none';
+  document.getElementById('triagem-panel').style.display = 'block';
+
+  renderTriagemTabela();
+}
+
+function voltarSelecao() {
+  notaAtiva = null;
+  itensAtivos = [];
+  document.getElementById('triagem-panel').style.display = 'none';
+  loadNotasPendentes();
+}
+
+function renderTriagemTabela() {
+  const tbody = document.getElementById('triagem-tbody');
+  const totalRecebido = itensAtivos.reduce((s, it) => s + (it.qtd_recebida || 0), 0);
+  document.getElementById('t-recebido').textContent = totalRecebido;
+
+  tbody.innerHTML = itensAtivos.map((it, i) => {
+    const preenchido = it.input_boa !== '' && it.input_ruim !== '';
+    const rowStyle = it._jaSalvo ? 'background:rgba(62,207,142,0.06);border-left:3px solid var(--accent)' : '';
+    return `<tr style="${rowStyle}">
+      <td><div class="priority-badge">${it.ordem}</div></td>
+      <td class="td-code">${it.codigo}</td>
+      <td style="font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td>
+        <div class="triagem-input">
+          <input type="number" min="0" max="${it.qtd_recebida}" value="${it.input_boa}"
+            placeholder="0" data-idx="${i}" data-tipo="boa"
+            oninput="atualizarInput(this)" class="boa">
+          <span class="input-label" style="color:var(--accent)">boas</span>
+        </div>
+      </td>
+      <td>
+        <div class="triagem-input">
+          <input type="number" min="0" max="${it.qtd_recebida}" value="${it.input_ruim}"
+            placeholder="0" data-idx="${i}" data-tipo="ruim"
+            oninput="atualizarInput(this)" class="ruim">
+          <span class="input-label" style="color:var(--coral)">ruins</span>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" data-idx="${i}" data-tipo="trocada"
+            ${it.input_trocada ? 'checked' : ''}
+            onchange="atualizarTrocada(this)"
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--coral)">
+          <input type="text" data-idx="${i}" data-tipo="cod-trocado"
+            value="${it.input_codigo_trocado}"
+            placeholder="Cód. trocado"
+            oninput="atualizarCodTrocado(this)"
+            style="display:${it.input_trocada ? 'block' : 'none'};width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 8px;outline:none">
+        </div>
+      </td>
+      <td>${it._jaSalvo ? '<span class="badge badge-done"><i class="ti ti-check" style="font-size:11px"></i> Já salvo</span>' : (preenchido ? '<span class="badge badge-done"><i class="ti ti-check" style="font-size:11px"></i> OK</span>' : '<span class="badge badge-pending">pendente</span>')}</td>
+    </tr>`;
+  }).join('');
+
+  atualizarTotais();
+}
+
+function atualizarTrocada(el) {
+  const idx = parseInt(el.dataset.idx);
+  itensAtivos[idx].input_trocada = el.checked;
+  const row = el.closest('tr');
+  const codInput = row.querySelector('[data-tipo="cod-trocado"]');
+  if (codInput) codInput.style.display = el.checked ? 'block' : 'none';
+  if (!el.checked) { itensAtivos[idx].input_codigo_trocado = ''; if (codInput) codInput.value = ''; }
+}
+
+function atualizarCodTrocado(el) {
+  const idx = parseInt(el.dataset.idx);
+  itensAtivos[idx].input_codigo_trocado = el.value.trim().toUpperCase();
+}
+
+function atualizarInput(el) {
+  const idx = parseInt(el.dataset.idx);
+  const tipo = el.dataset.tipo;
+  const val = el.value === '' ? '' : Math.max(0, parseInt(el.value) || 0);
+  if (tipo === 'boa') itensAtivos[idx].input_boa = val;
+  else itensAtivos[idx].input_ruim = val;
+
+  // Auto-fill ruim se boa preenchida
+  const it = itensAtivos[idx];
+  if (tipo === 'boa' && it.input_boa !== '') {
+    const ruim = it.qtd_recebida - it.input_boa;
+    if (ruim >= 0) {
+      it.input_ruim = ruim;
+      const ruimInputs = document.querySelectorAll(`[data-idx="${idx}"][data-tipo="ruim"]`);
+      ruimInputs.forEach(inp => inp.value = ruim);
+    }
+  }
+
+  atualizarTotais();
+  const preenchido = it.input_boa !== '' && it.input_ruim !== '';
+  const statusCell = el.closest('tr').querySelector('td:last-child');
+  statusCell.innerHTML = preenchido
+    ? '<span class="badge badge-done"><i class="ti ti-check" style="font-size:11px"></i> OK</span>'
+    : '<span class="badge badge-pending">pendente</span>';
+}
+
+function atualizarTotais() {
+  let somaRecebido = 0, somaBoas = 0, somaRuins = 0, preenchidos = 0;
+  itensAtivos.forEach(it => {
+    somaRecebido += it.qtd_recebida || 0;
+    somaBoas += it.input_boa !== '' ? parseInt(it.input_boa) || 0 : 0;
+    somaRuins += it.input_ruim !== '' ? parseInt(it.input_ruim) || 0 : 0;
+    if (it.input_boa !== '' && it.input_ruim !== '') preenchidos++;
+  });
+  document.getElementById('t-boas').textContent = somaBoas;
+  document.getElementById('t-ruins').textContent = somaRuins;
+  document.getElementById('sum-recebido').textContent = somaRecebido;
+  document.getElementById('sum-boas').textContent = somaBoas;
+  document.getElementById('sum-ruins').textContent = somaRuins;
+  document.getElementById('triagem-progress-label').textContent = `${preenchidos} / ${itensAtivos.length} preenchidos`;
+}
+
+async function salvarParcial() {
+  if (!sb || !notaAtiva) return;
+  const preenchidos = itensAtivos.filter(it => it.input_boa !== '' && it.input_ruim !== '');
+  if (preenchidos.length === 0) { toast('Nenhum item preenchido para salvar'); return; }
+
+  for (const it of preenchidos) {
+    const qtdBoa = parseInt(it.input_boa) || 0;
+    const qtdRuim = parseInt(it.input_ruim) || 0;
+
+    const { data: existente } = await sb.from('triagem').select('id, qtd_boa, qtd_ruim').eq('item_id', it.id).single();
+
+    await sb.from('triagem').upsert({
+      item_id: it.id, nota_id: notaAtiva.id,
+      qtd_boa: qtdBoa, qtd_ruim: qtdRuim,
+      capa_trocada: it.input_trocada || false,
+      codigo_trocado: it.input_codigo_trocado || null
+    }, { onConflict: 'item_id' });
+
+    // Só atualiza historico_codigo se for novo registro (evita duplicar ao salvar parcial 2x)
+    if (!existente) {
+      const { data: hist } = await sb.from('historico_codigo').select('*').eq('codigo', it.codigo).single();
+      if (hist) {
+        await sb.from('historico_codigo').update({
+          total_boa: (hist.total_boa || 0) + qtdBoa,
+          total_ruim: (hist.total_ruim || 0) + qtdRuim
+        }).eq('codigo', it.codigo);
+      } else {
+        await sb.from('historico_codigo').insert({ codigo: it.codigo, total_boa: qtdBoa, total_ruim: qtdRuim });
+      }
+    } else {
+      // Ajusta a diferença no histórico
+      const diffBoa = qtdBoa - (existente.qtd_boa || 0);
+      const diffRuim = qtdRuim - (existente.qtd_ruim || 0);
+      if (diffBoa !== 0 || diffRuim !== 0) {
+        const { data: hist } = await sb.from('historico_codigo').select('*').eq('codigo', it.codigo).single();
+        if (hist) {
+          await sb.from('historico_codigo').update({
+            total_boa: Math.max(0, (hist.total_boa || 0) + diffBoa),
+            total_ruim: Math.max(0, (hist.total_ruim || 0) + diffRuim)
+          }).eq('codigo', it.codigo);
+        }
+      }
+    }
+  }
+
+  toast(`${preenchidos.length} item(ns) salvo(s) parcialmente! Nota continua aberta para os demais itens.`);
+  selecionarNota(notaAtiva.id);
+}
+
+async function salvarTriagem() {
+  if (!sb || !notaAtiva) return;
+  const incompletos = itensAtivos.filter(it => it.input_boa === '' || it.input_ruim === '');
+  if (incompletos.length > 0) {
+    toast(`Preencha todos os itens (${incompletos.length} pendentes)`);
+    return;
+  }
+
+  for (const it of itensAtivos) {
+    const qtdBoa = parseInt(it.input_boa) || 0;
+    const qtdRuim = parseInt(it.input_ruim) || 0;
+
+    // Upsert triagem
+    await sb.from('triagem').upsert({
+      item_id: it.id, nota_id: notaAtiva.id,
+      qtd_boa: qtdBoa, qtd_ruim: qtdRuim,
+      capa_trocada: it.input_trocada || false,
+      codigo_trocado: it.input_codigo_trocado || null
+    }, { onConflict: 'item_id' });
+
+    // Upsert historico_codigo
+    const { data: hist } = await sb.from('historico_codigo').select('*').eq('codigo', it.codigo).single();
+    if (hist) {
+      await sb.from('historico_codigo').update({
+        total_boa: (hist.total_boa || 0) + qtdBoa,
+        total_ruim: (hist.total_ruim || 0) + qtdRuim
+      }).eq('codigo', it.codigo);
+    } else {
+      await sb.from('historico_codigo').insert({ codigo: it.codigo, total_boa: qtdBoa, total_ruim: qtdRuim });
+    }
+  }
+
+  // Atualiza status da nota
+  const novoStatus = notaAtiva.tipo === 'pelicula' ? 'concluida' : 'triagem';
+  await sb.from('notas').update({ status: novoStatus }).eq('id', notaAtiva.id);
+
+  if (notaAtiva.tipo === 'pelicula') {
+    toast('Película concluída! Processo finalizado.');
+    await enviarWaAnalista(`✅ Triagem finalizada!\n\nNota ${notaAtiva.numero} (película) foi finalizada pelo estoque. Pronta para coleta! 🎉`);
+  } else {
+    toast('Triagem salva com sucesso!');
+    await enviarWaAnalista(`✅ Triagem concluída!\n\nNota ${notaAtiva.numero} foi triada pelo estoque e aguarda envio para produção.`);
+  }
+  setTimeout(voltarSelecao, 800);
+}
+
+async function loadHistorico() {
+  if (!sb) return;
+  const { data: notas } = await sb.from('notas').select('*').in('status', ['triagem','tampografia','concluida']).order('created_at', { ascending: false });
+  const c = document.getElementById('historico-list');
+  if (!notas || notas.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-history"></i><p>Nenhuma triagem registrada</p></div>';
+    return;
+  }
+  // Agrupar por numero+fornecedor
+  const grupos = {};
+  notas.forEach(n => {
+    const key = (n.numero||'') + '|' + (n.fornecedor||'').toLowerCase();
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(n);
+  });
+
+  const statusColor = (s) => ({
+    'triagem': 'background:rgba(91,106,240,0.1);color:var(--accent)',
+    'tampografia': 'background:rgba(224,92,92,0.1);color:var(--coral)',
+    'concluida': 'background:rgba(58,191,133,0.1);color:var(--green)',
+  })[s] || 'background:var(--surface2);color:var(--muted)';
+
+  const statusLabel = (s) => ({
+    'triagem': 'TRIAGEM FEITA',
+    'tampografia': 'EM TAMPOGRAFIA',
+    'concluida': 'CONCLUÍDA',
+  })[s] || s.toUpperCase();
+
+  window._histGrupos = window._histGrupos || {};
+
+  c.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` +
+    Object.values(grupos).map((g, gIdx) => {
+      g.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+      const principal = g[0];
+      const totalItens = g.reduce((s, n) => s + (n.qtd_itens || 0), 0);
+      // Status mais ativo
+      const prioMap = { triagem: 3, tampografia: 2, concluida: 1 };
+      const statusAtivo = g.reduce((best, n) => (prioMap[n.status]||0) > (prioMap[best.status]||0) ? n : best, principal);
+      window._histGrupos[gIdx] = principal.id;
+      const entradaBadge = g.length > 1
+        ? `<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--muted);font-family:var(--mono);border:1px solid var(--border2)">${g.length} ENTRADAS</span>`
+        : '';
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;cursor:pointer;transition:border-color 0.15s" onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'" onclick="verDetalheTriagem(window._histGrupos[${gIdx}])">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:500;color:var(--text);font-family:var(--mono);margin-bottom:2px">${(principal.fornecedor||'—').toUpperCase()}</div>
+            <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:8px">${principal.numero}</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:8px;border-top:1px solid var(--border)">
+              <div style="text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-weight:500;margin-bottom:2px">PRODUTO</div>
+                <div style="font-size:12px;color:var(--text)">${principal.tipo==='pelicula'?'PELÍCULA':'CAPA'}</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-weight:500;margin-bottom:2px">ITENS</div>
+                <div style="font-size:12px;color:var(--text)">${totalItens}</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-weight:500;margin-bottom:2px">DATA</div>
+                <div style="font-size:12px;color:var(--text)">${formatDate(principal.created_at)}</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:12px;flex-shrink:0">
+            <span style="font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-weight:500;${statusColor(statusAtivo.status)}">${statusLabel(statusAtivo.status)}</span>
+            ${entradaBadge}
+            <i class="ti ti-chevron-right" style="color:var(--muted)"></i>
+          </div>
+        </div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+async function verDetalheTriagem(notaId) {
+  if (!sb) return;
+  const { data: nota } = await sb.from('notas').select('*').eq('id', notaId).single();
+  // Buscar todas as notas irmãs para mostrar todos os itens agrupados
+  const { data: irmas } = await sb.from('notas').select('id').eq('numero', nota.numero).eq('fornecedor', nota.fornecedor);
+  const todosIds = (irmas || []).map(n => n.id);
+  const { data: itens } = await sb.from('itens_nota').select('*').in('nota_id', todosIds).order('ordem');
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await sb.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  const totalRecebido = itens.reduce((s, it) => s + (it.qtd_recebida || 0), 0);
+  const totalBoas = (triagemData || []).reduce((s, t) => s + (t.qtd_boa || 0), 0);
+  const totalRuins = (triagemData || []).reduce((s, t) => s + (t.qtd_ruim || 0), 0);
+  const totalTrocas = (triagemData || []).filter(t => t.capa_trocada).length;
+
+  const rows = itens.map(it => {
+    const t = triagemMap[it.id] || {};
+    return `<tr>
+      <td style="padding:10px 12px"><div style="width:22px;height:22px;border-radius:50%;background:var(--purple-dim);color:var(--purple);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">${it.ordem}</div></td>
+      <td style="padding:10px 12px;font-family:var(--mono);font-weight:500;color:var(--purple)">${it.codigo}</td>
+      <td style="padding:10px 12px;font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td style="padding:10px 12px;font-family:var(--mono);color:var(--accent)">${t.qtd_boa !== undefined ? t.qtd_boa : '—'}</td>
+      <td style="padding:10px 12px;font-family:var(--mono);color:var(--coral)">${t.qtd_ruim !== undefined ? t.qtd_ruim : '—'}</td>
+      <td style="padding:10px 12px">${t.capa_trocada ? `<span style="font-size:11px;background:rgba(240,165,0,0.15);color:#f0a500;padding:3px 8px;border-radius:20px;font-family:var(--mono)">⇄ ${t.codigo_trocado || 'sem código'}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('modal-hist-titulo').textContent = 'Nota ' + nota.numero;
+  const trDates = (triagemData || []).map(t => t.created_at).filter(Boolean).sort();
+  const trFim = trDates.length > 0 ? trDates[trDates.length - 1] : null;
+  let trInfo = '';
+  if (trFim) {
+    const dias = Math.round((new Date(trFim) - new Date(nota.created_at)) / 86400000);
+    trInfo = ` · Triagem em ${formatDate(trFim)} (${dias === 0 ? 'mesmo dia' : dias + ' dia(s)'})`;
+  }
+  document.getElementById('modal-hist-sub').textContent = (nota.fornecedor || '—') + ' · Aberta em ' + formatDate(nota.created_at) + trInfo;
+  document.getElementById('modal-hist-recebido').textContent = totalRecebido;
+  document.getElementById('modal-hist-boas').textContent = totalBoas;
+  document.getElementById('modal-hist-ruins').textContent = totalRuins;
+  document.getElementById('modal-hist-trocas').textContent = totalTrocas;
+  document.getElementById('modal-hist-body').innerHTML = rows;
+  document.getElementById('modal-hist').classList.add('open');
+}
+
+function loadConfig() {
+  document.getElementById('cfg-url').value = SB_URL;
+  document.getElementById('cfg-key').value = SB_KEY;
+}
+
+function salvarConfig() {
+  SB_URL = document.getElementById('cfg-url').value.trim();
+  SB_KEY = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('sb_url_est', SB_URL);
+  localStorage.setItem('sb_key_est', SB_KEY);
+  sb = supabase.createClient(SB_URL, SB_KEY);
+  toast('Supabase conectado!');
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+
+
+
+async function enviarViaProxy(number, message, mentioned) {
+  try {
+    const body = { number, message };
+    if (mentioned && mentioned.length) body.mentioned = mentioned;
+    await fetch('https://script.google.com/macros/s/AKfycbxZhiIAjmPZsqvNfM-01X5qrYIK9IMoW0EL_4TJQ9MDcV3xnn_hV9tVZ_F92mcWDVsw/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.warn('Proxy WA erro:', e); }
+};
+    if (mentioned && mentioned.length) body.mentioned = mentioned;
+    await fetch('https://script.google.com/macros/s/AKfycbxZhiIAjmPZsqvNfM-01X5qrYIK9IMoW0EL_4TJQ9MDcV3xnn_hV9tVZ_F92mcWDVsw/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.warn('Proxy WA erro:', e); }
+}
+
+async function enviarWaAnalista(msg) {
+  await enviarViaProxy('5571988220976', msg);
+  await enviarViaProxy('5571993143772', msg);
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+
+
+
+// original init removido — initAuth chama loadNotasPendentes via hidden
+
+
+
+
+
+
+
+
+
+
+var LS_PW='Estoque123';
+
+function subscribeRealtime() {
+  if (!sb) return;
+  sb.channel('estoque-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => {
+      const activeView = document.querySelector('.view.active');
+      if (activeView && activeView.id === 'view-triagem' && !notaAtiva) loadNotasPendentes();
+      if (activeView && activeView.id === 'view-historico') loadHistorico();
+    })
+    .subscribe();
+}
+
+function lsLogin(){var p=document.getElementById('ls-pw').value;if(p===LS_PW){sessionStorage.setItem('_a','1');document.getElementById('ls').style.display='none';loadNotasPendentes();subscribeRealtime();}else{document.getElementById('ls-err').textContent='Senha incorreta.';document.getElementById('ls-pw').value='';}}
+function fazerLogout(){sessionStorage.removeItem('_a');location.reload();}
+document.addEventListener('DOMContentLoaded',function(){if(sessionStorage.getItem('_a')==='1'){document.getElementById('ls').style.display='none';loadNotasPendentes();subscribeRealtime();}else{document.getElementById('ls').style.display='flex';}});
+</script>
+</body>
+</html>
