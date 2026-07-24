@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia — Estoque</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI2IiBmaWxsPSIjM2QzZDNkIi8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSI3IiB5PSI3IiB3aWR0aD0iMTQiIGhlaWdodD0iMTIiIHJ4PSIxLjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2YwYTUwMCIvPjwvc3ZnPg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #efefef; font-family: 'Sora', sans-serif; font-size: 13px; color: #333; min-height: 100vh; }
+
+  /* HEADER */
+  .erp-header { background: #3d3d3d; height: 42px; display: flex; align-items: center; padding: 0 12px; gap: 12px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+  .erp-logo { color: #fff; font-weight: 600; font-size: 13px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+  .erp-logo span { color: #f0a500; }
+  .erp-header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; color: #ccc; font-size: 11px; }
+  .erp-timer { background: #555; border-radius: 3px; padding: 3px 8px; font-family: monospace; font-size: 11px; color: #fff; }
+  .erp-user-chip { background: #555; border-radius: 3px; padding: 3px 10px; color: #fff; font-size: 11px; }
+
+  /* LAYOUT */
+  .erp-shell { display: flex; padding-top: 42px; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .erp-sidebar { width: 160px; background: #2d2d2d; position: fixed; top: 42px; bottom: 0; overflow-y: auto; z-index: 99; }
+  .erp-nav-group { border-bottom: 1px solid #444; }
+  .erp-nav-parent { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; color: #ccc; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; text-transform: uppercase; letter-spacing: .5px; }
+  .erp-nav-parent:hover { background: #3a3a3a; color: #fff; }
+  .erp-nav-parent.active { background: #f0a500; color: #fff; }
+  .erp-nav-children { display: none; background: #262626; }
+  .erp-nav-children.open { display: block; }
+  .erp-nav-child { display: block; padding: 10px 14px 10px 22px; color: #ccc; font-size: 13px; cursor: pointer; transition: background .15s; border: none; background: none; width: 100%; text-align: left; }
+  .erp-nav-child:hover { background: #333; color: #fff; }
+  .erp-nav-child.active { color: #f0a500; background: #333; }
+
+  /* MAIN */
+  .erp-main { margin-left: 160px; flex: 1; padding: 16px; }
+
+  /* PAGE HEADER */
+  .erp-page-header { background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .erp-page-title { font-size: 16px; font-weight: 600; color: #333; }
+  .erp-page-sub { font-size: 11px; color: #999; margin-top: 2px; }
+
+  /* CARD */
+  .erp-card { background: #fff; border: 1px solid #ddd; border-radius: 3px; margin-bottom: 12px; }
+  .erp-card-header { padding: 10px 16px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+  .erp-card-title { font-size: 13px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .4px; }
+  .erp-card-body { padding: 14px 16px; }
+
+  /* BUTTONS */
+  .erp-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 3px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; font-family: 'Sora', sans-serif; transition: filter .15s; }
+  .erp-btn-green { background: #4caf50; color: #fff; }
+  .erp-btn-green:hover { filter: brightness(.9); }
+  .erp-btn-blue { background: #1976d2; color: #fff; }
+  .erp-btn-blue:hover { filter: brightness(.9); }
+  .erp-btn-orange { background: #f0a500; color: #fff; }
+  .erp-btn-red { background: #e53935; color: #fff; }
+  .erp-btn-red:hover { filter: brightness(.9); }
+  .erp-btn-gray { background: #757575; color: #fff; }
+  .erp-btn-outline { background: #fff; color: #555; border: 1px solid #ccc; }
+  .erp-btn-outline:hover { background: #f5f5f5; }
+  .erp-btn-sm { padding: 4px 8px; font-size: 11px; }
+
+  /* TABLE */
+  .erp-table-wrap { overflow-x: auto; }
+  table.erp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.erp-table thead th { background: #f5f5f5; border: 1px solid #ddd; padding: 8px 12px; text-align: center; font-weight: 600; color: #555; text-transform: uppercase; font-size: 11px; white-space: nowrap; }
+  table.erp-table tbody td { border: 1px solid #eee; padding: 8px 12px; color: #333; vertical-align: middle; font-size: 12px; text-align: center; }
+  table.erp-table tbody tr:hover td { background: #fafafa; }
+
+  /* BADGE */
+  .erp-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .erp-badge-green { background: #e8f5e9; color: #2e7d32; }
+  .erp-badge-orange { background: #fff3e0; color: #e65100; }
+  .erp-badge-red { background: #ffebee; color: #c62828; }
+  .erp-badge-blue { background: #e3f2fd; color: #1565c0; }
+  .erp-badge-gray { background: #f5f5f5; color: #757575; }
+
+  /* FORM */
+  .erp-form-group { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 10px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+  input[type=checkbox] { display:block; margin:0 auto; }
+  input:not([type=checkbox]):not([type=radio]), select, textarea { background: #fff; border: 1px solid #ccc; border-radius: 2px; color: #333; font-family: 'Sora', sans-serif; font-size: 12px; padding: 6px 8px; outline: none; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: #1976d2; }
+
+  /* NOTA CARD (lista) */
+  .nota-selector { display: flex; flex-direction: column; gap: 0; }
+  .nota-card-erp { background: #fff; border-bottom: 1px solid #eee; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background .1s; }
+  .nota-card-erp:hover { background: #fafafa; }
+  .nota-card-erp:last-child { border-bottom: none; }
+
+  /* TRIAGEM INPUTS */
+  .triagem-input { display: flex; align-items: center; gap: 6px; justify-content: center; }
+  .triagem-input input { width: 72px; text-align: center; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* MODAL */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .erp-modal { background: #fff; border-radius: 3px; width: 640px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border: 1px solid #ccc; }
+  .erp-modal-header { background: #3d3d3d; color: #fff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .erp-modal-title { font-size: 13px; font-weight: 600; }
+  .erp-modal-close { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; }
+  .erp-modal-body { padding: 16px; }
+  .erp-modal-footer { padding: 10px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; justify-content: flex-end; background: #f9f9f9; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #333; border-radius: 3px; padding: 10px 16px; font-size: 12px; z-index: 999; display: flex; align-items: center; gap: 8px; transform: translateY(80px); opacity: 0; transition: all .25s; color: #fff; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* LOGIN */
+  .ls-screen { position: fixed; inset: 0; background: #3d3d3d; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+  .ls-box { background: #fff; border-radius: 3px; padding: 28px 24px; width: 320px; border: 1px solid #ccc; }
+  .ls-err { font-size: 11px; color: #c62828; margin-top: 8px; min-height: 16px; }
+
+  /* DARK */
+  body.dark { background: #1a1a1a; color: #eee; }
+  body.dark .erp-main { background: #1a1a1a; }
+  body.dark .erp-card, body.dark .erp-page-header { background: #2a2a2a; border-color: #444; }
+  body.dark .erp-card-header { border-color: #3a3a3a; }
+  body.dark table.erp-table thead th { background: #333; border-color: #444; color: #ccc; }
+  body.dark table.erp-table tbody td { border-color: #3a3a3a; color: #eee; }
+  body.dark .nota-card-erp { background: #2a2a2a; border-color: #3a3a3a; }
+  body.dark .nota-card-erp:hover { background: #333; }
+  body.dark input:not([type=checkbox]), body.dark select, body.dark textarea { background: #333; border-color: #555; color: #eee; }
+  body.dark label { color: #aaa; }
+
+  /* NOTA CARDS GRID */
+  .notas-grid-cards { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .nota-card-grid { background: #fff; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; overflow: hidden; transition: border-color .15s; }
+  .nota-card-grid:hover { border-color: #aaa; }
+  .nota-card-grid-header { background: #f0a500; padding: 7px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .nota-card-grid-nf { font-size: 12px; font-weight: 700; color: #fff; font-family: monospace; }
+  .nota-card-grid-badge { font-size: 10px; background: rgba(255,255,255,0.25); color: #fff; padding: 1px 7px; border-radius: 2px; font-weight: 600; }
+  .nota-card-grid-body { padding: 10px 14px; }
+  .nota-card-grid-forn { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; }
+  .nota-card-grid-info { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; text-align: center; padding-top: 8px; border-top: 1px solid #eee; }
+  .nota-card-grid-info-label { font-size: 9px; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .nota-card-grid-info-val { font-size: 12px; font-weight: 500; color: #333; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 32px; color: #aaa; }
+  .empty i { font-size: 28px; display: block; margin-bottom: 8px; opacity: .4; }
+
+</style>
+</head>
+<body>
+<div class="ls-screen" id="ls" style="display:flex">
+  <div class="ls-box">
+    <div style="margin-bottom:16px">
+      <div class="erp-logo" style="font-size:20px;color:#333;margin-bottom:4px">VX <span style="color:#f0a500">CASE</span></div>
+      <div style="font-size:11px;color:#999">Módulo de Triagem — Estoque</div>
+    </div>
+    <div class="erp-form-group" style="margin-bottom:12px">
+      <label>Senha de acesso</label>
+      <input type="password" id="ls-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')lsLogin()">
+    </div>
+    <button onclick="lsLogin()" style="width:100%;padding:9px;background:#4caf50;color:#fff;border:none;border-radius:2px;font-size:13px;font-weight:500;cursor:pointer">Entrar</button>
+    <div id="ls-err" class="ls-err"></div>
+  </div>
+</div>
+<header class="erp-header">
+  <div class="erp-logo">VX <span>CASE</span></div>
+  <div class="erp-header-right">
+    <button onclick="toggleTheme()" style="background:#555;border:none;color:#fff;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:11px">🌓</button>
+    <div class="erp-timer" id="erp-timer">00:00:00</div>
+    <div class="erp-user-chip">Estoque</div>
+  </div>
+</header>
+<div class="erp-shell">
+<aside class="erp-sidebar">
+  <div class="erp-nav-group">
+    <div class="erp-nav-parent active" onclick="toggleNav('nav-tri',this)">
+      <span>Triagem</span><i class="ti ti-chevron-down"></i>
+    </div>
+    <div class="erp-nav-children open" id="nav-tri">
+      <button class="erp-nav-child active" onclick="showEstoqueView('notas-pendentes')">Pendentes</button>
+      <button class="erp-nav-child" onclick="showEstoqueView('historico-triagens')">Histórico</button>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px;border-top:1px solid #444">
+    <button class="erp-btn erp-btn-gray" style="width:100%;justify-content:center;font-size:10px" onclick="fazerLogout()">
+      <i class="ti ti-logout"></i> Sair
+    </button>
+  </div>
+</aside>
+<main class="erp-main">
+
+
+    <!-- TRIAGEM -->
+    <div id="view-triagem" class="view active">
+      <div style="background:#3d3d3d;border-radius:3px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#fff">Triagem de capas</div>
+          
+        </div>
+        
+      </div>
+
+      <div id="notas-pendentes" style="display:block">
+        <div class="empty"><i class="ti ti-package"></i><p>Carregando notas...</p></div>
+      </div>
+
+      <div id="triagem-panel" style="display:none">
+        <!-- Header escuro -->
+        <div style="background:#3d3d3d;border-radius:3px 3px 0 0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <span style="color:#fff;font-size:14px;font-weight:600" id="triagem-nota-label">Nota —</span>
+            <div style="color:#aaa;font-size:11px;margin-top:2px" id="triagem-nota-sub">—</div>
+          </div>
+          <button class="erp-btn erp-btn-gray erp-btn-sm" onclick="voltarSelecao()"><i class="ti ti-arrow-left"></i> Voltar</button>
+        </div>
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;border:1px solid #ddd;border-top:none;border-bottom:1px solid #eee">
+          <div style="padding:10px 16px;border-right:1px solid #eee;text-align:center">
+            <div style="font-size:9px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:3px">PROGRESSO</div>
+            <div style="font-size:18px;font-weight:700;color:#333" id="triagem-progress-label">0/0</div>
+            <div style="height:4px;background:#eee;border-radius:2px;margin-top:4px"><div id="triagem-progress-bar" style="height:4px;background:#4caf50;border-radius:2px;width:0%"></div></div>
+          </div>
+          <div style="padding:10px 16px;border-right:1px solid #eee;text-align:center">
+            <div style="font-size:9px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:3px">TOTAL RECEBIDO</div>
+            <div style="font-size:18px;font-weight:700;color:#333" id="t-recebido">—</div>
+          </div>
+          <div style="padding:10px 16px;border-right:1px solid #eee;text-align:center">
+            <div style="font-size:9px;color:#2e7d32;text-transform:uppercase;font-weight:600;margin-bottom:3px">BOAS</div>
+            <div style="font-size:18px;font-weight:700;color:#2e7d32" id="t-boas">0</div>
+          </div>
+          <div style="padding:10px 16px;text-align:center">
+            <div style="font-size:9px;color:#c62828;text-transform:uppercase;font-weight:600;margin-bottom:3px">RUINS</div>
+            <div style="font-size:18px;font-weight:700;color:#c62828" id="t-ruins">0</div>
+          </div>
+        </div>
+        <!-- Tabela -->
+        <div style="background:#fff;border:1px solid #ddd;border-top:none;overflow-x:auto">
+          <table class="erp-table" style="width:100%">
+            <thead>
+              <tr>
+                <th style="width:36px">#</th>
+                <th>Código</th>
+                <th>Recebido</th>
+                <th>Boas ✓</th>
+                <th>Ruins ✗</th>
+                <th id="th-trocada">Capa trocada?</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="triagem-tbody"></tbody>
+            <tfoot>
+              <tr style="background:#f5f5f5;font-weight:600">
+                <td colspan="2" style="padding:8px 12px;font-size:11px;color:#555;text-align:left">TOTAL</td>
+                <td id="sum-recebido" style="padding:8px 12px;text-align:center"></td>
+                <td id="sum-boas" style="padding:8px 12px;text-align:center;color:#2e7d32"></td>
+                <td id="sum-ruins" style="padding:8px 12px;text-align:center;color:#c62828"></td>
+                <td></td><td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <!-- Botões -->
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;background:#f9f9f9;border:1px solid #ddd;border-top:none;border-radius:0 0 3px 3px">
+          <button class="erp-btn erp-btn-outline" onclick="voltarSelecao()">Cancelar</button>
+          <button class="erp-btn erp-btn-gray" onclick="salvarParcial()"><i class="ti ti-device-floppy"></i> Salvar parcial</button>
+          <button class="erp-btn erp-btn-green" id="btn-salvar-triagem" onclick="salvarTriagem()"><i class="ti ti-device-floppy"></i> Salvar triagem</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORICO TRIAGENS (usado pelo JS) -->
+    <div id="historico-triagens" style="display:none">
+      <div class="erp-page-header">
+        <div>
+          <div class="erp-page-title">Histórico de triagens</div>
+          <div class="erp-page-sub">Notas já triadas</div>
+        </div>
+      </div>
+      <div class="erp-card">
+        <div id="historico-list-erp">
+          <div class="empty"><i class="ti ti-history"></i><p>Nenhuma triagem registrada</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO LEGADO -->
+    <div id="view-historico" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Histórico de triagens</div>
+          <div class="page-sub">Notas já triadas</div>
+        </div>
+      </div>
+      <div id="historico-list">
+        <div class="empty"><i class="ti ti-history"></i><p>Nenhuma triagem registrada</p></div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="view-config" class="view">
+      <div class="page-header">
+        <div><div class="page-title">Configurações</div></div>
+      </div>
+      <div class="card" style="max-width:480px">
+        <div class="card-header"><span class="card-title">Supabase</span></div>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Supabase URL</label>
+            <input type="text" id="cfg-url" placeholder="https://xxxx.supabase.co">
+          </div>
+          <div class="form-group">
+            <label>Anon Key</label>
+            <input type="password" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+          </div>
+          <button class="btn btn-primary" style="align-self:start" onclick="salvarConfig()">
+            <i class="ti ti-device-floppy"></i> Salvar e conectar
+          </button>
+        </div>
+      </div>
+    </div>
+
+  
+</main>
+</div>
+</div>
+
+<!-- MODAL DETALHE TRIAGEM -->
+<div class="modal-backdrop" id="modal-hist">
+  <div class="erp-modal" style="width:680px">
+    <div class="erp-modal-header">
+      <div>
+        <span class="erp-modal-title" id="modal-hist-titulo">—</span>
+        <span style="font-size:11px;color:#aaa;margin-left:8px" id="modal-hist-sub">—</span>
+      </div>
+      <button class="erp-modal-close" onclick="document.getElementById('modal-hist').classList.remove('open')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="erp-modal-body">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        <div style="text-align:center;padding:10px;background:#f9f9f9;border:1px solid #eee;border-radius:2px">
+          <div style="font-size:9px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px">TOTAL RECEBIDO</div>
+          <div style="font-size:20px;font-weight:700;color:#333" id="modal-hist-recebido">—</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:2px">
+          <div style="font-size:9px;color:#2e7d32;text-transform:uppercase;font-weight:600;margin-bottom:4px">BOAS</div>
+          <div style="font-size:20px;font-weight:700;color:#2e7d32" id="modal-hist-boas">—</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#ffebee;border:1px solid #ffcdd2;border-radius:2px">
+          <div style="font-size:9px;color:#c62828;text-transform:uppercase;font-weight:600;margin-bottom:4px">RUINS</div>
+          <div style="font-size:20px;font-weight:700;color:#c62828" id="modal-hist-ruins">—</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#fff3e0;border:1px solid #ffe0b2;border-radius:2px">
+          <div style="font-size:9px;color:#e65100;text-transform:uppercase;font-weight:600;margin-bottom:4px">TROCAS</div>
+          <div style="font-size:20px;font-weight:700;color:#e65100" id="modal-hist-trocas">—</div>
+        </div>
+      </div>
+      <div class="erp-table-wrap">
+        <table class="erp-table" style="width:100%">
+          <thead>
+            <tr>
+              <th style="text-align:center">#</th>
+              <th style="text-align:left">Código</th>
+              <th style="text-align:center">Recebido</th>
+              <th style="text-align:center">Boas</th>
+              <th style="text-align:center">Ruins</th>
+              <th style="text-align:center">Troca</th>
+            </tr>
+          </thead>
+          <tbody id="modal-hist-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="document.getElementById('modal-hist').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <i class="ti ti-check"></i>
+  <span id="toast-msg">Salvo</span>
+</div>
+
+
+<script>
+
+let _timerSec = 0;
+setInterval(() => {
+  _timerSec++;
+  const h = String(Math.floor(_timerSec/3600)).padStart(2,'0');
+  const m = String(Math.floor((_timerSec%3600)/60)).padStart(2,'0');
+  const s = String(_timerSec%60).padStart(2,'0');
+  const el = document.getElementById('erp-timer');
+  if (el) el.textContent = h+':'+m+':'+s;
+}, 1000);
+
+function toggleNav(id, el) {
+  document.getElementById(id).classList.toggle('open');
+  el.classList.toggle('active');
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+
+function showEstoqueView(v) {
+  document.querySelectorAll('.erp-nav-child').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.erp-nav-child').forEach(b => {
+    if (b.getAttribute('onclick')?.includes(v)) b.classList.add('active');
+  });
+  if (v === 'notas-pendentes') {
+    document.getElementById('notas-pendentes').style.display = 'block';
+    document.getElementById('historico-triagens').style.display = 'none';
+    loadNotasPendentes();
+  } else {
+    document.getElementById('notas-pendentes').style.display = 'none';
+    document.getElementById('historico-triagens').style.display = 'block';
+    loadHistorico();
+  }
+}
+
+var LS_PW = 'Estoque123';
+function lsLogin() {
+  const p = document.getElementById('ls-pw').value;
+  if (p === LS_PW) {
+    sessionStorage.setItem('_e','1');
+    document.getElementById('ls').style.display = 'none';
+    loadNotasPendentes();
+    subscribeRealtime();
+  } else {
+    document.getElementById('ls-err').textContent = 'Senha incorreta.';
+    document.getElementById('ls-pw').value = '';
+  }
+}
+function fazerLogout() { sessionStorage.removeItem('_e'); location.reload(); }
+document.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+  const el = document.getElementById('ls');
+  if (sessionStorage.getItem('_e') === '1') {
+    if (el) el.style.display = 'none';
+    loadNotasPendentes();
+    subscribeRealtime();
+  } else {
+    if (el) el.style.display = 'flex';
+  }
+});
+
+
+const SB_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+let sb = null;
+let notaAtiva = null;
+let itensAtivos = [];
+
+sb = supabase.createClient(SB_URL, SB_KEY);
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const map = { triagem: 0, historico: 1, config: 2 };
+  document.querySelectorAll('.nav-item')[map[v] ?? 0].classList.add('active');
+  if (v === 'triagem') loadNotasPendentes();
+  if (v === 'historico') loadHistorico();
+  if (v === 'config') loadConfig();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function loadNotasPendentes() {
+  const c = document.getElementById('notas-pendentes');
+  document.getElementById('triagem-panel').style.display = 'none';
+  c.style.display = 'block';
+
+  if (!sb) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i><p>Configure o Supabase em Configurações</p></div>';
+    return;
+  }
+
+  const { data: notas } = await sb.from('notas').select('*, itens_nota(id, qtd_recebida)').in('status', ['aberta','triagem']).order('created_at');
+
+  if (!notas || notas.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-package-off"></i><p>Nenhuma nota aguardando triagem</p></div>';
+    return;
+  }
+
+  // Agrupar por numero+fornecedor usando as notas retornadas
+  const grupos = {};
+  notas.forEach(n => {
+    const key = (n.numero||'') + '|' + (n.fornecedor||'').toLowerCase();
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(n);
+  });
+
+  const gruposArr = await Promise.all(Object.values(grupos).map(async g => {
+    g.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const principal = g[0];
+    // Buscar irmãs concluídas para somar itens
+    const { data: irmas } = await sb.from('notas').select('*, itens_nota(id, qtd_recebida)')
+      .eq('numero', principal.numero).eq('fornecedor', principal.fornecedor);
+    const todasG = irmas || g;
+    todasG.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const totalItens = todasG.reduce((s, n) => s + (n.itens_nota?.length || 0), 0);
+    const totalUnidades = todasG.reduce((s, n) => s + (n.itens_nota?.reduce((ss, it) => ss + (it.qtd_recebida||0), 0) || 0), 0);
+    const todosIds = todasG.map(n => n.id);
+    return { principal: todasG[0], totalItens, totalUnidades, qtd: todasG.length, todosIds, tipo: todasG[0].tipo };
+  }));
+
+  // Filtrar grupos onde todos os itens já têm triagem completa
+  const gruposFiltrados = [];
+  for (const g of gruposArr) {
+    const { data: todosItens } = await sb.from('itens_nota').select('id').in('nota_id', g.todosIds);
+    if (!todosItens || todosItens.length === 0) continue;
+    const itemIds = todosItens.map(it => it.id);
+    const { data: triagens } = await sb.from('triagem').select('item_id').in('item_id', itemIds);
+    const triadosIds = new Set((triagens || []).map(t => t.item_id));
+    const todosTriados = itemIds.every(id => triadosIds.has(id));
+    if (!todosTriados) gruposFiltrados.push(g);
+  }
+
+  const tipoBadgeFn = (tipo) => tipo === 'pelicula'
+    ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:monospace;font-weight:600">PELÍCULA</span>'
+    : '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:monospace;font-weight:600">CAPA</span>';
+
+  c.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;font-family:var(--mono)">${gruposFiltrados.length} nota(s) aguardando triagem — clique para iniciar</p>
+    <div class="nota-selector">
+      ${gruposFiltrados.map(g => {
+        const entradaBadge = g.qtd > 1
+          ? `<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--muted);font-family:monospace;border:1px solid var(--border2)">${g.qtd} ENTRADAS</span>`
+          : '';
+        const gIdx = gruposFiltrados.indexOf(g);
+        window._gruposTriagem = window._gruposTriagem || {};
+        window._gruposTriagem[gIdx] = g.todosIds;
+        return `<div class="nota-card-grid" onclick="selecionarNotaAgrupada(window._gruposTriagem[${gIdx}])">
+          <div class="nota-card-grid-header">
+            <span class="nota-card-grid-nf">NF ${g.principal.numero}</span>
+            ${g.qtd > 1 ? `<span class="nota-card-grid-badge">${g.qtd} ENTRADAS</span>` : `<span style="font-size:10px;color:rgba(255,255,255,0.7)">Aguardando triagem</span>`}
+          </div>
+          <div class="nota-card-grid-body">
+            <div class="nota-card-grid-forn">${(g.principal.fornecedor||'—').toUpperCase()}</div>
+            <div class="nota-card-grid-info">
+              <div>
+                <div class="nota-card-grid-info-label">Produto</div>
+                <div class="nota-card-grid-info-val">${g.tipo==='pelicula'?'PELÍCULA':'CAPA'}</div>
+              </div>
+              <div>
+                <div class="nota-card-grid-info-label">Itens</div>
+                <div class="nota-card-grid-info-val">${g.totalItens}</div>
+              </div>
+              <div>
+                <div class="nota-card-grid-info-label">Data</div>
+                <div class="nota-card-grid-info-val">${formatDate(g.principal.created_at)}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function selecionarNotaAgrupada(ids) {
+  if (!sb || !ids || !ids.length) return;
+  // Usa a primeira nota como principal
+  const { data: nota } = await sb.from('notas').select('*').eq('id', ids[0]).single();
+
+  // Busca TODAS as notas com mesmo numero+fornecedor independente de status
+  const { data: notasIrmas } = await sb.from('notas').select('id')
+    .eq('numero', nota.numero).eq('fornecedor', nota.fornecedor);
+  const todosIds = (notasIrmas || []).map(n => n.id);
+
+  // Busca itens de todas as entradas
+  const { data: itens } = await sb.from('itens_nota').select('*').in('nota_id', todosIds).order('ordem');
+
+  // Busca triagem de todos os itens
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await sb.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  notaAtiva = { ...nota, _todosIds: ids };
+  itensAtivos = itens.map(it => {
+    const t = triagemMap[it.id];
+    return {
+      ...it,
+      input_boa: t?.qtd_boa ?? '',
+      input_ruim: t?.qtd_ruim ?? '',
+      input_trocada: t?.capa_trocada ?? false,
+      input_codigo_trocado: t?.codigo_trocado ?? '',
+      _jaSalvo: !!t
+    };
+  });
+
+  const tipoBadgeTriagem = nota.tipo === 'pelicula'
+    ? ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:monospace;font-weight:600">PELÍCULA</span>'
+    : ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:monospace;font-weight:600">CAPA</span>';
+  document.getElementById('triagem-nota-label').innerHTML = 'Nota ' + nota.numero + tipoBadgeTriagem;
+  const subEl = document.getElementById('triagem-nota-sub');
+  if (subEl) subEl.textContent = (nota.fornecedor||'—').toUpperCase() + ' · ' + (notaAtiva._todosIds ? notaAtiva._todosIds.length > 1 ? itensAtivos.length + ' itens (agrupado)' : itensAtivos.length + ' itens' : itensAtivos.length + ' itens');
+  document.getElementById('th-trocada').textContent = nota.tipo === 'pelicula' ? 'Película trocada?' : 'Capa trocada?';
+  document.getElementById('btn-salvar-triagem').innerHTML = nota.tipo === 'pelicula'
+    ? '<i class="ti ti-device-floppy"></i> Finalizar triagem'
+    : '<i class="ti ti-device-floppy"></i> Salvar triagem';
+
+  document.getElementById('notas-pendentes').style.display = 'none';
+  document.getElementById('triagem-panel').style.display = 'block';
+  renderTriagemTabela();
+}
+
+async function selecionarNota(notaId) {
+  if (!sb) return;
+  const { data: nota } = await sb.from('notas').select('*').eq('id', notaId).single();
+  const { data: itens } = await sb.from('itens_nota').select('*').eq('nota_id', notaId).order('ordem');
+
+  // Buscar triagem separadamente (join aninhado do Supabase é inconsistente)
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await sb.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  notaAtiva = nota;
+  itensAtivos = itens.map(it => {
+    const t = triagemMap[it.id];
+    return {
+      ...it,
+      input_boa: t?.qtd_boa ?? '',
+      input_ruim: t?.qtd_ruim ?? '',
+      input_trocada: t?.capa_trocada ?? false,
+      input_codigo_trocado: t?.codigo_trocado ?? '',
+      _jaSalvo: !!t
+    };
+  });
+
+  const tipoBadgeTriagem = nota.tipo === 'pelicula'
+    ? ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:monospace;font-weight:600">PELÍCULA</span>'
+    : ' <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:monospace;font-weight:600">CAPA</span>';
+  document.getElementById('triagem-nota-label').innerHTML = 'Nota ' + nota.numero + tipoBadgeTriagem;
+  document.getElementById('th-trocada').textContent = nota.tipo === 'pelicula' ? 'Película trocada?' : 'Capa trocada?';
+  document.getElementById('btn-salvar-triagem').innerHTML = nota.tipo === 'pelicula'
+    ? '<i class="ti ti-device-floppy"></i> Finalizar triagem'
+    : '<i class="ti ti-device-floppy"></i> Salvar triagem';
+  document.getElementById('notas-pendentes').style.display = 'none';
+  document.getElementById('triagem-panel').style.display = 'block';
+
+  renderTriagemTabela();
+}
+
+function voltarSelecao() {
+  notaAtiva = null;
+  itensAtivos = [];
+  document.getElementById('triagem-panel').style.display = 'none';
+  loadNotasPendentes();
+}
+
+function renderTriagemTabela() {
+  const tbody = document.getElementById('triagem-tbody');
+  const totalRecebido = itensAtivos.reduce((s, it) => s + (it.qtd_recebida || 0), 0);
+  document.getElementById('t-recebido').textContent = totalRecebido;
+
+  tbody.innerHTML = itensAtivos.map((it, i) => {
+    const preenchido = it.input_boa !== '' && it.input_ruim !== '';
+    const rowStyle = it._jaSalvo ? 'background:rgba(62,207,142,0.06);border-left:3px solid var(--accent)' : '';
+    return `<tr style="${rowStyle}">
+      <td><div class="priority-badge">${it.ordem}</div></td>
+      <td class="td-code">${it.codigo}</td>
+      <td style="font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td>
+        <div class="triagem-input">
+          <input type="number" min="0" max="${it.qtd_recebida}" value="${it.input_boa}"
+            placeholder="0" data-idx="${i}" data-tipo="boa"
+            oninput="atualizarInput(this)" class="boa">
+          <span class="input-label" style="color:var(--accent)">boas</span>
+        </div>
+      </td>
+      <td>
+        <div class="triagem-input">
+          <input type="number" min="0" max="${it.qtd_recebida}" value="${it.input_ruim}"
+            placeholder="0" data-idx="${i}" data-tipo="ruim"
+            oninput="atualizarInput(this)" class="ruim">
+          <span class="input-label" style="color:var(--coral)">ruins</span>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" data-idx="${i}" data-tipo="trocada"
+            ${it.input_trocada ? 'checked' : ''}
+            onchange="atualizarTrocada(this)"
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--coral)">
+          <input type="text" data-idx="${i}" data-tipo="cod-trocado"
+            value="${it.input_codigo_trocado}"
+            placeholder="Cód. trocado"
+            oninput="atualizarCodTrocado(this)"
+            style="display:${it.input_trocada ? 'block' : 'none'};width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 8px;outline:none">
+        </div>
+      </td>
+      <td>${it._jaSalvo ? '<span class="badge badge-done"><i class="ti ti-check" style="font-size:11px"></i> Já salvo</span>' : (preenchido ? '<span class="badge badge-done"><i class="ti ti-check" style="font-size:11px"></i> OK</span>' : '<span class="badge badge-pending">pendente</span>')}</td>
+    </tr>`;
+  }).join('');
+
+  atualizarTotais();
+}
+
+function atualizarTrocada(el) {
+  const idx = parseInt(el.dataset.idx);
+  itensAtivos[idx].input_trocada = el.checked;
+  const row = el.closest('tr');
+  const codInput = row.querySelector('[data-tipo="cod-trocado"]');
+  if (codInput) codInput.style.display = el.checked ? 'block' : 'none';
+  if (!el.checked) { itensAtivos[idx].input_codigo_trocado = ''; if (codInput) codInput.value = ''; }
+}
+
+function atualizarCodTrocado(el) {
+  const idx = parseInt(el.dataset.idx);
+  itensAtivos[idx].input_codigo_trocado = el.value.trim().toUpperCase();
+}
+
+function atualizarInput(el) {
+  const idx = parseInt(el.dataset.idx);
+  const tipo = el.dataset.tipo;
+  const val = el.value === '' ? '' : Math.max(0, parseInt(el.value) || 0);
+  if (tipo === 'boa') itensAtivos[idx].input_boa = val;
+  else itensAtivos[idx].input_ruim = val;
+
+  // Auto-fill ruim se boa preenchida
+  const it = itensAtivos[idx];
+  if (tipo === 'boa' && it.input_boa !== '') {
+    const ruim = it.qtd_recebida - it.input_boa;
+    if (ruim >= 0) {
+      it.input_ruim = ruim;
+      const ruimInputs = document.querySelectorAll(`[data-idx="${idx}"][data-tipo="ruim"]`);
+      ruimInputs.forEach(inp => inp.value = ruim);
+    }
+  }
+
+  atualizarTotais();
+  const preenchido = it.input_boa !== '' && it.input_ruim !== '';
+  const statusCell = el.closest('tr').querySelector('td:last-child');
+  statusCell.innerHTML = preenchido
+    ? '<span class="badge badge-done"><i class="ti ti-check" style="font-size:11px"></i> OK</span>'
+    : '<span class="badge badge-pending">pendente</span>';
+}
+
+function atualizarTotais() {
+  let somaRecebido = 0, somaBoas = 0, somaRuins = 0, preenchidos = 0;
+  itensAtivos.forEach(it => {
+    somaRecebido += it.qtd_recebida || 0;
+    somaBoas += it.input_boa !== '' ? parseInt(it.input_boa) || 0 : 0;
+    somaRuins += it.input_ruim !== '' ? parseInt(it.input_ruim) || 0 : 0;
+    if (it.input_boa !== '' && it.input_ruim !== '') preenchidos++;
+  });
+  document.getElementById('t-boas').textContent = somaBoas;
+  document.getElementById('t-ruins').textContent = somaRuins;
+  document.getElementById('sum-recebido').textContent = somaRecebido;
+  document.getElementById('sum-boas').textContent = somaBoas;
+  document.getElementById('sum-ruins').textContent = somaRuins;
+  document.getElementById('triagem-progress-label').textContent = preenchidos + '/' + itensAtivos.length;
+  const pct = itensAtivos.length > 0 ? Math.round(preenchidos/itensAtivos.length*100) : 0;
+  const bar = document.getElementById('triagem-progress-bar');
+  if (bar) bar.style.width = pct + '%';
+}
+
+async function salvarParcial() {
+  if (!sb || !notaAtiva) return;
+  const preenchidos = itensAtivos.filter(it => it.input_boa !== '' && it.input_ruim !== '');
+  if (preenchidos.length === 0) { toast('Nenhum item preenchido para salvar'); return; }
+
+  for (const it of preenchidos) {
+    const qtdBoa = parseInt(it.input_boa) || 0;
+    const qtdRuim = parseInt(it.input_ruim) || 0;
+
+    const { data: existente } = await sb.from('triagem').select('id, qtd_boa, qtd_ruim').eq('item_id', it.id).single();
+
+    await sb.from('triagem').upsert({
+      item_id: it.id, nota_id: notaAtiva.id,
+      qtd_boa: qtdBoa, qtd_ruim: qtdRuim,
+      capa_trocada: it.input_trocada || false,
+      codigo_trocado: it.input_codigo_trocado || null
+    }, { onConflict: 'item_id' });
+
+    // Só atualiza historico_codigo se for novo registro (evita duplicar ao salvar parcial 2x)
+    if (!existente) {
+      const { data: hist } = await sb.from('historico_codigo').select('*').eq('codigo', it.codigo).single();
+      if (hist) {
+        await sb.from('historico_codigo').update({
+          total_boa: (hist.total_boa || 0) + qtdBoa,
+          total_ruim: (hist.total_ruim || 0) + qtdRuim
+        }).eq('codigo', it.codigo);
+      } else {
+        await sb.from('historico_codigo').insert({ codigo: it.codigo, total_boa: qtdBoa, total_ruim: qtdRuim });
+      }
+    } else {
+      // Ajusta a diferença no histórico
+      const diffBoa = qtdBoa - (existente.qtd_boa || 0);
+      const diffRuim = qtdRuim - (existente.qtd_ruim || 0);
+      if (diffBoa !== 0 || diffRuim !== 0) {
+        const { data: hist } = await sb.from('historico_codigo').select('*').eq('codigo', it.codigo).single();
+        if (hist) {
+          await sb.from('historico_codigo').update({
+            total_boa: Math.max(0, (hist.total_boa || 0) + diffBoa),
+            total_ruim: Math.max(0, (hist.total_ruim || 0) + diffRuim)
+          }).eq('codigo', it.codigo);
+        }
+      }
+    }
+  }
+
+  toast(`${preenchidos.length} item(ns) salvo(s) parcialmente! Nota continua aberta para os demais itens.`);
+  selecionarNota(notaAtiva.id);
+}
+
+async function salvarTriagem() {
+  if (!sb || !notaAtiva) return;
+  const incompletos = itensAtivos.filter(it => it.input_boa === '' || it.input_ruim === '');
+  if (incompletos.length > 0) {
+    toast(`Preencha todos os itens (${incompletos.length} pendentes)`);
+    return;
+  }
+
+  for (const it of itensAtivos) {
+    const qtdBoa = parseInt(it.input_boa) || 0;
+    const qtdRuim = parseInt(it.input_ruim) || 0;
+
+    // Upsert triagem
+    await sb.from('triagem').upsert({
+      item_id: it.id, nota_id: notaAtiva.id,
+      qtd_boa: qtdBoa, qtd_ruim: qtdRuim,
+      capa_trocada: it.input_trocada || false,
+      codigo_trocado: it.input_codigo_trocado || null
+    }, { onConflict: 'item_id' });
+
+    // Upsert historico_codigo
+    const { data: hist } = await sb.from('historico_codigo').select('*').eq('codigo', it.codigo).single();
+    if (hist) {
+      await sb.from('historico_codigo').update({
+        total_boa: (hist.total_boa || 0) + qtdBoa,
+        total_ruim: (hist.total_ruim || 0) + qtdRuim
+      }).eq('codigo', it.codigo);
+    } else {
+      await sb.from('historico_codigo').insert({ codigo: it.codigo, total_boa: qtdBoa, total_ruim: qtdRuim });
+    }
+  }
+
+  // Atualiza status da nota
+  const novoStatus = notaAtiva.tipo === 'pelicula' ? 'concluida' : 'triagem';
+  // Atualizar todas as notas do grupo (mesmo número + fornecedor)
+  const { data: irmasUpdate } = await sb.from('notas').select('id').eq('numero', notaAtiva.numero).eq('fornecedor', notaAtiva.fornecedor);
+  const idsUpdate = (irmasUpdate || []).map(n => n.id);
+  if (idsUpdate.length > 0) {
+    await sb.from('notas').update({ status: novoStatus }).in('id', idsUpdate);
+  } else {
+    await sb.from('notas').update({ status: novoStatus }).eq('id', notaAtiva.id);
+  }
+
+  if (notaAtiva.tipo === 'pelicula') {
+    toast('Película concluída! Processo finalizado.');
+    await enviarWaAnalista(`✅ Triagem finalizada!\n\nNota ${notaAtiva.numero} (película) foi finalizada pelo estoque. Pronta para coleta! 🎉`);
+  } else {
+    toast('Triagem salva com sucesso!');
+    await enviarWaAnalista(`✅ Triagem concluída!\n\nNota ${notaAtiva.numero} foi triada pelo estoque e aguarda envio para produção.`);
+  }
+  setTimeout(voltarSelecao, 800);
+}
+
+async function loadHistorico() {
+  if (!sb) return;
+  const { data: notas } = await sb.from('notas').select('*').in('status', ['triagem','tampografia','concluida']).order('created_at', { ascending: false });
+  const c = document.getElementById('historico-list-erp') || document.getElementById('historico-list');
+  if (!notas || notas.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-history"></i><p>Nenhuma triagem registrada</p></div>';
+    return;
+  }
+  // Agrupar por numero+fornecedor
+  const grupos = {};
+  notas.forEach(n => {
+    const key = (n.numero||'') + '|' + (n.fornecedor||'').toLowerCase();
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(n);
+  });
+
+  const statusColor = (s) => ({
+    'triagem': 'background:rgba(91,106,240,0.1);color:var(--accent)',
+    'tampografia': 'background:rgba(224,92,92,0.1);color:var(--coral)',
+    'concluida': 'background:rgba(58,191,133,0.1);color:var(--green)',
+  })[s] || 'background:var(--surface2);color:var(--muted)';
+
+  const statusLabel = (s) => ({
+    'triagem': 'TRIAGEM FEITA',
+    'tampografia': 'EM TAMPOGRAFIA',
+    'concluida': 'CONCLUÍDA',
+  })[s] || s.toUpperCase();
+
+  window._histGrupos = window._histGrupos || {};
+
+  const rows = Object.values(grupos).map((g, gIdx) => {
+    g.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const principal = g[0];
+    const totalItens = g.reduce((s, n) => s + (n.qtd_itens || 0), 0);
+    const prioMap = { triagem: 3, tampografia: 2, concluida: 1 };
+    const statusAtivo = g.reduce((best, n) => (prioMap[n.status]||0) > (prioMap[best.status]||0) ? n : best, principal);
+    window._histGrupos[gIdx] = principal.id;
+    const sMap = { triagem:['erp-badge-blue','TRIAGEM FEITA'], tampografia:['erp-badge-red','EM TAMPOGRAFIA'], concluida:['erp-badge-green','CONCLUÍDA'] };
+    const [sCls, sLbl] = sMap[statusAtivo.status] || ['erp-badge-gray', statusAtivo.status.toUpperCase()];
+    const entradas = g.length > 1 ? `<br><span class="erp-badge erp-badge-gray" style="margin-top:2px">${g.length} ENTRADAS</span>` : '';
+    return `<tr onclick="verDetalheTriagem(window._histGrupos[${gIdx}])" style="cursor:pointer" onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background=''">
+      <td style="padding:8px 12px;font-weight:700;color:#1565c0;font-family:monospace">${principal.numero}</td>
+      <td style="padding:8px 12px;font-weight:600">${(principal.fornecedor||'—').toUpperCase()}</td>
+      <td style="padding:8px 12px;text-align:center">${principal.tipo==='pelicula'?'<span class="erp-badge erp-badge-orange">PELÍCULA</span>':'<span class="erp-badge erp-badge-blue">CAPA</span>'}</td>
+      <td style="padding:8px 12px;text-align:center">${totalItens}</td>
+      <td style="padding:8px 12px;text-align:center;color:#777">${formatDate(principal.created_at)}</td>
+      <td style="padding:8px 12px;text-align:center"><span class="erp-badge ${sCls}">${sLbl}</span>${entradas}</td>
+      <td style="padding:8px 12px;text-align:center;color:#bbb">›</td>
+    </tr>`;
+  }).join('');
+  c.innerHTML = '<div class="erp-table-wrap"><table class="erp-table" style="width:100%"><thead><tr><th style="text-align:left">NF</th><th style="text-align:left">Fornecedor</th><th>Tipo</th><th>Itens</th><th>Data</th><th>Status</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+async function verDetalheTriagem(notaId) {
+  if (!sb) return;
+  const { data: nota } = await sb.from('notas').select('*').eq('id', notaId).single();
+  // Buscar todas as notas irmãs para mostrar todos os itens agrupados
+  const { data: irmas } = await sb.from('notas').select('id').eq('numero', nota.numero).eq('fornecedor', nota.fornecedor);
+  const todosIds = (irmas || []).map(n => n.id);
+  const { data: itens } = await sb.from('itens_nota').select('*').in('nota_id', todosIds).order('ordem');
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await sb.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  const totalRecebido = itens.reduce((s, it) => s + (it.qtd_recebida || 0), 0);
+  const totalBoas = (triagemData || []).reduce((s, t) => s + (t.qtd_boa || 0), 0);
+  const totalRuins = (triagemData || []).reduce((s, t) => s + (t.qtd_ruim || 0), 0);
+  const totalTrocas = (triagemData || []).filter(t => t.capa_trocada).length;
+
+  const rows = itens.map(it => {
+    const t = triagemMap[it.id] || {};
+    const temTriagem = t.qtd_boa !== undefined;
+    return `<tr style="${!temTriagem ? '' : ''}">
+      <td style="text-align:center;color:#999">${it.ordem}</td>
+      <td style="text-align:left;font-family:monospace;font-weight:700;color:#1565c0">${it.codigo}</td>
+      <td style="text-align:center;font-weight:600">${it.qtd_recebida}</td>
+      <td style="text-align:center;font-weight:600;color:#2e7d32">${t.qtd_boa !== undefined ? t.qtd_boa : '—'}</td>
+      <td style="text-align:center;font-weight:600;color:#c62828">${t.qtd_ruim !== undefined ? t.qtd_ruim : '—'}</td>
+      <td style="text-align:center">${t.capa_trocada ? `<span class="erp-badge erp-badge-orange">⇄ ${t.codigo_trocado || 'sem código'}</span>` : '<span style="color:#aaa">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('modal-hist-titulo').textContent = 'Nota ' + nota.numero;
+  const trDates = (triagemData || []).map(t => t.created_at).filter(Boolean).sort();
+  const trFim = trDates.length > 0 ? trDates[trDates.length - 1] : null;
+  let trInfo = '';
+  if (trFim) {
+    const dias = Math.round((new Date(trFim) - new Date(nota.created_at)) / 86400000);
+    trInfo = ` · Triagem em ${formatDate(trFim)} (${dias === 0 ? 'mesmo dia' : dias + ' dia(s)'})`;
+  }
+  document.getElementById('modal-hist-sub').textContent = (nota.fornecedor || '—') + ' · Aberta em ' + formatDate(nota.created_at) + trInfo;
+  document.getElementById('modal-hist-recebido').textContent = totalRecebido;
+  document.getElementById('modal-hist-boas').textContent = totalBoas;
+  document.getElementById('modal-hist-ruins').textContent = totalRuins;
+  document.getElementById('modal-hist-trocas').textContent = totalTrocas;
+  document.getElementById('modal-hist-body').innerHTML = rows;
+  document.getElementById('modal-hist').classList.add('open');
+}
+
+function loadConfig() {
+  document.getElementById('cfg-url').value = SB_URL;
+  document.getElementById('cfg-key').value = SB_KEY;
+}
+
+function salvarConfig() {
+  SB_URL = document.getElementById('cfg-url').value.trim();
+  SB_KEY = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('sb_url_est', SB_URL);
+  localStorage.setItem('sb_key_est', SB_KEY);
+  sb = supabase.createClient(SB_URL, SB_KEY);
+  toast('Supabase conectado!');
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+
+
+
+async function enviarViaProxy(number, message, mentioned) {
+  try {
+    const body = { number, message };
+    if (mentioned && mentioned.length) body.mentioned = mentioned;
+    await fetch('https://script.google.com/macros/s/AKfycbxZhiIAjmPZsqvNfM-01X5qrYIK9IMoW0EL_4TJQ9MDcV3xnn_hV9tVZ_F92mcWDVsw/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.warn('Proxy WA erro:', e); }
+}
+
+async function enviarWaAnalista(msg) {
+  await enviarViaProxy('5571988220976', msg);
+  await enviarViaProxy('5571993143772', msg);
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+
+
+
+// original init removido — initAuth chama loadNotasPendentes via hidden
+
+
+
+
+
+
+
+
+
+
+var LS_PW='Estoque123';
+
+function subscribeRealtime() {
+  if (!sb) return;
+  sb.channel('estoque-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => {
+      const activeView = document.querySelector('.view.active');
+      if (activeView && activeView.id === 'view-triagem' && !notaAtiva) loadNotasPendentes();
+      if (activeView && activeView.id === 'view-historico') loadHistorico();
+    })
+    .subscribe();
+}
+
+function lsLogin(){var p=document.getElementById('ls-pw').value;if(p===LS_PW){sessionStorage.setItem('_a','1');document.getElementById('ls').style.display='none';loadNotasPendentes();subscribeRealtime();}else{document.getElementById('ls-err').textContent='Senha incorreta.';document.getElementById('ls-pw').value='';}}
+function fazerLogout(){sessionStorage.removeItem('_a');location.reload();}
+document.addEventListener('DOMContentLoaded',function(){if(sessionStorage.getItem('_a')==='1'){document.getElementById('ls').style.display='none';loadNotasPendentes();subscribeRealtime();}else{document.getElementById('ls').style.display='flex';}});
+
+</script>
+</body>
+</html>
