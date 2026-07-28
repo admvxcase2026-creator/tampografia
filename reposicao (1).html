@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reposição — Compras | VX CASE</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI2IiBmaWxsPSIjM2QzZDNkIi8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSI3IiB5PSI3IiB3aWR0aD0iMTQiIGhlaWdodD0iMTIiIHJ4PSIxLjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2YwYTUwMCIvPjwvc3ZnPg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background:#efefef; font-family:'Sora',sans-serif; font-size:13px; color:#333; min-height:100vh; }
+  .hdr { background:#3d3d3d; height:42px; display:flex; align-items:center; padding:0 14px; gap:8px; position:sticky; top:0; z-index:10; }
+  .hdr .logo { color:#fff; font-weight:600; font-size:13px; letter-spacing:1px; }
+  .hdr .logo span { color:#f0a500; }
+  .hdr .tag { margin-left:auto; color:#ccc; font-size:11px; }
+  .wrap { max-width:640px; margin:20px auto; padding:0 14px; }
+  .card { background:#fff; border:1px solid #ddd; border-radius:3px; margin-bottom:12px; }
+  .card-h { padding:10px 16px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; }
+  .card-t { font-size:13px; font-weight:600; color:#555; text-transform:uppercase; letter-spacing:.4px; }
+  .card-b { padding:14px 16px; }
+  .row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f2f2f2; font-size:13px; }
+  .row:last-child { border-bottom:none; }
+  .row .k { color:#888; }
+  .row .v { font-weight:500; color:#333; font-family:'DM Mono',monospace; }
+  .pill { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; font-family:'DM Mono',monospace; }
+  .pill-red { background:rgba(224,92,92,.12); color:#c0392b; }
+  .pill-lock { background:#f0f0f0; color:#888; }
+  label { display:block; font-size:12px; color:#666; margin-bottom:5px; font-weight:500; }
+  input[type=number] { width:100%; border:1px solid #ccc; border-radius:3px; padding:9px 11px; font-size:14px; font-family:'DM Mono',monospace; outline:none; }
+  input[type=number]:focus { border-color:#f0a500; }
+  .seg { display:flex; gap:6px; }
+  .seg button { flex:1; padding:8px; border:1px solid #ccc; background:#fff; border-radius:3px; cursor:pointer; font-family:'Sora',sans-serif; font-size:13px; color:#555; }
+  .seg button.on { background:#f0a500; border-color:#f0a500; color:#fff; font-weight:600; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .result { background:#eef6ff; border:1px solid #cfe3fb; border-radius:6px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; margin-top:4px; }
+  .result .lbl { font-size:12px; color:#1565c0; }
+  .result .sub { font-size:11px; color:#1565c0; opacity:.75; margin-top:2px; }
+  .result .num { font-size:32px; font-weight:600; color:#1565c0; font-family:'DM Mono',monospace; }
+  .result.zero { background:#eafaf0; border-color:#c8ebd5; }
+  .result.zero .lbl,.result.zero .sub,.result.zero .num { color:#2e9e5b; }
+  .btn { width:100%; padding:12px; border:none; border-radius:3px; background:#2e9e5b; color:#fff; font-size:14px; font-weight:600; font-family:'Sora',sans-serif; cursor:pointer; margin-top:14px; }
+  .btn:hover { background:#278a4f; }
+  .btn:disabled { background:#bbb; cursor:not-allowed; }
+  .hint { font-size:11px; color:#999; margin-top:4px; }
+  .state { text-align:center; padding:50px 20px; color:#888; }
+  .done-banner { background:#eafaf0; border:1px solid #c8ebd5; border-radius:6px; padding:14px 16px; color:#2e9e5b; font-weight:500; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<div class="hdr">
+  <span class="logo">VX <span>CASE</span></span>
+  <span class="tag">Reposição de compra</span>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="state" id="loading"><i class="ti ti-loader-2"></i> Carregando reposição...</div>
+</div>
+
+<script>
+const SB_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+const params = new URLSearchParams(location.search);
+const REPO_ID = params.get('id');
+let repo = null;
+let periodo = '6';
+
+function fmtData(d){ if(!d) return '—'; const dt=new Date(d); return dt.toLocaleDateString('pt-BR')+' '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function diasDesde(d){ if(!d) return null; return Math.floor((Date.now()-new Date(d).getTime())/86400000); }
+
+async function init(){
+  if(!REPO_ID){ erro('Link inválido — sem identificador da reposição.'); return; }
+  const { data, error } = await sb.from('reposicoes').select('*').eq('id', REPO_ID).single();
+  if(error || !data){ erro('Reposição não encontrada. Confira o link.'); return; }
+  repo = data;
+  if(repo.status === 'aguardando_analista'){ erro('Esta reposição ainda está aguardando a validação de estoque do analista. Aguarde a liberação.'); return; }
+  if(repo.status === 'concluido'){ renderConcluido(); return; }
+  renderForm();
+}
+
+function erro(msg){
+  document.getElementById('wrap').innerHTML = '<div class="state"><i class="ti ti-alert-triangle" style="font-size:26px;color:#e0995c;display:block;margin-bottom:10px"></i>'+msg+'</div>';
+}
+
+function contexto(){
+  const dias = diasDesde(repo.validado_analista_em);
+  const frescor = dias===null ? '' : (dias===0 ? 'validado hoje' : ('validado há '+dias+' dia'+(dias>1?'s':'')));
+  return `
+    <div class="card">
+      <div class="card-h"><span class="card-t">Código sinalizado</span><span class="pill pill-red">${(repo.pct_perda||0).toString().replace('.',',')}% de perda</span></div>
+      <div class="card-b">
+        <div class="row"><span class="k">Código</span><span class="v">${repo.codigo||'—'}</span></div>
+        <div class="row"><span class="k">Recebido / ruins</span><span class="v">${repo.qtd_recebida||0} / ${repo.qtd_ruim||0}</span></div>
+        <div class="row"><span class="k">Nota fiscal</span><span class="v">${repo.nota_numero||'—'}</span></div>
+        <div class="row"><span class="k">Fornecedor</span><span class="v">${(repo.fornecedor||'—').toUpperCase()}</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-t">Estoque validado pelo analista</span><span class="pill pill-lock"><i class="ti ti-lock" style="font-size:11px"></i> fixo</span></div>
+      <div class="card-b">
+        <div class="row"><span class="k">Estoque na matriz</span><span class="v">${repo.estoque_matriz ?? 0}</span></div>
+        <div class="row"><span class="k">Estoque em loja (PDVs)</span><span class="v">${repo.estoque_loja ?? 0}</span></div>
+        <div class="row"><span class="k">Posição total</span><span class="v">${(repo.estoque_matriz||0)+(repo.estoque_loja||0)}</span></div>
+        <div class="row"><span class="k">Cobertura desejada</span><span class="v">${(repo.cobertura_meses ?? 2).toString().replace('.',',')} meses</span></div>
+        <div class="row"><span class="k">Estoque de segurança</span><span class="v">${(repo.seguranca_meses ?? 0.5).toString().replace('.',',')} meses</span></div>
+        ${frescor?`<div class="row"><span class="k">Atualização</span><span class="v" style="color:#f0a500">${frescor}</span></div>`:''}
+      </div>
+    </div>`;
+}
+
+function renderForm(){
+  document.getElementById('wrap').innerHTML = contexto() + `
+    <div class="card">
+      <div class="card-h"><span class="card-t">Sua análise de compra</span></div>
+      <div class="card-b">
+        <label>Vendas do código — período</label>
+        <div class="seg" style="margin-bottom:14px">
+          <button id="p3" onclick="setPeriodo('3')">Últimos 3 meses</button>
+          <button id="p6" class="on" onclick="setPeriodo('6')">Últimos 6 meses</button>
+        </div>
+        <div class="grid2">
+          <div>
+            <label>Vendas no período (un.)</label>
+            <input type="number" id="vendas" min="0" step="1" placeholder="0" oninput="calc()">
+          </div>
+          <div>
+            <label>Mín. por lote</label>
+            <input type="number" id="minlote" min="1" step="1" value="1" oninput="calc()">
+            <div class="hint">Qtd por caixa / pedido mínimo do fornecedor. Deixe 1 se compra avulsa.</div>
+          </div>
+        </div>
+        <div class="result" id="res">
+          <div><div class="lbl" id="res-lbl">Sugestão de compra</div><div class="sub" id="res-sub">preencha as vendas</div></div>
+          <div class="num" id="res-num">—</div>
+        </div>
+        <div id="calc-memo" style="display:none;background:#fafafa;border:1px solid #eee;border-radius:4px;padding:10px 12px;margin-top:8px;font-size:11px;color:#777;line-height:1.7;font-family:'DM Mono',monospace"></div>
+        <button class="btn" id="btn-concluir" onclick="concluir()" disabled><i class="ti ti-check"></i> Marcar análise concluída</button>
+      </div>
+    </div>`;
+  calc();
+}
+
+function setPeriodo(p){
+  periodo = p;
+  document.getElementById('p3').classList.toggle('on', p==='3');
+  document.getElementById('p6').classList.toggle('on', p==='6');
+  calc();
+}
+
+function calc(){
+  const vendas = Math.max(0, parseInt(document.getElementById('vendas').value)||0);
+  const minlote = Math.max(1, parseInt(document.getElementById('minlote').value)||1);
+  const meses = parseInt(periodo);
+  const dem = vendas/meses;
+  const pos = (repo.estoque_matriz||0)+(repo.estoque_loja||0);
+  const cob = repo.cobertura_meses ?? 2;
+  const seg = repo.seguranca_meses ?? 0.5;
+  const alvo = dem*cob + dem*seg;
+  let compra = Math.max(0, alvo - pos);
+  const compraBruta = compra;
+  compra = Math.ceil(compra/minlote)*minlote;
+  window._sugestao = Math.round(compra);
+  const res = document.getElementById('res');
+  const memo = document.getElementById('calc-memo');
+  const preencheu = document.getElementById('vendas').value !== '';
+  document.getElementById('btn-concluir').disabled = !preencheu;
+  document.getElementById('res-num').textContent = preencheu ? Math.round(compra) : '—';
+  if(!preencheu){ res.classList.remove('zero'); memo.style.display='none'; document.getElementById('res-lbl').textContent='Sugestão de compra'; document.getElementById('res-sub').textContent='preencha as vendas'; return; }
+  const cobAtual = dem>0 ? Math.round(pos/dem*10)/10 : 0;
+  const nb = n => Math.round(n*10)/10;
+  const loteTxt = (minlote>1 && Math.round(compra)!==Math.round(compraBruta))
+    ? `\n5) Arredonda p/ lote de ${minlote} ....... ${Math.round(compraBruta)} → ${Math.round(compra)}` : '';
+  memo.innerHTML =
+    `1) Demanda/mês = ${vendas} ÷ ${meses} meses ....... ${nb(dem)}\n`+
+    `2) Você já tem = ${repo.estoque_matriz||0} matriz + ${repo.estoque_loja||0} loja ....... ${pos}\n`+
+    `3) Quer ter = ${nb(dem)} × ${nb(cob+seg)} meses (${nb(cob)} cobertura + ${nb(seg)} segurança) ....... ${Math.round(alvo)}\n`+
+    `4) Comprar = ${Math.round(alvo)} − ${pos} ....... ${Math.max(0,Math.round(compraBruta))}`+
+    loteTxt;
+  memo.style.display='block';
+  if(compra<=0){
+    res.classList.add('zero');
+    document.getElementById('res-lbl').textContent='Não precisa comprar';
+    document.getElementById('res-sub').textContent = dem>0 ? ('estoque cobre '+String(cobAtual).replace('.',',')+' meses') : 'sem venda no período';
+  } else {
+    res.classList.remove('zero');
+    document.getElementById('res-lbl').textContent='Sugestão de compra';
+    document.getElementById('res-sub').textContent='demanda '+Math.round(dem)+'/mês · cobertura atual '+String(cobAtual).replace('.',',')+' meses';
+  }
+}
+
+async function concluir(){
+  const btn = document.getElementById('btn-concluir');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i> Salvando...';
+  const vendas = Math.max(0, parseInt(document.getElementById('vendas').value)||0);
+  const minlote = Math.max(1, parseInt(document.getElementById('minlote').value)||1);
+  const { error } = await sb.from('reposicoes').update({
+    vendas, periodo_vendas: periodo, min_lote: minlote,
+    sugestao_compra: window._sugestao||0,
+    status: 'concluido', concluido_em: new Date().toISOString()
+  }).eq('id', REPO_ID);
+  if(error){ btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Marcar análise concluída'; alert('Erro ao salvar. Tente novamente.'); return; }
+  repo.vendas=vendas; repo.periodo_vendas=periodo; repo.min_lote=minlote; repo.sugestao_compra=window._sugestao||0; repo.concluido_em=new Date().toISOString();
+  renderConcluido();
+}
+
+function renderConcluido(){
+  document.getElementById('wrap').innerHTML = `
+    <div class="done-banner"><i class="ti ti-circle-check" style="font-size:18px"></i> Análise concluída e registrada no histórico.</div>
+    ` + contexto() + `
+    <div class="card">
+      <div class="card-h"><span class="card-t">Resultado da análise</span></div>
+      <div class="card-b">
+        <div class="row"><span class="k">Vendas (${repo.periodo_vendas||'—'} meses)</span><span class="v">${repo.vendas ?? '—'}</span></div>
+        <div class="row"><span class="k">Mín. por lote</span><span class="v">${repo.min_lote ?? '—'}</span></div>
+        <div class="row"><span class="k">Concluído em</span><span class="v">${fmtData(repo.concluido_em)}</span></div>
+        <div class="result zero" style="margin-top:12px"><div><div class="lbl">Quantidade a comprar</div></div><div class="num">${repo.sugestao_compra ?? 0}</div></div>
+      </div>
+    </div>`;
+}
+
+init();
+</script>
+</body>
+</html>
