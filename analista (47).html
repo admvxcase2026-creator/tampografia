@@ -1,0 +1,2470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI2IiBmaWxsPSIjM2QzZDNkIi8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSI3IiB5PSI3IiB3aWR0aD0iMTQiIGhlaWdodD0iMTIiIHJ4PSIxLjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2YwYTUwMCIvPjwvc3ZnPg==">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia — Analista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+
+  /* Design tokens (compat tema ERP) — corrige var(--...) órfãos em modais/badges */
+  :root {
+    --surface: #fff;
+    --surface2: #f5f5f5;
+    --border: #ddd;
+    --border2: #ddd;
+    --text: #333;
+    --muted: #999;
+    --accent: #f0a500;
+    --amber: #f0a500;
+    --green: #3abf85;
+    --coral: #e05c5c;
+    --font: 'Sora', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --radius: 3px;
+  }
+  body.dark {
+    --surface: #2a2a2a;
+    --surface2: #333;
+    --border: #444;
+    --border2: #444;
+    --text: #f0f0f0;
+    --muted: #aaa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #efefef; font-family: 'Sora', sans-serif; font-size: 13px; color: #333; min-height: 100vh; }
+
+  /* HEADER */
+  .erp-header { background: #3d3d3d; height: 42px; display: flex; align-items: center; padding: 0 12px; gap: 12px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+  .erp-logo { color: #fff; font-weight: 600; font-size: 13px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+  .erp-logo span { color: #f0a500; }
+  .erp-search { flex: 1; max-width: 220px; background: #555; border: none; border-radius: 3px; color: #fff; padding: 5px 10px; font-size: 11px; outline: none; }
+  .erp-search::placeholder { color: #aaa; }
+  .erp-header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; color: #ccc; font-size: 11px; }
+  .erp-timer { background: #555; border-radius: 3px; padding: 3px 8px; font-family: monospace; font-size: 11px; color: #fff; }
+  .erp-user-chip { background: #555; border-radius: 3px; padding: 3px 10px; color: #fff; font-size: 11px; cursor: pointer; }
+  .erp-user-chip:hover { background: #666; }
+
+  /* LAYOUT */
+  .erp-shell { display: flex; padding-top: 42px; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .erp-sidebar { width: 160px; background: #2d2d2d; position: fixed; top: 42px; bottom: 0; overflow-y: auto; z-index: 99; }
+  .erp-nav-group { border-bottom: 1px solid #444; }
+  .erp-nav-parent { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; color: #ccc; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; text-transform: uppercase; letter-spacing: .5px; }
+  .erp-nav-parent:hover { background: #3a3a3a; color: #fff; }
+  .erp-nav-parent.active { background: #f0a500; color: #fff; }
+  .erp-nav-parent i { font-size: 13px; }
+  .erp-nav-children { display: none; background: #262626; }
+  .erp-nav-children.open { display: block; }
+  .erp-nav-child { display: block; padding: 10px 14px 10px 22px; color: #ccc; font-size: 13px; cursor: pointer; transition: background .15s; border: none; background: none; width: 100%; text-align: left; }
+  .erp-nav-child:hover { background: #333; color: #fff; }
+  .erp-nav-child.active { color: #f0a500; background: #333; }
+
+  /* MAIN */
+  .erp-main { margin-left: 160px; flex: 1; padding: 16px; min-height: calc(100vh - 42px); }
+
+  /* PAGE HEADER */
+  .erp-page-header { background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .erp-page-title { font-size: 16px; font-weight: 600; color: #333; }
+  .erp-breadcrumb { font-size: 11px; color: #999; margin-top: 2px; }
+
+  /* CARD */
+  .erp-card { background: #fff; border: 1px solid #ddd; border-radius: 3px; margin-bottom: 12px; }
+  .erp-card-header { padding: 10px 16px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+  .erp-card-title { font-size: 13px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .4px; }
+  .erp-card-body { padding: 14px 16px; }
+
+  /* STATS */
+  .erp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .erp-stat { background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 12px 16px; }
+  .erp-stat-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+  .erp-stat-value { font-size: 24px; font-weight: 600; color: #333; }
+  .erp-stat-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
+  .erp-erp-stat-green { color: #2e7d32; }
+  .erp-stat-red { color: #c62828; }
+  .erp-stat-orange { color: #e65100; }
+  .erp-stat-blue { color: #1565c0; }
+
+  /* BUTTONS */
+  .erp-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 3px; font-size: 11px; font-weight: 500; cursor: pointer; border: none; font-family: 'Sora', sans-serif; transition: filter .15s; }
+  .erp-btn-green { background: #4caf50; color: #fff; }
+  .erp-btn-green:hover { filter: brightness(.9); }
+  .erp-btn-blue { background: #1976d2; color: #fff; }
+  .erp-btn-blue:hover { filter: brightness(.9); }
+  .erp-btn-orange { background: #f0a500; color: #fff; }
+  .erp-btn-orange:hover { filter: brightness(.9); }
+  .erp-btn-red { background: #e53935; color: #fff; }
+  .erp-btn-red:hover { filter: brightness(.9); }
+  .erp-btn-gray { background: #757575; color: #fff; }
+  .erp-btn-gray:hover { filter: brightness(.9); }
+  .erp-btn-outline { background: #fff; color: #555; border: 1px solid #ccc; }
+  .erp-btn-outline:hover { background: #f5f5f5; }
+  .erp-btn-sm { padding: 4px 8px; font-size: 10px; }
+
+  /* TABLE */
+  .erp-table-wrap { overflow-x: auto; }
+  table.erp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.erp-table thead th { background: #f5f5f5; border: 1px solid #ddd; padding: 8px 12px; text-align: center; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .3px; font-size: 11px; white-space: nowrap; }
+  table.erp-table tbody td { border: 1px solid #eee; padding: 8px 12px; color: #333; vertical-align: middle; font-size: 12px; text-align: center; }
+  table.erp-table tbody tr:hover td { background: #fafafa; }
+  table.erp-table tbody tr:nth-child(even) td { background: #fafefe; }
+
+  /* BADGE */
+  .erp-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 2px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .erp-badge-green { background: #e8f5e9; color: #2e7d32; }
+  .erp-badge-orange { background: #fff3e0; color: #e65100; }
+  .erp-badge-red { background: #ffebee; color: #c62828; }
+  .erp-badge-blue { background: #e3f2fd; color: #1565c0; }
+  .erp-badge-gray { background: #f5f5f5; color: #757575; }
+  .erp-badge-yellow { background: #fffde7; color: #f57f17; }
+
+  /* FORM */
+  .erp-form-row { display: grid; gap: 10px; margin-bottom: 10px; }
+  .erp-form-group { display: flex; flex-direction: column; gap: 4px; }
+  .erp-label { font-size: 10px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+  .erp-input { background: #fff; border: 1px solid #ccc; border-radius: 2px; color: #333; font-family: 'Sora', sans-serif; font-size: 11px; padding: 6px 8px; outline: none; transition: border-color .15s; width: 100%; }
+  .erp-input:focus { border-color: #1976d2; }
+  select.erp-input option { background: #fff; }
+  textarea.erp-input { resize: vertical; min-height: 70px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* FILTERS BAR */
+  .erp-filters { background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 10px 14px; margin-bottom: 10px; }
+  .erp-filters-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+
+  /* DRAG */
+  .erp-drag { cursor: grab; color: #bbb; }
+  .erp-priority-num { width: 20px; height: 20px; border-radius: 50%; background: #f0a500; color: #fff; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+
+  /* ACTIONS COL */
+  .erp-actions { display: flex; gap: 4px; }
+
+  /* MODAL */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .erp-modal { background: #fff; border-radius: 3px; padding: 0; width: 580px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border: 1px solid #ccc; }
+  .erp-modal-header { background: #3d3d3d; color: #fff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .erp-modal-title { font-size: 13px; font-weight: 600; }
+  .erp-modal-close { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; }
+  .erp-modal-body { padding: 16px; }
+  .erp-modal-footer { padding: 10px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; justify-content: flex-end; background: #f9f9f9; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #333; border-radius: 3px; padding: 10px 16px; font-size: 12px; z-index: 999; display: flex; align-items: center; gap: 8px; transform: translateY(80px); opacity: 0; transition: all .25s; color: #fff; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* LOGIN */
+  .ls-screen { position: fixed; inset: 0; background: #3d3d3d; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+  .ls-screen.hidden { display: none; }
+  .ls-box { background: #fff; border-radius: 3px; padding: 28px 24px; width: 320px; border: 1px solid #ccc; }
+  .ls-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .ls-logo-txt { font-size: 16px; font-weight: 600; color: #333; }
+  .ls-err { font-size: 11px; color: #c62828; margin-top: 8px; min-height: 16px; }
+
+  /* TIMELINE */
+  .erp-timeline { display: flex; flex-direction: column; gap: 0; }
+  .erp-tl-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
+  .erp-tl-item:not(:last-child)::before { content: ''; position: absolute; left: 13px; top: 28px; bottom: 0; width: 1px; background: #ddd; }
+  .erp-tl-dot { width: 28px; height: 28px; border-radius: 50%; background: #f5f5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .erp-tl-dot.done { background: #e8f5e9; border-color: #a5d6a7; }
+  .erp-tl-dot.active { background: #e3f2fd; border-color: #90caf9; }
+  .erp-tl-dot i { font-size: 13px; color: #999; }
+  .erp-tl-dot.done i { color: #2e7d32; }
+  .erp-tl-dot.active i { color: #1565c0; }
+  .erp-tl-content { flex: 1; padding-top: 4px; }
+  .erp-tl-title { font-size: 12px; font-weight: 600; color: #333; }
+  .erp-tl-date { font-size: 10px; color: #999; margin-top: 2px; }
+
+  /* NOTA ROW */
+  .erp-nota-row { border-bottom: 1px solid #eee; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background .1s; }
+  .erp-nota-row:hover { background: #fafafa; }
+  .erp-nota-row:last-child { border-bottom: none; }
+
+  /* HIST CARD */
+  .erp-hist-card { background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 12px 14px; }
+
+  /* WA preview hidden */
+  #wa-msg-preview, #wa-time, #btn-wa { display: none !important; }
+
+  /* Light theme override */
+  body.light { background: #efefef; }
+
+  /* Progress */
+  .erp-progress { height: 6px; background: #eee; border-radius: 2px; overflow: hidden; }
+  .erp-progress-fill { height: 100%; background: #4caf50; border-radius: 2px; transition: width .3s; }
+
+  /* Checklist item */
+  .erp-check-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border: 1px solid #eee; border-radius: 2px; margin-bottom: 4px; }
+  .erp-check-item.done { opacity: .6; background: #f9fff9; border-color: #c8e6c9; }
+
+
+  /* Classes antigas compatíveis */
+  .page-header { background:#fff;border:1px solid #ddd;border-radius:3px;padding:10px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between; }
+  .page-title { font-size:16px;font-weight:600;color:#333; }
+  .page-sub { font-size:11px;color:#999;margin-top:2px; }
+  .notas-grid { display:flex;flex-direction:column;gap:0;background:#fff;border:1px solid #ddd;border-radius:3px;overflow:hidden; }
+  .search-bar { display:flex;gap:8px;margin-bottom:10px; }
+  .search-bar input { flex:1; }
+  .hist-grid { }
+  .hist-card { background:#fff;border:1px solid #ddd;border-radius:3px;padding:10px 12px;cursor:pointer; }
+  .hist-code { font-size:13px;font-weight:600;color:#333;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #eee; }
+  .hist-row { display:flex;justify-content:space-between;font-size:11px;padding:2px 0; }
+  .hist-row span:first-child { color:#777; }
+  .good { color:#2e7d32;font-weight:500; }
+  .bad { color:#c62828;font-weight:500; }
+  .empty { text-align:center;padding:32px;color:#aaa; }
+  .empty i { font-size:28px;display:block;margin-bottom:8px;opacity:.4; }
+  .empty p { font-size:12px; }
+  .td-code { font-family:monospace;font-weight:600;color:#1565c0; }
+  .td-drag { cursor:grab;color:#bbb; }
+  .priority-badge { width:22px;height:22px;border-radius:50%;background:#f0a500;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center; }
+  .add-item-row { display:grid;grid-template-columns:1fr 1fr 120px auto;gap:8px;align-items:end;padding:12px;background:#f9f9f9;border-radius:3px;border:1px dashed #ddd;margin-bottom:12px; }
+  .triagem-input { display:flex;align-items:center;gap:5px; }
+  .triagem-input input { width:70px;background:#fff;border:1px solid #ccc;border-radius:2px;color:#333;font-size:12px;padding:5px 8px;outline:none;text-align:center; }
+  .chamado-num { font-family:monospace;font-size:12px;font-weight:600;color:#1565c0; }
+  .nota-num { font-family:monospace;font-size:12px;font-weight:600;color:#1565c0; }
+  .nota-info-sub { font-size:11px;color:#999;margin-top:2px; }
+  .nota-data { font-size:11px;color:#999; }
+  .badge { display:inline-flex;align-items:center;padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600; }
+  .badge-pending { background:#fff3e0;color:#e65100; }
+  .badge-done { background:#e8f5e9;color:#2e7d32; }
+  .badge-tamp { background:#ffebee;color:#c62828; }
+  .badge-triagem { background:#e3f2fd;color:#1565c0; }
+  .stat-card { background:#fff;border:1px solid #ddd;border-radius:3px;padding:12px 16px; }
+  .stat-label { font-size:11px;color:#999;text-transform:uppercase;margin-bottom:4px; }
+  .stat-value { font-size:24px;font-weight:600;color:#333; }
+  .stat-sub { font-size:10px;color:#aaa;margin-top:2px; }
+  .stat-accent { color:#1565c0; }
+  .stat-coral { color:#c62828; }
+  .stat-green { color:#2e7d32; }
+  .stat-amber { color:#e65100; }
+  .stats-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px; }
+  .section-divider { height:1px;background:#eee;margin:16px 0; }
+  .wa-preview,.wa-bubble,.wa-time { display:none!important; }
+  label { font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.3px; }
+  input:not([type=checkbox]):not([type=radio]),select,textarea { background:#fff;border:1px solid #ccc;border-radius:2px;color:#333;font-family:'Sora',sans-serif;font-size:12px;padding:6px 8px;outline:none;width:100%; }
+  input:focus,select:focus,textarea:focus { border-color:#1976d2; }
+  .form-group { display:flex;flex-direction:column;gap:4px; }
+  .form-row { display:grid;gap:10px;margin-bottom:10px; }
+  .form-grid { display:flex;flex-direction:column;gap:10px; }
+  .card { background:#fff;border:1px solid #ddd;border-radius:3px;margin-bottom:10px; }
+  .card-header { padding:10px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between; }
+  .card-title { font-size:12px;font-weight:600;color:#555;text-transform:uppercase; }
+  .card-body { padding:14px 16px; }
+  table { width:100%;border-collapse:collapse; }
+  thead th { background:#f5f5f5;border:1px solid #ddd;padding:7px 10px;text-align:center;font-weight:600;color:#555;font-size:11px;text-transform:uppercase; }
+  tbody td { border:1px solid #eee;padding:7px 10px;color:#333;vertical-align:middle;font-size:12px;text-align:center; }
+  tbody tr:hover td { background:#fafafa; }
+  .table-wrap { overflow-x:auto; }
+  .progress-bar { height:5px;background:#eee;border-radius:2px;overflow:hidden; }
+  .progress-fill { height:100%;background:#4caf50;border-radius:2px; }
+
+  /* TEMA CLARO (padrão ERP) */
+  body.dark { background:#1a1a1a;color:#f0f0f0; }
+  body.dark .erp-main { background:#1a1a1a; }
+  body.dark .erp-card,.dark .card,.dark .stat-card,.dark .notas-grid,.dark .page-header { background:#2a2a2a;border-color:#444;color:#f0f0f0; }
+  body.dark table thead th { background:#333;border-color:#444;color:#ccc; }
+  body.dark table tbody td { border-color:#3a3a3a;color:#eee; }
+  body.dark input:not([type=checkbox]),body.dark select,body.dark textarea { background:#333;border-color:#555;color:#eee; }
+  body.dark .hist-card { background:#2a2a2a;border-color:#444; }
+
+  /* BTN compat */
+  .btn { display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:3px;font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:'Sora',sans-serif; }
+  .btn-primary { background:#4caf50;color:#fff; }
+  .btn-ghost { background:#fff;color:#555;border:1px solid #ccc; }
+  .btn-danger { background:#e53935;color:#fff; }
+  .btn-success { background:#4caf50;color:#fff; }
+  .btn-sm { padding:4px 8px;font-size:11px; }
+  .btn:hover { filter:brightness(.92); }
+
+</style>
+</head>
+<body>
+<div class="ls-screen" id="ls" style="display:flex">
+  <div class="ls-box">
+    <div class="ls-logo">
+      <div class="erp-logo" style="font-size:20px;color:#333">VX <span style="color:#f0a500">CASE</span></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:4px">SENHA DE ACESSO</label>
+      <input type="password" id="ls-pw" placeholder="••••••••" style="width:100%;border:1px solid #ccc;border-radius:2px;padding:8px 10px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')lsLogin()">
+    </div>
+    <button onclick="lsLogin()" style="width:100%;padding:9px;background:#4caf50;color:#fff;border:none;border-radius:2px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Sora',sans-serif">Entrar</button>
+    <div id="ls-err" class="ls-err"></div>
+  </div>
+</div>
+<header class="erp-header">
+  <div class="erp-logo">VX <span>CASE</span></div>
+  <div class="erp-header-right"><button onclick="toggleTheme()" style="background:#555;border:none;color:#fff;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:11px">🌓</button>
+    <div class="erp-timer" id="erp-timer">00:00:00</div>
+    <div class="erp-user-chip" id="erp-user-chip">Analista</div>
+  </div>
+</header>
+<div class="erp-shell">
+<aside class="erp-sidebar">
+  <div class="erp-nav-group">
+    <div class="erp-nav-parent active" onclick="toggleNav('nav-gestao',this)">
+      <span>Gestão</span><i class="ti ti-chevron-down"></i>
+    </div>
+    <div class="erp-nav-children open" id="nav-gestao">
+      <button class="erp-nav-child active" onclick="showView('dashboard')">Dashboard</button>
+      <button class="erp-nav-child" onclick="showView('notas')">Notas fiscais</button>
+      <button class="erp-nav-child" onclick="showView('nova-nota')">+ Nova nota</button>
+    </div>
+  </div>
+  <div class="erp-nav-group">
+    <div class="erp-nav-parent" onclick="toggleNav('nav-consultas',this)">
+      <span>Consultas</span><i class="ti ti-chevron-down"></i>
+    </div>
+    <div class="erp-nav-children" id="nav-consultas">
+      <button class="erp-nav-child" onclick="showView('historico')">Histórico</button>
+      <button class="erp-nav-child" onclick="showView('chamados')">Levas</button>
+      <button class="erp-nav-child" onclick="showView('trocas')">Trocas</button>
+      <button class="erp-nav-child" onclick="showView('performance')">Performance</button>
+      <button class="erp-nav-child" onclick="showView('liberacoes')">Liberações</button>
+    </div>
+  </div>
+  <div class="erp-nav-group">
+    <div class="erp-nav-parent" onclick="toggleNav('nav-config',this)">
+      <span>Config</span><i class="ti ti-chevron-down"></i>
+    </div>
+    <div class="erp-nav-children" id="nav-config">
+      <button class="erp-nav-child" onclick="showView('config')">Configurações</button>
+      <button class="erp-nav-child" onclick="document.getElementById('modal-reset').classList.add('open')" style="color:#e53935">Reset</button>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px;border-top:1px solid #444">
+    <button class="erp-btn erp-btn-gray" style="width:100%;justify-content:center;font-size:10px" onclick="fazerLogout()">
+      <i class="ti ti-logout"></i> Sair
+    </button>
+  </div>
+</aside>
+  <main class="erp-main">
+
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Visão geral</div>
+          <div class="page-sub">Segunda-feira, 18 de maio de 2026</div>
+        </div>
+        <button class="erp-btn erp-btn-green" onclick="showView('nova-nota')">
+          <i class="ti ti-plus"></i> Nova nota
+        </button>
+      </div>
+
+      <div class="erp-stats">
+        <div class="erp-stat" style="border-left:3px solid #1976d2">
+          <div class="erp-stat-label">Notas abertas</div>
+          <div class="erp-stat-value" style="color:#1976d2" id="stat-abertas">—</div>
+          <div class="erp-stat-sub">aguardando ação</div>
+        </div>
+        <div class="erp-stat" style="border-left:3px solid #e53935">
+          <div class="erp-stat-label">Em tampografia</div>
+          <div class="erp-stat-value" style="color:#e53935" id="stat-tamp">—</div>
+          <div class="erp-stat-sub">chamados ativos</div>
+        </div>
+        <div class="erp-stat" style="border-left:3px solid #4caf50">
+          <div class="erp-stat-label">Concluídos hoje</div>
+          <div class="erp-stat-value" style="color:#4caf50" id="stat-done">—</div>
+          <div class="erp-stat-sub">chamados finalizados</div>
+        </div>
+        <div class="erp-stat" style="border-left:3px solid #f0a500">
+          <div class="erp-stat-label">Itens em triagem</div>
+          <div class="erp-stat-value" style="color:#f0a500" id="stat-triagem">—</div>
+          <div class="erp-stat-sub">aguardando estoque</div>
+        </div>
+      </div>
+
+      <div class="erp-card">
+        <div class="erp-card-header">
+          <span class="erp-card-title">Notas recentes</span>
+          <button class="erp-btn erp-btn-outline erp-btn-sm" onclick="showView('notas')">Ver todas <i class="ti ti-arrow-right"></i></button>
+        </div>
+        <div class="erp-table-wrap" id="dashboard-notas-list">
+          <div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota aberta</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTA DE NOTAS -->
+    <div id="view-notas" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Notas fiscais</div>
+          <div class="page-sub">Todas as notas registradas</div>
+        </div>
+        <button class="erp-btn erp-btn-green" onclick="showView('nova-nota')">
+          <i class="ti ti-plus"></i> Nova nota
+        </button>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar por número da nota..." id="search-nota" oninput="filterNotas()" class="erp-input">
+        <select id="filter-status" onchange="filterNotas()" style="width:180px" class="erp-input">
+          <option value="">Todos os status</option>
+          <option value="aberta">Aberta</option>
+          <option value="triagem">Em triagem</option>
+          <option value="tampografia">Em tampografia</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
+      <div class="notas-grid" id="notas-list">
+        <div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota encontrada</p></div>
+      </div>
+    </div>
+
+    <!-- NOVA NOTA -->
+    <div id="view-nova-nota" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Nova nota</div>
+          <div class="page-sub">Registre os itens recebidos e defina a ordem de prioridade</div>
+        </div>
+      </div>
+
+      <div class="erp-card" style="margin-bottom:12px">
+        <div class="erp-card-header"><span class="erp-card-title">Dados da nota</span></div>
+        <div class="erp-card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+            <div class="erp-form-group">
+              <label>Nº da nota *</label>
+              <input type="text" id="nota-numero" placeholder="Ex: 2450" class="erp-input">
+            </div>
+            <div class="erp-form-group">
+              <label>Fornecedor *</label>
+              <input type="text" id="nota-fornecedor" placeholder="Nome do fornecedor" class="erp-input">
+            </div>
+            <div class="erp-form-group">
+              <label>Tipo *</label>
+              <select id="nota-tipo" onchange="togglePrazoField()" class="erp-input">
+                <option value="capa">Capa</option>
+                <option value="pelicula">Película</option>
+              </select>
+            </div>
+            <div class="erp-form-group">
+              <label>Data de recebimento *</label>
+              <input type="date" id="nota-data" class="erp-input">
+            </div>
+            <div class="erp-form-group" id="prazo-group">
+              <label>Prazo (dias)</label>
+              <input type="number" id="nota-prazo" placeholder="Ex: 3" min="1" class="erp-input">
+            </div>
+          </div>
+          <div class="erp-form-group">
+            <label>Observações</label>
+            <textarea id="nota-obs" placeholder="Informações adicionais..." class="erp-input" style="height:50px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="erp-card" style="margin-bottom:16px">
+        <div class="erp-card-header">
+          <span class="erp-card-title">Itens da nota</span>
+          <span style="font-size:11px;color:var(--muted);font-family:var(--mono)" id="itens-count">0 itens</span>
+        </div>
+
+        <div class="add-item-row" style="margin-bottom:16px">
+          <div class="erp-form-group">
+            <label>Código da capa</label>
+            <input type="text" id="item-codigo" placeholder="Ex: CAP-0123" class="erp-input">
+          </div>
+          <div class="erp-form-group">
+            <label>Qtd recebida</label>
+            <input type="number" id="item-qtd" placeholder="0" min="1" class="erp-input">
+          </div>
+          <div class="erp-form-group">
+            <label>Tipo</label>
+            <select id="item-tipo" class="erp-input">
+              <option value="capa">Capa</option>
+              <option value="pelicula">Película</option>
+            </select>
+          </div>
+          <div class="erp-form-group">
+            <label>Prioridade?</label>
+            <select id="item-tem-prioridade" onchange="toggleMotivo()" class="erp-input">
+              <option value="nao">Não</option>
+              <option value="sim">Sim</option>
+            </select>
+          </div>
+          <div class="erp-form-group" id="motivo-group" style="display:none">
+            <label>Motivo</label>
+            <select id="item-prioridade" class="erp-input">
+              <option value="zerado">Zerado há muito tempo</option>
+              <option value="demanda">Alta demanda</option>
+              <option value="vendas">Vendas pendentes</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="erp-form-group">
+            <label>&nbsp;</label>
+            <button class="erp-btn erp-btn-green" onclick="addItem()"><i class="ti ti-plus"></i> Adicionar</button>
+          </div>
+        </div>
+
+        <div class="erp-table-wrap">
+          <table id="itens-table">
+            <thead>
+              <tr>
+                <th style="width:40px"></th>
+                <th style="width:36px">#</th>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Qtd recebida</th>
+                <th>Prioridade</th>
+                <th>Histórico vida toda</th>
+                <th style="width:60px"></th>
+              </tr>
+            </thead>
+            <tbody id="itens-tbody">
+              <tr><td colspan="7" class="empty" style="padding:32px;text-align:center;color:var(--muted)"><i class="ti ti-box-off" style="font-size:24px;display:block;margin-bottom:8px;opacity:0.4"></i>Adicione itens acima</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--mono)"><i class="ti ti-drag-drop" style="font-size:13px;vertical-align:-2px"></i> Arraste as linhas para reordenar a prioridade</p>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="erp-btn erp-btn-outline" onclick="showView('notas')">Cancelar</button>
+        <button class="erp-btn erp-btn-green" onclick="salvarNota()">
+          <i class="ti ti-device-floppy"></i> Salvar nota
+        </button>
+      </div>
+    </div>
+
+    <!-- LIBERAÇÕES -->
+    <div id="view-liberacoes" class="view">
+      <div class="erp-page-header">
+        <div>
+          <div class="erp-page-title">Liberações</div>
+          <div class="erp-page-sub">Chamados com solicitação de finalização pendente de aprovação</div>
+        </div>
+      </div>
+      <div class="erp-card">
+        <div id="liberacoes-list">
+          <div class="empty"><i class="ti ti-lock-open"></i><p>Nenhuma liberação pendente</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETALHE DA NOTA -->
+    <div id="view-detalhe-nota" class="view">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="erp-btn erp-btn-outline erp-btn-sm" onclick="showView('notas')"><i class="ti ti-arrow-left"></i></button>
+          <div>
+            <div class="page-title" id="detalhe-titulo">Nota NF-2026-0041</div>
+            <div class="page-sub" id="detalhe-sub">Aberta em 18/05/2026 · 8 itens</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="erp-btn erp-btn-green" id="btn-gerar-chamado" onclick="gerarChamado()">
+            <i class="ti ti-send"></i> Nova Leva e enviar
+          </button>
+        </div>
+      </div>
+
+      <!-- Triagem summary cards -->
+      <div class="erp-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+        <div class="erp-stat">
+          <div class="erp-stat-label">Recebido</div>
+          <div class="erp-stat-value" id="detalhe-recebido">—</div>
+          <div class="erp-stat-sub">unidades na nota</div>
+        </div>
+        <div class="erp-stat">
+          <div class="erp-stat-label">Boas (pós-triagem)</div>
+          <div class="erp-stat-value" style="color:#4caf50" id="detalhe-boas">—</div>
+          <div class="erp-stat-sub">vão para tampografia</div>
+        </div>
+        <div class="erp-stat">
+          <div class="erp-stat-label">Devoluções</div>
+          <div class="erp-stat-value" style="color:#e53935" id="detalhe-ruins">—</div>
+          <div class="erp-stat-sub">retornam ao fornecedor</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr;gap:16px">
+        <div>
+          <div class="erp-card">
+            <div class="erp-card-header">
+              <span class="erp-card-title">Itens por prioridade</span>
+              <span id="detalhe-badge" class="erp-badge erp-badge-orange">aguardando triagem</span>
+            </div>
+            <div class="erp-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:36px"><input type="checkbox" id="check-all-itens" onchange="toggleAllItens(this)" style="cursor:pointer" class="erp-input"></th>
+                    <th>#</th>
+                    <th>Código</th>
+                    <th>Recebido</th>
+                    <th>Boas</th>
+                    <th>Ruins</th>
+                    <th>Prioridade</th>
+                    <th>Vida toda ✓</th>
+                    <th>Vida toda ✗</th>
+                    <th>Troca</th>
+                    <th>Envio</th>
+                  </tr>
+                </thead>
+                <tbody id="detalhe-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- btn-wa hidden para manter compatibilidade -->
+        <div style="display:none">
+          <div id="wa-msg-preview"></div>
+          <div id="wa-time"></div>
+          <button id="btn-wa" data-msg=""></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO POR CÓDIGO -->
+    <div id="view-historico" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Histórico por código</div>
+          <div class="page-sub">Acumulado de boas e ruins por capa em toda a vida do sistema</div>
+        </div>
+        <button class="erp-btn erp-btn-green" onclick="exportarHistoricoExcel()">
+          <i class="ti ti-file-spreadsheet"></i> Exportar Excel
+        </button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-hist" placeholder="Buscar código..." oninput="filterHistorico()" class="erp-input">
+      </div>
+      <div class="hist-grid" id="hist-grid">
+        <div class="empty"><i class="ti ti-chart-off"></i><p>Nenhum dado encontrado</p></div>
+      </div>
+    </div>
+
+    <!-- CHAMADOS -->
+    <div id="view-chamados" class="view">
+      <div class="erp-card">
+        <div class="erp-card-header">
+          <span class="erp-card-title">Levas</span>
+          <input type="text" id="search-chamado" placeholder="Buscar leva..." oninput="buscarChamado()" style="border:1px solid #ccc;border-radius:2px;padding:5px 10px;font-size:11px;width:280px;outline:none">
+        </div>
+        <div id="chamados-list">
+          <div class="empty"><i class="ti ti-ticket-off"></i><p>Nenhuma leva encontrada</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="view-config" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configurações</div>
+          <div class="page-sub">Supabase e WhatsApp</div>
+        </div>
+      </div>
+      <div style="display:grid;gap:16px;max-width:600px">
+        <div class="erp-card">
+          <div class="erp-card-header"><span class="erp-card-title">Supabase</span></div>
+          <div class="erp-form-row">
+            <div class="erp-form-group">
+              <label>Supabase URL</label>
+              <input type="text" id="cfg-sb-url" placeholder="https://xxxx.supabase.co" class="erp-input">
+            </div>
+            <div class="erp-form-group">
+              <label>Anon Key</label>
+              <input type="password" id="cfg-sb-key" placeholder="eyJhbGciOiJIUzI1NiIs..." class="erp-input">
+            </div>
+            <button class="erp-btn erp-btn-green" style="align-self:start" onclick="salvarConfig()">
+              <i class="ti ti-device-floppy"></i> Salvar e conectar
+            </button>
+          </div>
+        </div>
+        <div class="erp-card">
+          <div class="erp-card-header"><span class="erp-card-title">WhatsApp</span></div>
+          <div class="erp-form-row">
+            <div class="erp-form-group">
+              <label>Número do grupo / contato (com DDI)</label>
+              <input type="text" id="cfg-wa-number" placeholder="5571999990000" class="erp-input">
+            </div>
+            <div class="erp-form-group">
+              <label>Nome do responsável (para a mensagem)</label>
+              <input type="text" id="cfg-wa-nome" placeholder="Ex: João — Tampografia" class="erp-input">
+            </div>
+            <button class="erp-btn erp-btn-green" style="align-self:start" onclick="salvarConfigWa()">
+              <i class="ti ti-device-floppy"></i> Salvar
+            </button>
+          </div>
+        </div>
+        <div class="erp-card" style="margin-top:16px">
+          <div class="erp-card-header"><span class="erp-card-title">Gerenciar usuários</span></div>
+          <div style="display:grid;gap:14px;max-width:600px">
+            <div id="usuarios-list" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="erp-form-group"><label>Email do usuário</label><input type="email" id="usr-email" placeholder="usuario@email.com" class="erp-input"></div>
+              <div class="erp-form-group"><label>Nova senha</label><input type="password" id="usr-senha" placeholder="mínimo 6 caracteres" class="erp-input"></div>
+            </div>
+            <button class="erp-btn erp-btn-green" style="align-self:start" onclick="alterarSenhaUsuario()"><i class="ti ti-key"></i> Alterar senha</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TROCAS -->
+    <div id="view-trocas" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Trocas de código</div>
+          <div class="page-sub">Itens identificados com código trocado durante a triagem</div>
+        </div>
+        <button class="erp-btn erp-btn-outline erp-btn-sm" onclick="loadTrocas()"><i class="ti ti-refresh"></i> Atualizar</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-trocas" placeholder="Buscar por código..." oninput="filterTrocas()" class="erp-input">
+      </div>
+      <div id="trocas-list">
+        <div class="empty"><i class="ti ti-arrows-exchange"></i><p>Nenhuma troca registrada</p></div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div id="view-performance" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Performance de prazos</div>
+          <div class="page-sub">Histórico de cumprimento de prazos nos chamados finalizados</div>
+        </div>
+        <button class="erp-btn erp-btn-outline erp-btn-sm" onclick="loadPerformance()"><i class="ti ti-refresh"></i> Atualizar</button>
+      </div>
+      <div class="erp-stats" style="margin-bottom:24px">
+        <div class="erp-stat">
+          <div class="erp-stat-label">No prazo</div>
+          <div class="erp-stat-value" style="color:#4caf50" id="perf-noprazo">—</div>
+          <div class="erp-stat-sub">chamados</div>
+        </div>
+        <div class="erp-stat">
+          <div class="erp-stat-label">Com antecedência</div>
+          <div class="erp-stat-value" style="color:#1976d2" id="perf-antes">—</div>
+          <div class="erp-stat-sub" id="perf-antes-media">média — dias antes</div>
+        </div>
+        <div class="erp-stat">
+          <div class="erp-stat-label">Em atraso</div>
+          <div class="erp-stat-value" style="color:#e53935" id="perf-atraso">—</div>
+          <div class="erp-stat-sub" id="perf-atraso-media">média — dias de atraso</div>
+        </div>
+        <div class="erp-stat">
+          <div class="erp-stat-label">Total finalizado</div>
+          <div class="erp-stat-value" id="perf-total">—</div>
+          <div class="erp-stat-sub">chamados</div>
+        </div>
+      </div>
+      <div class="erp-card">
+        <div class="erp-card-header"><span class="erp-card-title">Detalhe por chamado</span></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Chamado</th>
+                <th>Nota</th>
+                <th>Prazo</th>
+                <th>Concluído em</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="perf-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  
+  </main>
+</div>
+</div>
+
+<!-- MODAL DETALHE CHAMADO -->
+<div class="modal-backdrop" id="modal-chamado">
+  <div class="erp-modal">
+    <div class="erp-modal-header">
+      <span class="erp-modal-title" id="modal-chamado-titulo">Chamado CHAMADO-20260518-001</span>
+      <button class="erp-modal-close" onclick="closeModal('modal-chamado')"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-chamado-body"></div>
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="closeModal('modal-chamado')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR NOTA -->
+<div class="modal-backdrop" id="modal-editar-nota">
+  <div class="erp-modal">
+    <div class="erp-modal-header">
+      <span class="erp-modal-title">Editar nota</span>
+      <button class="erp-modal-close" onclick="closeModal('modal-editar-nota')"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="display:grid;gap:14px">
+      <input type="hidden" id="edit-nota-id" class="erp-input">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="erp-form-group"><label>Número da nota</label><input type="text" id="edit-numero" class="erp-input"></div>
+        <div class="erp-form-group"><label>Fornecedor</label><input type="text" id="edit-fornecedor" class="erp-input"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="erp-form-group"><label>Data de recebimento</label><input type="date" id="edit-data" class="erp-input"></div>
+        <div class="erp-form-group"><label>Prazo (dias)</label><input type="number" id="edit-prazo" min="1" class="erp-input"></div>
+      </div>
+      <div class="erp-form-group"><label>Observações</label><textarea id="edit-obs" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:14px;padding:10px 12px;outline:none;width:100%;resize:vertical;min-height:80px" class="erp-input"></textarea></div>
+    </div>
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="closeModal('modal-editar-nota')">Cancelar</button>
+      <button class="erp-btn erp-btn-green" onclick="salvarEdicaoNota()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUIR -->
+<div class="modal-backdrop" id="modal-excluir-nota">
+  <div class="erp-modal" style="max-width:420px">
+    <div class="erp-modal-header">
+      <span class="erp-modal-title">Excluir nota</span>
+      <button class="erp-modal-close" onclick="closeModal('modal-excluir-nota')"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Tem certeza que deseja excluir a nota <strong id="excluir-nota-num" style="color:var(--text)"></strong>?</p>
+    <p style="font-size:12px;color:var(--coral)"><i class="ti ti-alert-triangle" style="font-size:13px;vertical-align:-2px"></i> Isso também excluirá todos os itens, triagem e chamados vinculados.</p>
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="closeModal('modal-excluir-nota')">Cancelar</button>
+      <button class="erp-btn erp-btn-red" id="btn-confirmar-excluir" onclick="excluirNota()"><i class="ti ti-trash"></i> Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESET -->
+<div class="modal-backdrop" id="modal-reset">
+  <div class="erp-modal" style="max-width:440px">
+    <div class="erp-modal-header">
+      <span class="erp-modal-title" style="color:var(--coral)"><i class="ti ti-alert-triangle" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i> Reset do sistema</span>
+      <button class="erp-modal-close" onclick="closeModal('modal-reset')"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Isso apagará <strong style="color:var(--coral)">todos os dados</strong> do sistema — notas, itens, triagens, chamados e histórico de códigos.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Digite <strong style="color:var(--text)">RESET</strong> para confirmar:</p>
+    <input type="text" id="reset-confirm-input" placeholder="RESET" style="margin-bottom:4px" class="erp-input">
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="closeModal('modal-reset')">Cancelar</button>
+      <button class="erp-btn erp-btn-red" onclick="executarReset()"><i class="ti ti-trash"></i> Apagar tudo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTAS DO CÓDIGO -->
+<div class="modal-backdrop" id="modal-notas-codigo">
+  <div class="erp-modal" style="width:680px">
+    <div class="erp-modal-header">
+      <span class="erp-modal-title" id="modal-notas-codigo-titulo">Código —</span>
+      <button class="erp-modal-close" onclick="closeModal('modal-notas-codigo')"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-notas-codigo-body" style="max-height:500px;overflow-y:auto"></div>
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="closeModal('modal-notas-codigo')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ENTRADAS DA NOTA -->
+<div class="modal-backdrop" id="modal-entradas">
+  <div class="erp-modal" style="width:560px">
+    <div class="erp-modal-header">
+      <span class="erp-modal-title" id="modal-entradas-titulo">Entradas</span>
+      <button class="erp-modal-close" onclick="closeModal('modal-entradas')"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-entradas-body" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="erp-modal-footer">
+      <button class="erp-btn erp-btn-outline" onclick="closeModal('modal-entradas')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="ti ti-check"></i>
+  <span id="toast-msg">Salvo com sucesso</span>
+</div>
+
+
+<script>
+
+// ERP Timer
+let _timerSec = 0;
+setInterval(() => {
+  _timerSec++;
+  const h = String(Math.floor(_timerSec/3600)).padStart(2,'0');
+  const m = String(Math.floor((_timerSec%3600)/60)).padStart(2,'0');
+  const s = String(_timerSec%60).padStart(2,'0');
+  const el = document.getElementById('erp-timer');
+  if (el) el.textContent = h+':'+m+':'+s;
+}, 1000);
+
+function toggleNav(id, el) {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('open');
+  el.classList.toggle('active');
+}
+
+
+// ============================================================
+// CONFIG LOCAL
+// ============================================================
+let SB_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+let SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+let WA_NUMBER = localStorage.getItem('wa_number') || '';
+let WA_NOME = localStorage.getItem('wa_nome') || 'Tampografia';
+let supabaseClient = null;
+
+supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+const _sb = supabaseClient;
+
+// ============================================================
+// STATE
+// ============================================================
+let itensNota = [];
+let notasCache = [];
+let currentNotaId = null;
+let dragSrcIdx = null;
+
+// ============================================================
+// NAV
+// ============================================================
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.erp-nav-child').forEach(el => el.classList.remove('active'));
+  const viewEl = document.getElementById('view-' + v);
+  if (viewEl) viewEl.classList.add('active');
+  document.querySelectorAll('.erp-nav-child').forEach(btn => {
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + v + "'")) {
+      btn.classList.add('active');
+    }
+  });
+
+  if (v === 'dashboard') loadDashboard();
+  if (v === 'notas') loadNotas();
+  if (v === 'historico') loadHistorico();
+  if (v === 'chamados') loadChamados();
+  if (v === 'performance') loadPerformance();
+  if (v === 'liberacoes') loadLiberacoes();
+  if (v === 'trocas') loadTrocas();
+  if (v === 'config') { loadConfig(); loadUsuarios(); }
+  if (v === 'nova-nota') resetNovaNotaForm();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ============================================================
+// SUPABASE HELPERS
+// ============================================================
+async function dbSelect(table, query='') {
+  if (!supabaseClient) return { data: [], error: 'Supabase não configurado' };
+  let q = supabaseClient.from(table).select(query || '*');
+  return q;
+}
+
+async function dbInsert(table, data) {
+  if (!supabaseClient) { toast('Configure o Supabase primeiro', 'error'); return null; }
+  const { data: d, error } = await supabaseClient.from(table).insert(data).select();
+  if (error) { toast('Erro: ' + error.message, 'error'); return null; }
+  return d;
+}
+
+async function dbUpdate(table, match, data) {
+  if (!supabaseClient) return null;
+  const { data: d, error } = await supabaseClient.from(table).update(data).match(match).select();
+  if (error) { toast('Erro: ' + error.message, 'error'); return null; }
+  return d;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  if (!supabaseClient) {
+    document.getElementById('stat-abertas').textContent = '—';
+    return;
+  }
+  const { data: notas } = await supabaseClient.from('notas').select('*, itens_nota(count)').order('created_at', { ascending: false }).limit(5);
+  if (!notas) return;
+
+  const abertas = notas.filter(n => n.status === 'aberta').length;
+  const tamp = notas.filter(n => n.status === 'tampografia').length;
+
+  document.getElementById('stat-abertas').textContent = abertas;
+  document.getElementById('stat-tamp').textContent = tamp;
+
+  const { count: done } = await supabaseClient.from('chamados').select('*', { count: 'exact' }).eq('status', 'concluido').gte('created_at', new Date().toISOString().split('T')[0]);
+  document.getElementById('stat-done').textContent = done || 0;
+
+  const { count: triagem } = await supabaseClient.from('itens_nota').select('*', { count: 'exact' }).eq('status', 'triagem');
+  document.getElementById('stat-triagem').textContent = triagem || 0;
+
+  renderNotasList(notas.slice(0, 5), 'dashboard-notas-list', true);
+}
+
+// ============================================================
+// NOTAS
+// ============================================================
+async function loadNotas() {
+  if (!supabaseClient) {
+    document.getElementById('notas-list').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i><p>Configure o Supabase em Configurações</p></div>';
+    return;
+  }
+  const { data: notas } = await supabaseClient.from('notas').select('*').order('created_at', { ascending: false });
+  notasCache = notas || [];
+  renderNotasList(notasCache, 'notas-list');
+}
+
+function getStatusColor(status) {
+  return {
+    'aberta': 'background:rgba(240,165,0,0.1);color:var(--amber)',
+    'triagem': 'background:rgba(91,106,240,0.1);color:var(--accent)',
+    'tampografia': 'background:rgba(224,92,92,0.1);color:var(--coral)',
+    'concluida': 'background:rgba(58,191,133,0.1);color:var(--green)',
+  }[status] || 'background:var(--surface2);color:var(--muted)';
+}
+
+function getStatusLabel(status) {
+  return { 'aberta':'ABERTA','triagem':'EM TRIAGEM','tampografia':'EM TAMPOGRAFIA','concluida':'CONCLUÍDA' }[status] || status.toUpperCase();
+}
+
+// Prioridade de status — status mais ativo vence
+function statusPrio(s) { return { 'aberta':4,'triagem':3,'tampografia':2,'concluida':1 }[s] || 0; }
+
+function tipoBadgeHtml(tipo) {
+  return tipo === 'pelicula'
+    ? '<span style="font-size:10px;padding:1px 6px;background:#fff3e0;color:#e65100;border-radius:2px;font-weight:600">PELÍCULA</span>'
+    : '<span style="font-size:10px;padding:1px 6px;background:#e3f2fd;color:#1565c0;border-radius:2px;font-weight:600">CAPA</span>';
+}
+function statusBadgeHtml(status) {
+  const map = {
+    aberta:['#e8f5e9','#2e7d32','ABERTA'],
+    triagem:['#e3f2fd','#1565c0','EM TRIAGEM'],
+    tampografia:['#ffebee','#c62828','EM TAMPOGRAFIA'],
+    concluida:['#e8f5e9','#2e7d32','CONCLUÍDA'],
+  };
+  const [bg,cl,lbl] = map[status] || ['#f5f5f5','#757575',(status||'').toUpperCase()];
+  return `<span style="font-size:10px;padding:2px 8px;background:${bg};color:${cl};border-radius:2px;font-weight:600">${lbl}</span>`;
+}
+function renderNotaCard(n, extra='') {
+  const entradas = extra ? `<br><span onclick="event.stopPropagation();${extra.match(/onclick="([^"]+)"/)?.[1]||''}" style="font-size:10px;padding:1px 6px;background:#f5f5f5;color:#555;border-radius:2px;cursor:pointer;border:1px solid #ddd">${extra.match(/(\d+) ENTRADAS/)?.[0]||''}</span>` : '';
+  return `<tr onclick="abrirNota('${n.id}')" style="cursor:pointer" onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background=''">
+    <td style="padding:8px 12px;font-weight:700;color:#1565c0;font-family:monospace;font-size:12px">${n.numero}</td>
+    <td style="padding:8px 12px;font-weight:600;font-size:12px">${(n.fornecedor||'—').toUpperCase()}</td>
+    <td style="padding:8px 12px">${tipoBadgeHtml(n.tipo)}</td>
+    <td style="padding:8px 12px;font-size:12px">${n.qtd_itens||0}</td>
+    <td style="padding:8px 12px;font-size:12px;color:#777">${formatDate(n.created_at)}</td>
+    <td style="padding:8px 12px">${statusBadgeHtml(n.status)}${entradas}</td>
+    <td style="padding:8px 12px;text-align:center" onclick="event.stopPropagation()">
+      <div style="display:flex;gap:4px;justify-content:center">
+        <button class="erp-btn erp-btn-outline erp-btn-sm" onclick="editarNota('${n.id}')" title="Editar"><i class="ti ti-edit"></i></button>
+        <button class="erp-btn erp-btn-red erp-btn-sm" onclick="confirmarExcluirNota('${n.id}','${n.numero}')" title="Excluir"><i class="ti ti-trash"></i></button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function renderNotasList(notas, containerId, compact=false) {
+  const el = document.getElementById(containerId);
+  if (!notas || notas.length === 0) {
+    el.innerHTML = '<div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota encontrada</p></div>';
+    return;
+  }
+
+  // Agrupar por numero+fornecedor
+  const grupos = {};
+  notas.forEach(n => {
+    const key = (n.numero||'') + '|' + (n.fornecedor||'').toLowerCase();
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(n);
+  });
+
+  const thead = '<table class="erp-table" style="width:100%"><thead><tr><th>NF</th><th>Fornecedor</th><th>Tipo</th><th>Itens</th><th>Data</th><th>Status</th><th style="text-align:center">Ações</th></tr></thead><tbody>';
+  el.innerHTML = thead + Object.values(grupos).map(grupo => {
+    // Ordenar: mais antiga primeiro
+    grupo.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const principal = grupo[0];
+
+    if (grupo.length === 1) return renderNotaCard(principal);
+
+    // Grupo com múltiplas entradas — status mais ativo vence, soma itens de todas
+    const statusAtivo = grupo.reduce((best, n) => statusPrio(n.status) > statusPrio(best.status) ? n : best, principal);
+    const totalItens = grupo.reduce((s, n) => s + (n.qtd_itens || 0), 0);
+    const badge = `<span onclick="event.stopPropagation();verEntradas(${JSON.stringify(grupo.map(n=>n.id))})" style="font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-weight:500;background:var(--surface2);color:var(--muted);cursor:pointer;border:1px solid var(--border2)">${grupo.length} ENTRADAS</span>`;
+
+    // Card mostra a mais antiga, status do mais ativo, total de itens somado
+    const cardBase = {...principal, status: statusAtivo.status, qtd_itens: totalItens};
+    return renderNotaCard(cardBase, badge);
+  }).join('');
+}
+
+async function loadLiberacoes() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.from('chamados')
+    .select('*, notas(numero, fornecedor)')
+    .eq('liberacao_pendente', true)
+    .eq('status', 'aberto');
+
+  const el = document.getElementById('liberacoes-list');
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="empty"><i class="ti ti-lock-open"></i><p>Nenhuma liberação pendente</p></div>';
+    return;
+  }
+
+  const rows = data.map(ch => `<tr>
+    <td style="text-align:left;font-family:monospace;font-weight:700;color:#1565c0">${ch.numero}</td>
+    <td>${ch.notas?.numero || '—'}</td>
+    <td>${(ch.notas?.fornecedor||'—').toUpperCase()}</td>
+    <td><span class="erp-badge erp-badge-orange">Aguardando liberação</span></td>
+    <td><button class="erp-btn erp-btn-green erp-btn-sm" onclick="liberarChamado('${ch.id}','${ch.numero}')">
+      <i class="ti ti-lock-open"></i> Liberar
+    </button></td>
+  </tr>`).join('');
+
+  el.innerHTML = '<div class="erp-table-wrap"><table class="erp-table" style="width:100%"><thead><tr><th style="text-align:left">Chamado</th><th>Nota</th><th>Fornecedor</th><th>Status</th><th>Ação</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+async function liberarChamado(chamadoId, numeroChamado) {
+  if (!supabaseClient) return;
+  await supabaseClient.from('chamados').update({ liberacao_pendente: false, liberado: true }).eq('id', chamadoId);
+
+  // Notificar grupo tampografia
+  const msg = `✅ Liberação aprovada!\n\nO chamado ${numeroChamado} foi liberado pela analista para finalização. Pode prosseguir!`;
+  await enviarViaProxy('557196600870-1538745701@g.us', msg, ['5571982381322']);
+
+  toast('Chamado liberado!');
+  loadLiberacoes();
+}
+
+async function verEntradas(ids) {
+  if (!supabaseClient) return;
+  const { data: notas } = await supabaseClient.from('notas').select('*').in('id', ids).order('created_at');
+  if (!notas) return;
+
+  document.getElementById('modal-entradas-titulo').textContent = `Nota ${notas[0]?.numero} — ${notas.length} entradas`;
+  document.getElementById('modal-entradas-body').innerHTML = notas.map((n, i) => `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="closeModal('modal-entradas');abrirNota('${n.id}')">
+      <div>
+        <div style="font-size:12px;font-weight:500;font-family:var(--mono);color:var(--text);margin-bottom:3px">ENTRADA ${i+1} — ${formatDate(n.created_at)}</div>
+        <div style="font-size:11px;color:var(--muted)">${n.qtd_itens||0} itens · ${n.tipo==='pelicula'?'PELÍCULA':'CAPA'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-weight:500;${getStatusColor(n.status)}">${getStatusLabel(n.status)}</span>
+        <i class="ti ti-chevron-right" style="color:var(--muted)"></i>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('modal-entradas').classList.add('open');
+}
+
+function filterNotas() {
+  const q = document.getElementById('search-nota').value.toLowerCase();
+  const s = document.getElementById('filter-status').value;
+  const filtered = notasCache.filter(n => {
+    const matchQ = !q || n.numero.toLowerCase().includes(q);
+    const matchS = !s || n.status === s;
+    return matchQ && matchS;
+  });
+  renderNotasList(filtered, 'notas-list');
+}
+
+// ============================================================
+// NOVA NOTA — ITENS
+// ============================================================
+function togglePrazoField() {
+  const tipo = document.getElementById('nota-tipo').value;
+  document.getElementById('prazo-group').style.display = tipo === 'capa' ? 'block' : 'none';
+}
+
+function resetNovaNotaForm() {
+  itensNota = [];
+  document.getElementById('nota-numero').value = '';
+  document.getElementById('nota-fornecedor').value = '';
+  document.getElementById('nota-obs').value = '';
+  document.getElementById('nota-prazo').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('nota-data').value = today;
+  document.getElementById('nota-tipo').value = 'capa';
+  document.getElementById('prazo-group').style.display = 'block';
+  renderItensTable();
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+
+function toggleMotivo() {
+  const v = document.getElementById('item-tem-prioridade').value;
+  document.getElementById('motivo-group').style.display = v === 'sim' ? 'block' : 'none';
+}
+
+function addItem() {
+  const codigo = document.getElementById('item-codigo').value.trim().toUpperCase();
+  const qtd = parseInt(document.getElementById('item-qtd').value);
+  const temPrio = document.getElementById('item-tem-prioridade').value;
+  const prioridade = temPrio === 'sim' ? document.getElementById('item-prioridade').value : 'nao';
+  if (!codigo || !qtd) { toast('Preencha código e quantidade', 'error'); return; }
+  if (itensNota.find(i => i.codigo === codigo)) { toast('Código já adicionado', 'error'); return; }
+  itensNota.push({ codigo, qtd_recebida: qtd, motivo_prioridade: prioridade, ordem: itensNota.length + 1 });
+  document.getElementById('item-codigo').value = '';
+  document.getElementById('item-qtd').value = '';
+  renderItensTable();
+}
+
+function removeItem(idx) {
+  itensNota.splice(idx, 1);
+  itensNota.forEach((it, i) => it.ordem = i + 1);
+  renderItensTable();
+}
+
+const motivoLabel = { zerado: 'Zerado há muito tempo', demanda: 'Alta demanda', vendas: 'Vendas pendentes', outro: 'Outro', nao: '—' };
+
+function renderItensTable() {
+  const tbody = document.getElementById('itens-tbody');
+  document.getElementById('itens-count').textContent = itensNota.length + ' itens';
+  if (itensNota.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty" style="padding:32px;text-align:center;color:var(--muted)"><i class="ti ti-box-off" style="font-size:24px;display:block;margin-bottom:8px;opacity:0.4"></i>Adicione itens acima</td></tr>';
+    return;
+  }
+  tbody.innerHTML = itensNota.map((it, i) => `
+    <tr draggable="true" data-idx="${i}" ondragstart="dragStart(event,${i})" ondragover="dragOver(event)" ondrop="dragDrop(event,${i})" ondragleave="dragLeave(event)">
+      <td class="td-drag"><i class="ti ti-grip-vertical" style="font-size:16px"></i></td>
+      <td><div class="priority-badge">${i + 1}</div></td>
+      <td class="td-code">${it.codigo}</td>
+      <td style="font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td><span class="erp-badge erp-badge-orange" style="font-size:10px">${motivoLabel[it.motivo_prioridade] || it.motivo_prioridade}</span></td>
+      <td style="font-size:11px;color:var(--muted)">carregando...</td>
+      <td><button class="erp-btn erp-btn-red erp-btn-sm" onclick="removeItem(${i})"><i class="ti ti-trash"></i></button></td>
+    </tr>
+  `).join('');
+}
+
+// DRAG & DROP
+function dragStart(e, idx) { dragSrcIdx = idx; e.currentTarget.classList.add('dragging'); }
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dragDrop(e, toIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragSrcIdx === null || dragSrcIdx === toIdx) return;
+  const moved = itensNota.splice(dragSrcIdx, 1)[0];
+  itensNota.splice(toIdx, 0, moved);
+  itensNota.forEach((it, i) => it.ordem = i + 1);
+  dragSrcIdx = null;
+  renderItensTable();
+}
+
+// ============================================================
+// SALVAR NOTA
+// ============================================================
+async function salvarNota() {
+  const numero = document.getElementById('nota-numero').value.trim();
+  const data = document.getElementById('nota-data').value;
+  const fornecedor = document.getElementById('nota-fornecedor').value.trim();
+  const obs = document.getElementById('nota-obs').value.trim();
+  const prazo = parseInt(document.getElementById('nota-prazo').value) || 3;
+  const tipo = document.getElementById('nota-tipo').value;
+
+  if (!numero || !data) { toast('Número e data são obrigatórios', 'error'); return; }
+  if (itensNota.length === 0) { toast('Adicione pelo menos um item', 'error'); return; }
+
+  const notaData = await dbInsert('notas', [{
+    numero, data_recebimento: data, fornecedor, obs, prazo_dias: prazo, tipo,
+    status: 'aberta', qtd_itens: itensNota.length
+  }]);
+  if (!notaData) return;
+
+  const notaId = notaData[0].id;
+  const itensData = itensNota.map(it => ({
+    nota_id: notaId, codigo: it.codigo, qtd_recebida: it.qtd_recebida,
+    motivo_prioridade: it.motivo_prioridade, ordem: it.ordem, status: 'triagem'
+  }));
+  await supabaseClient.from('itens_nota').insert(itensData);
+
+  // Enviar mensagem para o Estoque
+  const msgEstoque = tipo === 'pelicula'
+    ? `Olá, Estoque!\n\nTemos uma nova nota de películas para triagem referente à nota ${numero}.\n\nQualquer dúvida, estou à disposição. 👋`
+    : `Olá, Estoque!\n\nTemos uma nova nota de capas para triagem referente à nota ${numero}.\n\nQualquer dúvida, estou à disposição. 👋`;
+
+  await enviarViaProxy('120363028837269627@g.us', msgEstoque);
+
+  toast('Nota salva com sucesso!');
+  setTimeout(() => abrirNota(notaId), 500);
+}
+
+// ============================================================
+// DETALHE NOTA
+// ============================================================
+async function abrirNota(notaId) {
+  if (!supabaseClient) return;
+  currentNotaId = notaId;
+
+  const { data: nota } = await supabaseClient.from('notas').select('*').eq('id', notaId).single();
+
+  // Buscar TODAS as notas com mesmo número e fornecedor para puxar todos os itens
+  const { data: notasIrmans } = await supabaseClient.from('notas')
+    .select('id')
+    .eq('numero', nota.numero)
+    .eq('fornecedor', nota.fornecedor);
+  const todasNotaIds = (notasIrmans || []).map(n => n.id);
+
+  // Buscar itens de todas as entradas, reordenando por ordem
+  const { data: itens } = await supabaseClient.from('itens_nota')
+    .select('*')
+    .in('nota_id', todasNotaIds)
+    .order('ordem');
+
+  const itemIds = itens.map(it => it.id);
+  const { data: triagemData } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds);
+  const triagemMap = {};
+  (triagemData || []).forEach(t => { triagemMap[t.item_id] = t; });
+  itens.forEach(it => { it._triagem = triagemMap[it.id] || null; });
+
+  document.getElementById('detalhe-titulo').textContent = 'Nota ' + nota.numero;
+  // Buscar data de conclusão da triagem
+  const triagemDates = (triagemData || []).map(t => t.created_at).filter(Boolean).sort();
+  const triagemFim = triagemDates.length > 0 ? triagemDates[triagemDates.length - 1] : null;
+  let triagemInfo = '';
+  if (triagemFim) {
+    const diasTriagem = Math.round((new Date(triagemFim) - new Date(nota.created_at)) / 86400000);
+    triagemInfo = ` · Triagem: ${formatDate(triagemFim)} (${diasTriagem === 0 ? 'mesmo dia' : diasTriagem + ' dia(s)'})`;
+  }
+  document.getElementById('detalhe-sub').textContent = `Aberta em ${formatDate(nota.created_at)} · ${itens.length} itens · Prazo: ${nota.prazo_dias} dias${triagemInfo}`;
+
+  const totalRecebido = itens.reduce((s, it) => s + (it.qtd_recebida || 0), 0);
+  const totalBoas = itens.reduce((s, it) => s + (it._triagem?.qtd_boa || 0), 0);
+  const totalRuins = itens.reduce((s, it) => s + (it._triagem?.qtd_ruim || 0), 0);
+  const triagemFeita = itens.some(it => it._triagem);
+
+  document.getElementById('detalhe-recebido').textContent = totalRecebido;
+  document.getElementById('detalhe-boas').textContent = triagemFeita ? totalBoas : '—';
+  document.getElementById('detalhe-ruins').textContent = triagemFeita ? totalRuins : '—';
+
+  const statusBadge = { aberta: ['badge-pending','aguardando triagem'], triagem: ['badge-triagem','em triagem'], tampografia: ['badge-tamp','em tampografia'], concluida: ['badge-done','concluída'] };
+  const [badgeCls, badgeLbl] = statusBadge[nota.status] || ['badge-pending', nota.status];
+  // Mostrar/ocultar botão gerar chamado baseado no tipo
+  const btnChamado = document.getElementById('btn-gerar-chamado');
+  if (btnChamado) btnChamado.style.display = nota.tipo === 'pelicula' ? 'none' : 'inline-flex';
+  // Adicionar badge de tipo no título
+  const tipoTag = nota.tipo === 'pelicula' ? ' <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(240,165,0,0.15);color:#f0a500;font-family:var(--mono)">PELÍCULA</span>' : ' <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(107,78,255,0.15);color:#6B4EFF;font-family:var(--mono)">CAPA</span>';
+  document.getElementById('detalhe-titulo').innerHTML = 'Nota ' + nota.numero + tipoTag;
+  document.getElementById('detalhe-badge').className = 'badge ' + badgeCls;
+  document.getElementById('detalhe-badge').textContent = badgeLbl;
+
+  // Buscar histórico vida toda por código
+  const codigos = itens.map(it => it.codigo);
+  let histMap = {};
+  if (codigos.length > 0) {
+    const { data: hist } = await supabaseClient.from('historico_codigo').select('*').in('codigo', codigos);
+    (hist || []).forEach(h => { histMap[h.codigo] = h; });
+  }
+
+  // Buscar itens já enviados em chamados (qualquer chamado da nota)
+  const { data: chamadosExistentes } = await supabaseClient.from('chamados').select('id, status').eq('nota_id', notaId);
+  let itensJaEnviadosIds = new Set();
+  if (chamadosExistentes && chamadosExistentes.length > 0) {
+    const chIds = chamadosExistentes.map(c => c.id);
+    const { data: chItens } = await supabaseClient.from('chamado_itens').select('item_id').in('chamado_id', chIds);
+    (chItens || []).forEach(ci => { if (ci.item_id) itensJaEnviadosIds.add(ci.item_id); });
+  }
+  // Usa qualquer chamado existente da nota — aberto ou concluído (sempre 1 por nota)
+  window._chamadoExistenteAberto = chamadosExistentes && chamadosExistentes.length > 0
+    ? chamadosExistentes.sort((a,b) => new Date(a.created_at||0) - new Date(b.created_at||0))[0]
+    : null;
+  window._itensNotaAtual = itens;
+
+  document.getElementById('detalhe-tbody').innerHTML = itens.map((it, i) => {
+    const t = it._triagem || {};
+    const h = histMap[it.codigo] || {};
+    const temTriagem = t.qtd_boa !== undefined;
+    const jaEnviado = itensJaEnviadosIds.has(it.id);
+    let envioCell;
+    if (jaEnviado) {
+      envioCell = '<span class="erp-badge erp-badge-green" style="font-size:10px"><i class="ti ti-check" style="font-size:10px"></i> No chamado</span>';
+    } else if (temTriagem) {
+      envioCell = '<span class="erp-badge erp-badge-orange" style="font-size:10px">Pronto p/ envio</span>';
+    } else {
+      envioCell = '<span style="color:var(--muted);font-size:11px">Aguard. triagem</span>';
+    }
+    const canCheck = temTriagem && !jaEnviado && nota.tipo !== 'pelicula';
+    return `<tr>
+      <td>${canCheck ? `<input type="checkbox" class="check-item-envio" data-item-id="${it.id}" style="cursor:pointer">` : ''}</td>
+      <td><div class="priority-badge">${it.ordem}</div></td>
+      <td class="td-code">${it.codigo}</td>
+      <td style="font-family:var(--mono)">${it.qtd_recebida}</td>
+      <td style="font-family:var(--mono);color:var(--green)">${t.qtd_boa !== undefined ? t.qtd_boa : '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-family:var(--mono);color:var(--coral)">${t.qtd_ruim !== undefined ? t.qtd_ruim : '<span style="color:var(--muted)">—</span>'}</td>
+      <td><span class="erp-badge erp-badge-orange" style="font-size:10px">${motivoLabel[it.motivo_prioridade] || it.motivo_prioridade}</span></td>
+      <td style="font-family:var(--mono);color:var(--green)">${h.total_boa !== undefined ? h.total_boa : '—'}</td>
+      <td style="font-family:var(--mono);color:var(--coral)">${h.total_ruim !== undefined ? h.total_ruim : '—'}</td>
+      <td>${t.capa_trocada ? `<span style="font-size:11px;background:rgba(240,165,0,0.15);color:#f0a500;padding:3px 8px;border-radius:20px;font-family:var(--mono)">⇄ ${t.codigo_trocado || 'sem código'}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td>${envioCell}</td>
+    </tr>`;
+  }).join('');
+
+  // Atualizar texto do botão conforme existe chamado aberto ou não
+  const btnChamado2 = document.getElementById('btn-gerar-chamado');
+  if (btnChamado2 && nota.tipo !== 'pelicula') {
+    btnChamado2.innerHTML = window._chamadoExistenteAberto
+      ? '<i class="ti ti-plus"></i> Adicionar selecionados ao chamado'
+      : '<i class="ti ti-send"></i> Nova Leva com selecionados';
+  }
+
+  gerarPreviewWa(nota, itens);
+  showView('detalhe-nota');
+}
+
+function toggleAllItens(master) {
+  document.querySelectorAll('.check-item-envio').forEach(cb => { cb.checked = master.checked; });
+}
+
+// ============================================================
+// WHATSAPP PREVIEW
+// ============================================================
+function gerarPreviewWa(nota, itens) {
+  const prazoDate = new Date();
+  prazoDate.setDate(prazoDate.getDate() + (nota.prazo_dias || 3));
+  const prazoStr = prazoDate.toLocaleDateString('pt-BR');
+  let msg;
+  if (nota.tipo === 'pelicula') {
+    msg = `Olá, Estoque!\n\nTemos uma triagem de películas em aberto referente à nota ${nota.numero}:\n\nPrazo de entrega: ${prazoStr}\n\nQualquer dúvida, estou à disposição. 👋`;
+  } else {
+    msg = `Olá, Tampografia!\n\nAbrimos um chamado para produção de capas referente à nota ${nota.numero}:\n\nPrazo de entrega: ${prazoStr}\n\nQualquer dúvida, estou à disposição. 👋`;
+  }
+  document.getElementById('wa-msg-preview').textContent = msg;
+  document.getElementById('wa-time').textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('btn-wa').dataset.msg = encodeURIComponent(msg);
+}
+
+async function enviarWhatsapp(numeroChamado, notaNumero, itensEnviados, prazoStr) {
+  const msg = decodeURIComponent(document.getElementById('btn-wa').dataset.msg || '');
+  if (!msg) return;
+
+  // 1. Grupo Tampografia (701) — mensagem principal
+  await enviarViaProxy('557196600870-1538745701@g.us', msg, ['5571982381322']);
+
+  // 2. Grupo Produção (9627) — solicitar que levem os códigos
+  if (numeroChamado && itensEnviados && itensEnviados.length > 0) {
+    const listaItens = itensEnviados.map(it => `• ${it.codigo} — ${it.qtd_enviada || it._triagem?.qtd_boa || 0} unidades`).join('\n');
+    const msgProd = `📦 Nova leva para produção!\n\n${numeroChamado} | NF ${notaNumero} foi aberta para tampografia.\n\nCódigos desta leva:\n${listaItens}\n\nPor favor, encaminhem os volumes para a tampografia.\n\n@5571992583104 @5571996644903`;
+    await enviarViaProxy('120363028837269627@g.us', msgProd, ['5571992583104', '5571996644903']);
+  }
+
+  toast('Mensagens enviadas!');
+}
+
+// ============================================================
+// GERAR CHAMADO
+// ============================================================
+async function gerarChamado() {
+  if (!supabaseClient || !currentNotaId) return;
+
+  // Verificar itens disponíveis (triados e não enviados)
+  const checkboxesDisponiveis = document.querySelectorAll('.check-item-envio');
+  if (checkboxesDisponiveis.length === 0) { toast('Nenhum item triado disponível para enviar'); return; }
+
+  // Se só 1 item, enviar direto sem perguntar
+  if (checkboxesDisponiveis.length === 1) {
+    checkboxesDisponiveis[0].checked = true;
+  } else {
+    // Verificar se já tem algum selecionado (clicou em selecionar antes)
+    const jaSelecionados = Array.from(checkboxesDisponiveis).filter(cb => cb.checked);
+
+    if (jaSelecionados.length > 0 && jaSelecionados.length < checkboxesDisponiveis.length) {
+      // Já tem seleção parcial — perguntar o que fazer
+      const acao = await new Promise(resolve => {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+        modal.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:440px;max-width:95vw;position:relative">
+          <button id="btn-fechar-modal" style="position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">✕</button>
+          <div style="font-size:16px;font-weight:600;margin-bottom:8px">Nova Leva</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">${jaSelecionados.length} item(ns) selecionado(s). O que deseja fazer?</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button id="btn-enviar-selecionados" style="padding:10px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:var(--font);font-size:13px;text-align:left">Enviar itens selecionados (${jaSelecionados.length})</button>
+            <button id="btn-selecionar-mais" style="padding:10px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font);font-size:13px;text-align:left">Selecionar mais itens</button>
+            <button id="btn-enviar-todos" style="padding:10px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font);font-size:13px;text-align:left">Enviar todos</button>
+          </div>
+        </div>`;
+        document.body.appendChild(modal);
+        modal.querySelector('#btn-fechar-modal').onclick = () => { document.body.removeChild(modal); resolve('cancelar'); };
+        modal.querySelector('#btn-enviar-selecionados').onclick = () => { document.body.removeChild(modal); resolve('selecionados'); };
+        modal.querySelector('#btn-selecionar-mais').onclick = () => { document.body.removeChild(modal); resolve('selecionar'); };
+        modal.querySelector('#btn-enviar-todos').onclick = () => { document.body.removeChild(modal); resolve('todos'); };
+      });
+      if (acao === 'cancelar') return;
+      if (acao === 'selecionar') { toast('Selecione os itens e clique em "Nova Leva" novamente.'); return; }
+      if (acao === 'todos') checkboxesDisponiveis.forEach(cb => cb.checked = true);
+      // 'selecionados' mantém a seleção atual
+    } else {
+      // Nenhum ou todos selecionados — perguntar
+      const acao = await new Promise(resolve => {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+        modal.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:440px;max-width:95vw;position:relative">
+          <button id="btn-fechar-modal" style="position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">✕</button>
+          <div style="font-size:16px;font-weight:600;margin-bottom:8px">Nova Leva</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Como deseja enviar os itens?</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button id="btn-enviar-todos" style="padding:10px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:var(--font);font-size:13px;text-align:left">Enviar todos (${checkboxesDisponiveis.length})</button>
+            <button id="btn-selecionar" style="padding:10px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font);font-size:13px;text-align:left">Selecionar itens</button>
+          </div>
+        </div>`;
+        document.body.appendChild(modal);
+        modal.querySelector('#btn-fechar-modal').onclick = () => { document.body.removeChild(modal); resolve('cancelar'); };
+        modal.querySelector('#btn-enviar-todos').onclick = () => { document.body.removeChild(modal); resolve('todos'); };
+        modal.querySelector('#btn-selecionar').onclick = () => { document.body.removeChild(modal); resolve('selecionar'); };
+      });
+      if (acao === 'cancelar') return;
+      if (acao === 'selecionar') {
+        checkboxesDisponiveis.forEach(cb => cb.checked = false);
+        document.getElementById('check-all-itens').checked = false;
+        toast('Selecione os itens e clique em "Nova Leva" novamente.');
+        return;
+      }
+      if (acao === 'todos') checkboxesDisponiveis.forEach(cb => cb.checked = true);
+    }
+  }
+
+  const checked = Array.from(document.querySelectorAll('.check-item-envio:checked')).map(cb => cb.dataset.itemId);
+  if (checked.length === 0) { toast('Nenhum item selecionado'); return; }
+  // Verificar se algum item selecionado é película — alertar
+  const itensSel = window._itensNotaAtual?.filter(it => checked.includes(it.id)) || [];
+  const peliculas = itensSel.filter(it => it.tipo === 'pelicula');
+  if (peliculas.length > 0) {
+    toast(`${peliculas.length} película(s) ignorada(s) — apenas capas vão para o chamado.`);
+    const checkedSemPel = checked.filter(id => !peliculas.find(p => p.id === id));
+    if (checkedSemPel.length === 0) { toast('Nenhuma capa selecionada para envio'); return; }
+  }
+
+  // Modal de prazo + total de levas previstas
+  const { prazoLeva, totalLevasPrevistas } = await new Promise(resolve => {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+    modal.innerHTML = `<div style="background:#fff;border:1px solid #ddd;border-radius:3px;padding:24px;width:400px;max-width:95vw">
+      <div style="font-size:15px;font-weight:600;color:#333;margin-bottom:4px">Confirmar leva</div>
+      <div style="font-size:11px;color:#999;margin-bottom:18px">${checked.length} item(ns) selecionado(s)</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase">Prazo para produção (dias) *</label>
+          <input type="number" id="modal-prazo-leva" min="1" placeholder="Ex: 3" style="border:1px solid #ccc;border-radius:2px;padding:7px 9px;font-size:13px;outline:none">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase">Total de levas previstas para esta nota *</label>
+          <input type="number" id="modal-total-levas" min="1" value="1" placeholder="Ex: 2" style="border:1px solid #ccc;border-radius:2px;padding:7px 9px;font-size:13px;outline:none">
+          <span style="font-size:10px;color:#aaa">A nota só será fechada quando todas as levas forem concluídas.</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="modal-leva-cancel" style="padding:7px 14px;border:1px solid #ccc;border-radius:2px;background:#fff;font-size:12px;cursor:pointer">Cancelar</button>
+        <button id="modal-leva-ok" style="padding:7px 14px;border:none;border-radius:2px;background:#4caf50;color:#fff;font-size:12px;font-weight:600;cursor:pointer">✓ Gerar Leva</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('#modal-leva-cancel').onclick = () => { document.body.removeChild(modal); resolve({ prazoLeva: null, totalLevasPrevistas: null }); };
+    modal.querySelector('#modal-leva-ok').onclick = () => {
+      const p = parseInt(modal.querySelector('#modal-prazo-leva').value);
+      const t = parseInt(modal.querySelector('#modal-total-levas').value);
+      if (!p || p < 1) { modal.querySelector('#modal-prazo-leva').style.borderColor='#e53935'; return; }
+      if (!t || t < 1) { modal.querySelector('#modal-total-levas').style.borderColor='#e53935'; return; }
+      document.body.removeChild(modal);
+      resolve({ prazoLeva: p, totalLevasPrevistas: t });
+    };
+  });
+  if (!prazoLeva) return; // cancelou
+
+  const { data: nota } = await supabaseClient.from('notas').select('*').eq('id', currentNotaId).single();
+  const itens = (window._itensNotaAtual || []).filter(it => checked.includes(it.id));
+
+  const itemIds2 = itens.map(it => it.id);
+  const { data: triagemData2 } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds2);
+  const triagemMap2 = {};
+  (triagemData2 || []).forEach(t => { triagemMap2[t.item_id] = t; });
+  itens.forEach(it => { it._triagem = triagemMap2[it.id] || null; });
+
+  let chamadoId;
+  let numeroChamado;
+  const isAdicionando = !!window._chamadoExistenteAberto;
+
+  if (isAdicionando) {
+    chamadoId = window._chamadoExistenteAberto.id;
+    const { data: chData } = await supabaseClient.from('chamados').select('numero, status').eq('id', chamadoId).single();
+    numeroChamado = chData.numero;
+    // Se chamado estava concluído, reabre
+    if (chData.status === 'concluido') {
+      await supabaseClient.from('chamados').update({ status: 'aberto', data_conclusao: null }).eq('id', chamadoId);
+    }
+  } else {
+    const hoje = new Date();
+    const yyyymmdd = hoje.toISOString().slice(0,10).replace(/-/g,'');
+    const { count } = await supabaseClient.from('chamados').select('*', { count: 'exact' }).like('numero', `CHAMADO-${yyyymmdd}%`);
+    const seq = String((count || 0) + 1).padStart(3, '0');
+    numeroChamado = `CHAMADO-${yyyymmdd}-${seq}`;
+
+    const prazoDate = new Date();
+    prazoDate.setDate(prazoDate.getDate() + (nota.prazo_dias || 3));
+
+    const chamadoData = await dbInsert('chamados', [{
+      numero: numeroChamado, nota_id: currentNotaId, status: 'aberto',
+      prazo: prazoDate.toISOString()
+    }]);
+    if (!chamadoData) return;
+    chamadoId = chamadoData[0].id;
+  }
+
+  const agora = new Date().toISOString();
+  const chamadoItens = itens.map(it => ({
+    chamado_id: chamadoId, item_id: it.id, codigo: it.codigo,
+    qtd_enviada: it._triagem?.qtd_boa || it.qtd_recebida, concluido: false,
+    created_at: agora
+  }));
+  await supabaseClient.from('chamado_itens').insert(chamadoItens);
+
+  if (isAdicionando) {
+    // Registrar no log do chamado
+    const logEntries = itens.map(it => ({
+      chamado_id: chamadoId, acao: 'ADICIONADO', codigo: it.codigo,
+      quantidade: it._triagem?.qtd_boa || it.qtd_recebida,
+      motivo: 'ENVIO PARCIAL ADICIONAL DA MESMA NOTA'
+    }));
+    await supabaseClient.from('chamado_log').insert(logEntries);
+  }
+
+  // Só muda para 'tampografia' se TODOS os itens triados já foram enviados
+  const todosItens = window._itensNotaAtual || [];
+  const { data: todosEnviados } = await supabaseClient.from('chamado_itens')
+    .select('item_id')
+    .in('chamado_id', (await supabaseClient.from('chamados').select('id').eq('nota_id', currentNotaId)).data?.map(c => c.id) || []);
+  const enviados = new Set((todosEnviados || []).map(e => e.item_id));
+  const itensSemEnvio = todosItens.filter(it => it._triagem && !enviados.has(it.id));
+  if (itensSemEnvio.length === 0) {
+    await dbUpdate('notas', { id: currentNotaId }, { status: 'tampografia' });
+  }
+  // Se ainda tem itens triados sem envio, mantém status atual (triagem ou aberta)
+
+  toast(isAdicionando ? `${checked.length} item(ns) adicionado(s) à leva ${numeroChamado}!` : `Chamado ${numeroChamado} gerado com ${checked.length} item(ns)!`);
+  // Buscar nota para obter número
+  const { data: _notaWa } = await supabaseClient.from('notas').select('numero').eq('id', currentNotaId).single();
+  setTimeout(() => enviarWhatsapp(numeroChamado, _notaWa?.numero, itens), 500);
+  setTimeout(() => abrirNota(currentNotaId), 1200);
+}
+
+// ============================================================
+// HISTÓRICO
+// ============================================================
+async function exportarHistoricoExcel() {
+  if (!supabaseClient) return;
+  toast('Gerando planilha...');
+
+  // Buscar itens com fornecedor
+  const { data: itens } = await supabaseClient
+    .from('itens_nota')
+    .select('id, codigo, qtd_recebida, nota_id, notas(fornecedor)');
+
+  if (!itens || !itens.length) { toast('Sem dados para exportar'); return; }
+
+  // Buscar triagens separadamente
+  const itemIds = itens.map(i => i.id);
+  const { data: triagens } = await supabaseClient
+    .from('triagem')
+    .select('item_id, qtd_boa, qtd_ruim')
+    .in('item_id', itemIds);
+
+  const triagemMap = {};
+  (triagens || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  // Agrupar por código + fornecedor
+  const mapa = {};
+  itens.forEach(it => {
+    const forn = (it.notas?.fornecedor || 'DESCONHECIDO').toUpperCase();
+    const key = it.codigo + '|||' + forn;
+    if (!mapa[key]) mapa[key] = { codigo: it.codigo, fornecedor: forn, recebido: 0, boa: 0, ruim: 0 };
+    mapa[key].recebido += it.qtd_recebida || 0;
+    const t = triagemMap[it.id];
+    if (t) {
+      mapa[key].boa += t.qtd_boa || 0;
+      mapa[key].ruim += t.qtd_ruim || 0;
+    }
+  });
+
+  const linhas = [['Código','Fornecedor','Qtd Recebida','Qtd Boa','Qtd Ruim','Aproveitamento %']];
+  Object.values(mapa)
+    .sort((a,b) => a.codigo.localeCompare(b.codigo) || a.fornecedor.localeCompare(b.fornecedor))
+    .forEach(r => {
+      const pct = r.boa > 0 ? Math.round(r.boa / (r.boa + r.ruim) * 100) : 0;
+      linhas.push([r.codigo, r.fornecedor, r.recebido, r.boa, r.ruim, pct + '%']);
+    });
+
+  // Usar ; como separador (padrão Brasil) e não colocar aspas em números
+  const csv = 'sep=;\n' + linhas.map((row, ri) => row.map((v, ci) => {
+    if (ri === 0) return '"' + String(v) + '"'; // cabeçalho sempre string
+    if (ci === 0 || ci === 1) return '"' + String(v).replace(/"/g, '""') + '"'; // código e fornecedor como string
+    return String(v).replace('%',''); // números sem aspas, % virou número puro
+  }).join(';')).join('\n');
+
+  // Adicionar coluna % como número decimal
+  const csvFinal = csv; // já correto
+
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'historico_codigos_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Planilha exportada!');
+}
+
+let _histCache = [];
+async function loadHistorico() {
+  if (!supabaseClient) return;
+  const { data: histData } = await supabaseClient.from('historico_codigo').select('*').order('codigo');
+  // Buscar fornecedores por código via itens_nota + notas
+  const codigos = (histData||[]).map(h=>h.codigo);
+  const { data: itensData } = await supabaseClient.from('itens_nota').select('codigo, notas(fornecedor)').in('codigo', codigos);
+  const codFornMap = {};
+  (itensData||[]).forEach(it => {
+    if (!codFornMap[it.codigo]) codFornMap[it.codigo] = new Set();
+    if (it.notas?.fornecedor) codFornMap[it.codigo].add(it.notas.fornecedor);
+  });
+  const data = (histData||[]).map(h => ({...h, fornecedor: [...(codFornMap[h.codigo]||[])].join(' / ')}));
+  _histCache = (data || []);
+  renderHistorico(_histCache);
+}
+
+function renderHistorico(data) {
+  const c = document.getElementById('hist-grid');
+  if (!data.length) { c.innerHTML = '<div style="text-align:center;padding:32px;color:#999">Sem dados</div>'; return; }
+  c.style.display = 'grid';
+  c.style.gridTemplateColumns = 'repeat(auto-fill,minmax(180px,1fr))';
+  c.style.gap = '8px';
+  c.innerHTML = data.map(h => {
+    const total = (h.total_boa||0)+(h.total_ruim||0);
+    const taxa = total ? Math.round(h.total_boa/total*100) : 0;
+    return `<div onclick="verNotasDoCodigo('${h.codigo}')" style="background:#fff;border:1px solid #ddd;border-radius:3px;padding:10px 12px;cursor:pointer;transition:border-color .15s" onmouseenter="this.style.borderColor='#aaa'" onmouseleave="this.style.borderColor='#ddd'">
+      <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:6px">${h.codigo}</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0"><span style="color:#777">Recebido</span><span style="font-weight:500">${total}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0"><span style="color:#777">Boas</span><span style="color:#2e7d32;font-weight:500">+${h.total_boa||0}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0"><span style="color:#777">Ruins</span><span style="color:#c62828;font-weight:500">-${h.total_ruim||0}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0"><span style="color:#777">Aprovação</span><span style="font-weight:500;color:${taxa>=90?'#2e7d32':taxa>=70?'#e65100':'#c62828'}">${taxa}%</span></div>
+    </div>`;
+  }).join('');
+}
+
+async function verNotasDoCodigo(codigo) {
+  if (!supabaseClient) return;
+
+  // Buscar todos os itens_nota com esse código
+  const { data: itens } = await supabaseClient.from('itens_nota').select('id, nota_id, qtd_recebida, ordem').eq('codigo', codigo);
+  if (!itens || itens.length === 0) {
+    document.getElementById('modal-notas-codigo-titulo').textContent = 'Código ' + codigo;
+    document.getElementById('modal-notas-codigo-body').innerHTML = '<div class="empty"><i class="ti ti-file-off"></i><p>Nenhuma nota encontrada para este código</p></div>';
+    document.getElementById('modal-notas-codigo').classList.add('open');
+    return;
+  }
+
+  const itemIds = itens.map(it => it.id);
+  const notaIds = [...new Set(itens.map(it => it.nota_id))];
+
+  const { data: notas } = await supabaseClient.from('notas').select('id, numero, fornecedor, created_at, tipo, status').in('id', notaIds);
+  const { data: triagens } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds);
+
+  const notasMap = {};
+  (notas || []).forEach(n => { notasMap[n.id] = n; });
+  const triagemMap = {};
+  (triagens || []).forEach(t => { triagemMap[t.item_id] = t; });
+
+  // Ordenar por data mais recente
+  const rows = itens
+    .map(it => ({ it, nota: notasMap[it.nota_id], triagem: triagemMap[it.id] }))
+    .filter(r => r.nota)
+    .sort((a, b) => new Date(b.nota.created_at) - new Date(a.nota.created_at));
+
+  document.getElementById('modal-notas-codigo-titulo').textContent = `Código ${codigo} — ${rows.length} nota(s)`;
+
+  // Calcular acumulados
+  const acumBoa = rows.reduce((s, r) => s + (r.triagem?.qtd_boa || 0), 0);
+  const acumRuim = rows.reduce((s, r) => s + (r.triagem?.qtd_ruim || 0), 0);
+
+  const totalRecebido = rows.reduce((s,r) => s + (r.it.qtd_recebida||0), 0);
+  const aprovPct = (acumBoa + acumRuim) > 0 ? Math.round(acumBoa/(acumBoa+acumRuim)*100) : 0;
+
+  const stats = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;padding:14px 14px 0">
+    <div style="text-align:center;padding:10px;background:#f9f9f9;border:1px solid #eee;border-radius:2px">
+      <div style="font-size:10px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px">TOTAL RECEBIDO</div>
+      <div style="font-size:20px;font-weight:700;color:#333">${totalRecebido}</div>
+    </div>
+    <div style="text-align:center;padding:10px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:2px">
+      <div style="font-size:10px;color:#2e7d32;text-transform:uppercase;font-weight:600;margin-bottom:4px">ACUMULADO BOM</div>
+      <div style="font-size:20px;font-weight:700;color:#2e7d32">+${acumBoa}</div>
+    </div>
+    <div style="text-align:center;padding:10px;background:#ffebee;border:1px solid #ffcdd2;border-radius:2px">
+      <div style="font-size:10px;color:#c62828;text-transform:uppercase;font-weight:600;margin-bottom:4px">ACUMULADO RUIM</div>
+      <div style="font-size:20px;font-weight:700;color:#c62828">-${acumRuim}</div>
+    </div>
+    <div style="text-align:center;padding:10px;background:#e3f2fd;border:1px solid #90caf9;border-radius:2px">
+      <div style="font-size:10px;color:#1565c0;text-transform:uppercase;font-weight:600;margin-bottom:4px">APROVEITAMENTO</div>
+      <div style="font-size:20px;font-weight:700;color:#1565c0">${aprovPct}%</div>
+    </div>
+  </div>`;
+
+  const headerRow = stats + `<table class="erp-table" style="width:100%"><thead><tr>
+    <th style="padding:7px 12px;text-align:left">NF</th>
+    <th style="padding:7px 12px;text-align:left">Fornecedor</th>
+    <th style="padding:7px 12px;text-align:center">Recebido</th>
+    <th style="padding:7px 12px;text-align:center">Boas</th>
+    <th style="padding:7px 12px;text-align:center">Ruins</th>
+  </tr></thead><tbody>`;
+
+  const itemRows = rows.map(r => {
+    const t = r.triagem;
+    return `<tr onclick="closeModal('modal-notas-codigo');abrirNota('${r.nota.id}')" style="cursor:pointer" onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background=''">
+      <td style="padding:8px 12px;font-family:monospace;font-weight:700;color:#1565c0">${r.nota.numero}</td>
+      <td style="padding:8px 12px;font-size:11px;color:#555">${(r.nota.fornecedor||'—').toUpperCase()} · ${formatDate(r.nota.created_at)}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:600">${r.it.qtd_recebida}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:600;color:#2e7d32">${t ? t.qtd_boa : '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:600;color:#c62828">${t ? t.qtd_ruim : '—'}</td>
+    </tr>`;
+  }).join('') + '</tbody></table>';
+
+  const footer = '';
+
+  document.getElementById('modal-notas-codigo-body').innerHTML = headerRow + itemRows + footer;
+  document.getElementById('modal-notas-codigo').classList.add('open');
+}
+
+function filterHistorico() {
+  const q = document.getElementById('search-hist').value.toLowerCase();
+  if (!q) { loadHistorico(); return; }
+  supabaseClient.from('historico_codigo').select('*').ilike('codigo', `%${q}%`).then(({ data }) => renderHistorico(data || []));
+}
+
+// ============================================================
+// CHAMADOS
+// ============================================================
+async function loadChamados() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.from('chamados').select('*, notas(numero)').order('created_at', { ascending: false });
+  renderChamadosList(data || []);
+}
+
+async function buscarChamado() {
+  if (!supabaseClient) return;
+  const q = document.getElementById('search-chamado').value.trim();
+  if (!q) { loadChamados(); return; }
+  const { data } = await supabaseClient.from('chamados').select('*, notas(numero)').ilike('numero', `%${q}%`);
+  renderChamadosList(data || []);
+}
+
+function renderChamadosList(data) {
+  const c = document.getElementById('chamados-list');
+  if (!data.length) { c.innerHTML = '<div class="empty"><i class="ti ti-ticket-off"></i><p>Nenhuma leva encontrada</p></div>'; return; }
+  const statusMap = { aberto: ['#ffebee','#c62828','Aberto'], concluido: ['#e8f5e9','#2e7d32','Concluído'], coletado: ['#e8f5e9','#2e7d32','Coletado'] };
+  const rows = data.map(ch => {
+    const [bg,cl,lbl] = statusMap[ch.status] || ['#f5f5f5','#757575',ch.status];
+    return `<tr onclick="verChamado('${ch.id}')" style="cursor:pointer" onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background=''">
+      <td style="padding:8px 12px;font-weight:700;color:#1565c0;font-family:monospace;font-size:11px">${ch.numero}</td>
+      <td style="padding:8px 12px;font-weight:600">${ch.notas?.numero || '—'}</td>
+      <td style="padding:8px 12px;color:#777">${formatDate(ch.created_at)}</td>
+      <td style="padding:8px 12px;color:#777">${ch.prazo ? formatDate(ch.prazo) : '—'}</td>
+      <td style="padding:8px 12px"><span style="font-size:10px;padding:2px 8px;background:${bg};color:${cl};border-radius:2px;font-weight:600">${lbl}</span></td>
+      <td style="padding:8px 12px;text-align:center;color:#bbb">›</td>
+    </tr>`;
+  }).join('');
+  c.innerHTML = '<table class="erp-table" style="width:100%"><thead><tr><th style="padding:8px 12px">Chamado</th><th style="padding:8px 12px">Nota</th><th style="padding:8px 12px">Aberto em</th><th style="padding:8px 12px">Prazo</th><th style="padding:8px 12px">Status</th><th style="padding:8px 12px"></th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+let _chamadoAtivo = null;
+
+async function verChamado(chamadoId) {
+  if (!supabaseClient) return;
+  _chamadoAtivo = chamadoId;
+
+  const { data: ch } = await supabaseClient.from('chamados').select('*, notas(*), chamado_itens(*,created_at)').eq('id', chamadoId).single();
+  if (!ch) return;
+
+  const { data: logs } = await supabaseClient.from('chamado_log').select('*').eq('chamado_id', chamadoId).order('created_at', { ascending: false });
+
+  document.getElementById('modal-chamado-titulo').textContent = ch.numero;
+
+  const itensRows = (ch.chamado_itens || []).sort((a,b) => new Date(a.created_at||0) - new Date(b.created_at||0)).map(ci => `
+    <tr>
+      <td class="td-code">${ci.codigo}</td>
+      <td style="font-family:var(--mono)">${ci.qtd_enviada}</td>
+      <td style="font-size:11px;color:var(--muted);font-family:var(--mono)">${ci.created_at ? formatDate(ci.created_at) : '—'}</td>
+      <td>${ci.concluido ? '<span class="erp-badge erp-badge-green">Concluído</span>' : '<span class="erp-badge erp-badge-orange">Pendente</span>'}</td>
+      <td onclick="event.stopPropagation()">
+        ${ch.status === 'aberto' ? `<button class="erp-btn erp-btn-red erp-btn-sm" onclick="removerItemChamado('${ci.id}','${ci.codigo}','${chamadoId}')"><i class="ti ti-trash"></i></button>` : ''}
+      </td>
+    </tr>`).join('');
+
+  const logsRows = (logs || []).map(l => `
+    <tr>
+      <td style="font-size:11px;color:var(--muted);font-family:var(--mono);padding:8px 12px">${formatDate(l.created_at)} ${new Date(l.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</td>
+      <td style="padding:8px 12px"><span class="badge ${l.acao === 'ADICIONADO' ? 'badge-done' : 'badge-tamp'}" style="font-size:10px">${l.acao}</span></td>
+      <td style="font-family:var(--mono);font-size:12px;padding:8px 12px">${l.codigo || '—'}</td>
+      <td style="font-family:var(--mono);font-size:12px;padding:8px 12px">${l.quantidade || '—'}</td>
+      <td style="font-size:12px;padding:8px 12px">${l.motivo}</td>
+    </tr>`).join('');
+
+  const addForm = ch.status === 'aberto' ? `
+    <div style="background:var(--surface2);border-radius:var(--radius);padding:14px;margin-bottom:16px;border:1px dashed var(--border2)">
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:10px;text-transform:uppercase">Adicionar item ao chamado</div>
+      <div style="display:grid;grid-template-columns:1fr 100px 1fr auto;gap:10px;align-items:end">
+        <div><label style="font-size:11px;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:4px">Código</label>
+          <input id="add-item-codigo" type="text" placeholder="EX: 28586" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;width:100%" oninput="this.value=this.value.toUpperCase()" class="erp-input"></div>
+        <div><label style="font-size:11px;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:4px">Qtd</label>
+          <input id="add-item-qtd" type="number" min="1" placeholder="0" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;width:100%" class="erp-input"></div>
+        <div><label style="font-size:11px;color:var(--muted);font-family:var(--mono);display:block;margin-bottom:4px">Motivo</label>
+          <input id="add-item-motivo" type="text" placeholder="INFORME O MOTIVO" spellcheck="true" lang="pt-BR" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;width:100%;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" class="erp-input"></div>
+        <button class="erp-btn erp-btn-blue erp-btn-sm" onclick="adicionarItemChamado('${chamadoId}')"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>` : '';
+
+  // Stats do chamado
+  const totalItens = (ch.chamado_itens||[]).length;
+  const concluidosItens = (ch.chamado_itens||[]).filter(i=>i.concluido).length;
+  const pctCh = totalItens > 0 ? Math.round(concluidosItens/totalItens*100) : 0;
+  const prazoLabel = ch.prazo ? (() => {
+    const diff = Math.round((new Date(ch.prazo) - new Date(ch.data_conclusao||new Date())) / 86400000);
+    if (!ch.data_conclusao) return `<span style="font-size:11px;color:#e65100">Prazo: ${formatDate(ch.prazo)}</span>`;
+    if (diff > 0) return `<span style="font-size:11px;padding:2px 8px;background:#e8f5e9;color:#2e7d32;border-radius:2px;font-weight:600">↑ ${diff} dia(s) de antecedência</span>`;
+    if (diff === 0) return `<span style="font-size:11px;padding:2px 8px;background:#e3f2fd;color:#1565c0;border-radius:2px;font-weight:600">✓ No prazo</span>`;
+    return `<span style="font-size:11px;padding:2px 8px;background:#ffebee;color:#c62828;border-radius:2px;font-weight:600">↓ ${Math.abs(diff)} dia(s) de atraso</span>`;
+  })() : '';
+
+  document.getElementById('modal-chamado-body').innerHTML = `
+    <div style="padding:14px 16px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        <div style="padding:10px;background:#f9f9f9;border:1px solid #eee;border-radius:2px;text-align:center">
+          <div style="font-size:10px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px">NOTA</div>
+          <div style="font-size:16px;font-weight:700;color:#1565c0;font-family:monospace">${ch.notas?.numero||'—'}</div>
+        </div>
+        <div style="padding:10px;background:#f9f9f9;border:1px solid #eee;border-radius:2px;text-align:center">
+          <div style="font-size:10px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px">STATUS</div>
+          <div style="font-size:13px;font-weight:700;color:${ch.status==='concluido'?'#2e7d32':ch.status==='aberto'?'#c62828':'#e65100'}">${ch.status==='concluido'?'CONCLUÍDO':ch.status==='aberto'?'ABERTO':'COLETADO'}</div>
+        </div>
+        <div style="padding:10px;background:#f9f9f9;border:1px solid #eee;border-radius:2px;text-align:center">
+          <div style="font-size:10px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px">PROGRESSO</div>
+          <div style="font-size:16px;font-weight:700;color:#333">${concluidosItens}/${totalItens}</div>
+          <div style="margin-top:4px;height:4px;background:#eee;border-radius:2px"><div style="height:4px;background:#4caf50;border-radius:2px;width:${pctCh}%"></div></div>
+        </div>
+        <div style="padding:10px;background:#f9f9f9;border:1px solid #eee;border-radius:2px;text-align:center">
+          <div style="font-size:10px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:4px">PRAZO</div>
+          <div style="font-size:12px;margin-top:2px">${prazoLabel}</div>
+        </div>
+      </div>
+
+      ${addForm}
+
+      <table class="erp-table" style="width:100%;margin-bottom:14px">
+        <thead><tr>
+          <th style="text-align:center">Código</th>
+          <th style="text-align:center">Qtd</th>
+          <th style="text-align:center">Inclusão</th>
+          <th style="text-align:center">Status</th>
+          <th style="width:50px"></th>
+        </tr></thead>
+        <tbody>${itensRows}</tbody>
+      </table>
+
+      ${logs && logs.length > 0 ? `
+      <div style="border-top:1px solid #eee;padding-top:12px">
+        <div style="font-size:11px;color:#999;text-transform:uppercase;font-weight:600;margin-bottom:8px;letter-spacing:.4px">Histórico de alterações</div>
+        <table class="erp-table" style="width:100%">
+          <thead><tr><th>Data</th><th>Ação</th><th>Código</th><th>Qtd</th><th>Motivo</th></tr></thead>
+          <tbody>${logsRows}</tbody>
+        </table>
+      </div>` : ''}
+    </div>`;
+
+  document.getElementById('modal-chamado').classList.add('open');
+}
+
+async function adicionarItemChamado(chamadoId) {
+  const codigo = document.getElementById('add-item-codigo').value.trim().toUpperCase();
+  const qtd = parseInt(document.getElementById('add-item-qtd').value);
+  const motivo = document.getElementById('add-item-motivo').value.trim().toUpperCase();
+  if (!codigo || !qtd || !motivo) { toast('Preencha código, quantidade e motivo'); return; }
+
+  await supabaseClient.from('chamado_itens').insert({ chamado_id: chamadoId, codigo, qtd_enviada: qtd, concluido: false });
+  await supabaseClient.from('chamado_log').insert({ chamado_id: chamadoId, acao: 'ADICIONADO', codigo, quantidade: qtd, motivo });
+
+  toast('Item adicionado ao chamado');
+  verChamado(chamadoId);
+}
+
+async function removerItemChamado(itemId, codigo, chamadoId) {
+  const motivo = prompt('INFORME O MOTIVO DA REMOÇÃO (LETRAS MAIÚSCULAS):');
+  if (!motivo || !motivo.trim()) return;
+
+  await supabaseClient.from('chamado_itens').delete().eq('id', itemId);
+  await supabaseClient.from('chamado_log').insert({ chamado_id: chamadoId, acao: 'REMOVIDO', codigo, motivo: motivo.toUpperCase() });
+
+  toast('Item removido do chamado');
+  verChamado(chamadoId);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ============================================================
+// CONFIG
+// ============================================================
+function loadConfig() {
+  document.getElementById('cfg-sb-url').value = SB_URL;
+  document.getElementById('cfg-sb-key').value = SB_KEY;
+  document.getElementById('cfg-wa-number').value = WA_NUMBER;
+  document.getElementById('cfg-wa-nome').value = WA_NOME;
+}
+
+function salvarConfig() {
+  SB_URL = document.getElementById('cfg-sb-url').value.trim();
+  SB_KEY = document.getElementById('cfg-sb-key').value.trim();
+  localStorage.setItem('sb_url', SB_URL);
+  localStorage.setItem('sb_key', SB_KEY);
+  supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+  toast('Supabase conectado!');
+}
+
+function salvarConfigWa() {
+  WA_NUMBER = document.getElementById('cfg-wa-number').value.trim();
+  WA_NOME = document.getElementById('cfg-wa-nome').value.trim();
+  localStorage.setItem('wa_number', WA_NUMBER);
+  localStorage.setItem('wa_nome', WA_NOME);
+  toast('WhatsApp salvo!');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+
+// ============================================================
+// NOTIFICAÇÕES
+// ============================================================
+function pedirPermissaoNotif() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function notificar(titulo, corpo) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(titulo, { body: corpo, icon: '' });
+  }
+}
+
+// Polling a cada 30s para verificar mudanças de status
+let _statusCache = {};
+async function verificarMudancasStatus() {
+  if (!supabaseClient) return;
+  const { data: notas } = await supabaseClient.from('notas').select('id, numero, status').in('status', ['triagem','tampografia','concluida']);
+  if (!notas) return;
+  notas.forEach(n => {
+    const prev = _statusCache[n.id];
+    if (prev && prev !== n.status) {
+      if (n.status === 'triagem' && n.tipo === 'capa') {
+        notificar('Triagem concluída', `Nota ${n.numero} (capa) foi triada e aguarda envio para produção.`);
+        enviarWaAnalista(`✅ Triagem concluída!\n\nNota ${n.numero} (capa) foi triada pelo estoque e aguarda envio para produção.`);
+      }
+      if (n.status === 'concluida' && n.tipo === 'capa') {
+        notificar('Produção finalizada ✅', `Nota ${n.numero} foi concluída pela tampografia. Pronta para coleta!`);
+        enviarWaAnalista(`✅ Produção finalizada!\n\nNota ${n.numero} foi concluída pela tampografia. Pronta para coleta! 🎉`);
+      }
+      if (n.status === 'concluida' && n.tipo === 'pelicula') {
+        notificar('Película concluída ✅', `Nota ${n.numero} (película) foi finalizada pelo estoque. Pronta para coleta!`);
+        enviarWaAnalista(`✅ Triagem finalizada!\n\nNota ${n.numero} (película) foi finalizada pelo estoque. Pronta para coleta! 🎉`);
+      }
+    }
+    _statusCache[n.id] = n.status;
+  });
+}
+
+
+// ============================================================
+// TROCAS DE CÓDIGO
+// ============================================================
+let _trocasCache = [];
+
+async function loadTrocas() {
+  if (!supabaseClient) return;
+
+  // 1. Busca triagens com troca
+  const { data: triagens } = await supabaseClient
+    .from('triagem')
+    .select('*')
+    .eq('capa_trocada', true)
+    .order('created_at', { ascending: false });
+
+  if (!triagens || triagens.length === 0) { _trocasCache = []; renderTrocas([]); return; }
+
+  // 2. Busca itens
+  const itemIds = triagens.map(t => t.item_id);
+  const { data: itens } = await supabaseClient.from('itens_nota').select('id, codigo, nota_id').in('id', itemIds);
+
+  // 3. Busca notas
+  const notaIds = [...new Set((itens || []).map(it => it.nota_id))];
+  const { data: notas } = await supabaseClient.from('notas').select('id, numero, fornecedor, created_at').in('id', notaIds);
+
+  // 4. Montar mapa e combinar
+  const itensMap = {};
+  (itens || []).forEach(it => { itensMap[it.id] = it; });
+  const notasMap = {};
+  (notas || []).forEach(n => { notasMap[n.id] = n; });
+
+  _trocasCache = triagens.map(t => {
+    const item = itensMap[t.item_id] || {};
+    const nota = notasMap[item.nota_id] || {};
+    return { ...t, _codigo: item.codigo, _nota: nota };
+  });
+
+  renderTrocas(_trocasCache);
+}
+
+function renderTrocas(data) {
+  const c = document.getElementById('trocas-list');
+  if (!data || data.length === 0) {
+    c.innerHTML = '<div class="empty"><i class="ti ti-arrows-exchange"></i><p>Nenhuma troca registrada</p></div>';
+    return;
+  }
+  c.innerHTML = '<div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>Nota</th><th>Fornecedor</th><th>Data</th><th>Código recebido</th><th>Código correto</th></tr></thead><tbody>' +
+    data.map(t => {
+      const nota = t._nota || {};
+      return `<tr>
+        <td style="font-weight:700;color:#1565c0;font-family:monospace">${nota.numero||'—'}</td>
+        <td>${(nota.fornecedor||'—').toUpperCase()}</td>
+        <td style="color:#777">${formatDate(nota.created_at)}</td>
+        <td style="font-family:monospace;font-weight:600;color:#c62828">${t._codigo||'—'}</td>
+        <td style="font-family:monospace;font-weight:600;color:#e65100">${t.codigo_trocado||'—'}</td>
+      </tr>`;
+    }).join('') + '</tbody></table></div>';
+}
+
+function filterTrocas() {
+  const q = document.getElementById('search-trocas').value.toLowerCase();
+  if (!q) { renderTrocas(_trocasCache); return; }
+  const filtered = _trocasCache.filter(t => {
+    const it = t.itens_nota || {};
+    return (t._codigo || '').toLowerCase().includes(q) || (t.codigo_trocado || '').toLowerCase().includes(q);
+  });
+  renderTrocas(filtered);
+}
+
+
+// ============================================================
+// WA ANALISTA (notificações de conclusão)
+// ============================================================
+async function enviarWaAnalista(msg) {
+  await enviarViaProxy('5571988220976', msg);
+  await enviarViaProxy('5571993143772', msg);
+}
+
+
+// ============================================================
+// PROXY APPS SCRIPT — FARDAMENTOS
+// ============================================================
+const PROXY_URL = 'https://script.google.com/macros/s/AKfycbxZhiIAjmPZsqvNfM-01X5qrYIK9IMoW0EL_4TJQ9MDcV3xnn_hV9tVZ_F92mcWDVsw/exec';
+
+async function enviarViaProxy(number, message, mentioned) {
+  try {
+    const body = { number, message };
+    if (mentioned && mentioned.length) body.mentioned = mentioned;
+    await fetch('https://script.google.com/macros/s/AKfycbxZhiIAjmPZsqvNfM-01X5qrYIK9IMoW0EL_4TJQ9MDcV3xnn_hV9tVZ_F92mcWDVsw/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.warn('Proxy WA erro:', e); }
+}
+
+// ============================================================
+// PRAZO CHIP MODAL
+// ============================================================
+function prazoChipModal(prazoISO, conclusaoISO) {
+  const prazo = new Date(prazoISO);
+  const conclusao = new Date(conclusaoISO);
+  const diff = Math.round((prazo - conclusao) / 86400000);
+  if (diff > 0) return `<span class="erp-badge erp-badge-green" style="margin-top:4px;display:inline-flex"><i class="ti ti-trending-up" style="font-size:11px"></i> ${diff} dia(s) de antecedência</span>`;
+  if (diff === 0) return `<span class="erp-badge erp-badge-green" style="margin-top:4px;display:inline-flex"><i class="ti ti-check" style="font-size:11px"></i> No prazo</span>`;
+  return `<span class="erp-badge erp-badge-red" style="margin-top:4px;display:inline-flex"><i class="ti ti-trending-down" style="font-size:11px"></i> ${Math.abs(diff)} dia(s) de atraso</span>`;
+}
+
+// ============================================================
+// PERFORMANCE
+// ============================================================
+async function loadPerformance() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.from('chamados')
+    .select('*, notas(numero)')
+    .in('status', ['concluido', 'coletado'])
+    .not('data_conclusao', 'is', null)
+    .not('prazo', 'is', null)
+    .order('data_conclusao', { ascending: false });
+
+  if (!data || data.length === 0) {
+    document.getElementById('perf-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">Nenhum chamado finalizado ainda</td></tr>';
+    ['perf-noprazo','perf-antes','perf-atraso','perf-total'].forEach(id => document.getElementById(id).textContent = '0');
+    return;
+  }
+
+  let noPrazo = 0, antes = 0, atraso = 0;
+  let somaAntes = 0, somaAtraso = 0;
+
+  const rows = data.map(ch => {
+    const prazo = new Date(ch.prazo);
+    const conclusao = new Date(ch.data_conclusao);
+    const diff = Math.round((prazo - conclusao) / 86400000);
+    let badge, label;
+    if (diff > 0) {
+      antes++;
+      somaAntes += diff;
+      badge = 'badge-done';
+      label = `<i class="ti ti-trending-up" style="font-size:11px"></i> ${diff} dia(s) antes`;
+    } else if (diff === 0) {
+      noPrazo++;
+      badge = 'badge-done';
+      label = `<i class="ti ti-check" style="font-size:11px"></i> No prazo`;
+    } else {
+      atraso++;
+      somaAtraso += Math.abs(diff);
+      badge = 'badge-tamp';
+      label = `<i class="ti ti-trending-down" style="font-size:11px"></i> ${Math.abs(diff)} dia(s) de atraso`;
+    }
+    const badgeCls = diff > 0 ? 'erp-badge-green' : diff === 0 ? 'erp-badge-blue' : 'erp-badge-red';
+    return `<tr>
+      <td style="font-family:monospace;font-size:11px;font-weight:600">${ch.numero}</td>
+      <td>${ch.notas?.numero || '—'}</td>
+      <td>${formatDate(ch.prazo)}</td>
+      <td>${formatDate(ch.data_conclusao)}</td>
+      <td><span class="erp-badge ${badgeCls}">${label}</span></td>
+    </tr>`;
+  });
+
+  document.getElementById('perf-noprazo').textContent = noPrazo;
+  document.getElementById('perf-antes').textContent = antes;
+  document.getElementById('perf-atraso').textContent = atraso;
+  document.getElementById('perf-total').textContent = data.length;
+  document.getElementById('perf-antes-media').textContent = antes > 0 ? `média ${Math.round(somaAntes/antes)} dia(s) antes` : 'nenhum';
+  document.getElementById('perf-atraso-media').textContent = atraso > 0 ? `média ${Math.round(somaAtraso/atraso)} dia(s) de atraso` : 'nenhum';
+  document.getElementById('perf-tbody').innerHTML = rows.join('');
+}
+
+// ============================================================
+// EDITAR NOTA
+// ============================================================
+async function editarNota(notaId) {
+  if (!supabaseClient) return;
+  const { data: nota } = await supabaseClient.from('notas').select('*').eq('id', notaId).single();
+  document.getElementById('edit-nota-id').value = nota.id;
+  document.getElementById('edit-numero').value = nota.numero || '';
+  document.getElementById('edit-fornecedor').value = nota.fornecedor || '';
+  document.getElementById('edit-data').value = nota.data_recebimento || '';
+  document.getElementById('edit-prazo').value = nota.prazo_dias || 3;
+  document.getElementById('edit-obs').value = nota.obs || '';
+  document.getElementById('modal-editar-nota').classList.add('open');
+}
+
+async function salvarEdicaoNota() {
+  const id = document.getElementById('edit-nota-id').value;
+  const numero = document.getElementById('edit-numero').value.trim();
+  const fornecedor = document.getElementById('edit-fornecedor').value.trim();
+  const data = document.getElementById('edit-data').value;
+  const prazo = parseInt(document.getElementById('edit-prazo').value) || 3;
+  const obs = document.getElementById('edit-obs').value.trim();
+  if (!numero) { toast('Número é obrigatório'); return; }
+  await dbUpdate('notas', { id }, { numero, fornecedor, data_recebimento: data, prazo_dias: prazo, obs });
+  closeModal('modal-editar-nota');
+  toast('Nota atualizada!');
+  loadNotas();
+}
+
+// ============================================================
+// EXCLUIR NOTA
+// ============================================================
+let notaParaExcluir = null;
+
+function confirmarExcluirNota(notaId, numero) {
+  notaParaExcluir = notaId;
+  document.getElementById('excluir-nota-num').textContent = numero;
+  document.getElementById('modal-excluir-nota').classList.add('open');
+}
+
+async function excluirNota() {
+  if (!supabaseClient || !notaParaExcluir) return;
+  const id = notaParaExcluir;
+
+  // 1. Buscar itens da nota para reverter historico_codigo
+  const { data: itens } = await supabaseClient.from('itens_nota').select('id, codigo').eq('nota_id', id);
+  if (itens && itens.length > 0) {
+    const itemIds = itens.map(it => it.id);
+    const { data: triagens } = await supabaseClient.from('triagem').select('*').in('item_id', itemIds);
+    if (triagens && triagens.length > 0) {
+      for (const t of triagens) {
+        const item = itens.find(i => i.id === t.item_id);
+        if (!item) continue;
+        const { data: hist } = await supabaseClient.from('historico_codigo').select('*').eq('codigo', item.codigo).single();
+        if (hist) {
+          const novaBoa = Math.max(0, (hist.total_boa || 0) - (t.qtd_boa || 0));
+          const novaRuim = Math.max(0, (hist.total_ruim || 0) - (t.qtd_ruim || 0));
+          if (novaBoa === 0 && novaRuim === 0) {
+            await supabaseClient.from('historico_codigo').delete().eq('codigo', item.codigo);
+          } else {
+            await supabaseClient.from('historico_codigo').update({ total_boa: novaBoa, total_ruim: novaRuim }).eq('codigo', item.codigo);
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Apagar na ordem certa
+  const { data: chamados } = await supabaseClient.from('chamados').select('id').eq('nota_id', id);
+  if (chamados && chamados.length > 0) {
+    const chamadoIds = chamados.map(ch => ch.id);
+    await supabaseClient.from('chamado_itens').delete().in('chamado_id', chamadoIds);
+  }
+  await supabaseClient.from('chamados').delete().eq('nota_id', id);
+  await supabaseClient.from('triagem').delete().eq('nota_id', id);
+  await supabaseClient.from('itens_nota').delete().eq('nota_id', id);
+  await supabaseClient.from('notas').delete().eq('id', id);
+
+  notaParaExcluir = null;
+  closeModal('modal-excluir-nota');
+  toast('Nota excluída e histórico atualizado.');
+  loadNotas();
+}
+
+// ============================================================
+// RESET
+// ============================================================
+async function executarReset() {
+  const input = document.getElementById('reset-confirm-input').value.trim();
+  if (input !== 'RESET') { toast('Digite RESET para confirmar'); return; }
+  if (!supabaseClient) return;
+  await supabaseClient.from('chamado_itens').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('chamados').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('triagem').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('itens_nota').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('notas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabaseClient.from('historico_codigo').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  document.getElementById('reset-confirm-input').value = '';
+  closeModal('modal-reset');
+  toast('Sistema resetado. Todos os dados foram apagados.');
+  loadDashboard();
+}
+
+
+// ============================================================
+// GERENCIAR USUÁRIOS (só analista)
+// ============================================================
+async function loadUsuarios() {
+  const { data } = await supabaseClient.from('perfis').select('*').order('perfil');
+  if (!data) return;
+  const perfilLabel = { analista: 'Analista', estoque: 'Estoque', tampografia: 'Tampografia' };
+  const perfilBadge = { analista: 'badge-pending', estoque: 'badge-done', tampografia: 'badge-tamp' };
+  document.getElementById('usuarios-list').innerHTML = data.map(u => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:500">${u.nome}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${u.email}</div>
+      </div>
+      <span class="badge ${perfilBadge[u.perfil] || 'badge-pending'}">${perfilLabel[u.perfil] || u.perfil}</span>
+    </div>`).join('');
+}
+
+async function alterarSenhaUsuario() {
+  const email = document.getElementById('usr-email').value.trim();
+  const senha = document.getElementById('usr-senha').value;
+  if (!email || !senha) { toast('Preencha email e nova senha'); return; }
+  if (senha.length < 6) { toast('Senha deve ter ao menos 6 caracteres'); return; }
+  // Usa Admin API via edge function não disponível no client — orienta o usuário
+  toast('Para alterar senha: Supabase → Authentication → Users → clique no usuário → Reset Password');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+  pedirPermissaoNotif();
+  setInterval(verificarMudancasStatus, 30000);
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('nota-data').value = today;
+  document.getElementById('nota-tipo').value = 'capa';
+  document.getElementById('prazo-group').style.display = 'block';
+  loadDashboard();
+});
+
+
+
+
+
+
+
+
+
+var LS_PW='Analista26';
+
+function subscribeRealtimeAnalista() {
+  if (!supabaseClient) return;
+  supabaseClient.channel('analista-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => {
+      const av = document.querySelector('.view.active');
+      if (!av) return;
+      if (av.id === 'view-dashboard') loadDashboard();
+      if (av.id === 'view-notas') loadNotas();
+      if (av.id === 'view-detalhe-nota' && currentNotaId) abrirNota(currentNotaId);
+      verificarMudancasStatus();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'triagem' }, () => {
+      const av = document.querySelector('.view.active');
+      if (!av) return;
+      if (av.id === 'view-detalhe-nota' && currentNotaId) abrirNota(currentNotaId);
+      if (av.id === 'view-trocas') loadTrocas();
+      if (av.id === 'view-historico') loadHistorico();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, () => {
+      const av = document.querySelector('.view.active');
+      if (!av) return;
+      if (av.id === 'view-chamados') loadChamados();
+      if (av.id === 'view-dashboard') loadDashboard();
+      if (av.id === 'view-performance') loadPerformance();
+      if (av.id === 'view-liberacoes') loadLiberacoes();
+    })
+    .subscribe();
+}
+
+function lsLogin(){var p=document.getElementById('ls-pw').value;if(p===LS_PW){sessionStorage.setItem('_a','1');document.getElementById('ls').style.display='none';loadDashboard();subscribeRealtimeAnalista();}else{document.getElementById('ls-err').textContent='Senha incorreta.';document.getElementById('ls-pw').value='';}}
+function fazerLogout(){sessionStorage.removeItem('_a');location.reload();}
+document.addEventListener('DOMContentLoaded',function(){const lsEl=document.getElementById('ls');if(!lsEl)return;if(sessionStorage.getItem('_a')==='1'){lsEl.style.display='none';loadDashboard();subscribeRealtimeAnalista();}else{lsEl.style.display='flex';}});
+
+</script>
+</body>
+</html>
