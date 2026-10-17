@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estoque | Triagem</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI2IiBmaWxsPSIjM2QzZDNkIi8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSI3IiB5PSI3IiB3aWR0aD0iMTQiIGhlaWdodD0iMTIiIHJ4PSIxLjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2YwYTUwMCIvPjwvc3ZnPg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont3.49.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f3f4f6;--pn:#fff;--pn2:#fafbfc;--ln:#e3e6ea;--ln2:#eef0f3;--tx:#1d2330;--t2:#6b7487;--am:#f0a500;--bl:#1d6fd6;--rd:#d93b3b;--gn:#2f9e5f;--sbg:#25282f;--inp:#fff;--inpb:#d5dae2}
+body.dark{--bg:#14171d;--pn:#1c2029;--pn2:#171b23;--ln:#2a3140;--ln2:#232a37;--tx:#e8ecf5;--t2:#8d98ae;--sbg:#101319;--inp:#12161d;--inpb:#323b4d}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font:13px/1.45 'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+h1{font-size:20px;font-weight:700;line-height:1.2}
+.mono{font-family:'DM Mono',ui-monospace,Menlo,monospace}
+.sub{font-size:12px;color:var(--t2)}
+:focus-visible{outline:2px solid var(--bl);outline-offset:2px}
+
+/* cabeçalho e menu */
+.hd{position:fixed;top:0;left:0;right:0;height:44px;background:var(--sbg);display:flex;align-items:center;gap:10px;padding:0 14px;z-index:100;border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{color:#fff;font-weight:700;letter-spacing:.08em;font-size:13px}.logo span{color:var(--am)}
+.hd-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip-h{background:#363b47;color:#e6e9f0;border-radius:7px;padding:4px 10px;font-size:11px}
+.ib{background:#363b47;border:0;color:#fff;border-radius:7px;padding:4px 9px;line-height:1.3}
+.ib:hover{background:#434957}
+.sb{position:fixed;top:44px;bottom:0;left:0;width:176px;background:var(--sbg);padding:10px 8px;display:flex;flex-direction:column;z-index:90}
+.sb-t{font-size:11px;color:#7f889c;padding:10px 10px 4px}
+.nv{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;border:0;background:none;color:#c9ced8;padding:9px 10px;border-radius:8px;margin-bottom:2px;text-align:left;font-size:13px}
+.nv:hover{background:#2f343f;color:#fff}
+.nv.on{background:var(--am);color:#1a1300;font-weight:700}
+.nb{background:#3a3f4b;color:#fff;border-radius:99px;padding:0 7px;font-size:11px;font-weight:600;min-width:20px;text-align:center}
+.nv.on .nb{background:rgba(0,0,0,.18);color:#1a1300}.nb.red{background:var(--rd);color:#fff}.nb:empty{display:none}
+.sb-f{margin-top:auto;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+main{margin-left:176px;padding:62px 22px 40px;max-width:1400px}
+.view{display:none}.view.on{display:block}
+
+/* título da página */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* cartões e números */
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:12px;overflow:hidden}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--ln);font-weight:700;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.st{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+.st .l{font-size:12px;color:var(--t2)}
+.st .v{font-size:26px;font-weight:700;line-height:1.15;margin:2px 0;font-variant-numeric:tabular-nums}
+.st .s{font-size:11.5px;color:var(--t2)}
+.st.alerta{border-color:#f1b9b9;background:rgba(217,59,59,.07)}.st.alerta .s{color:var(--rd);font-weight:700}
+.st.gn .v{color:var(--gn)}.st.rd .v{color:var(--rd)}.st.am .v{color:#a06a00}.st.bl .v{color:var(--bl)}
+body.dark .st.am .v{color:var(--am)}
+.prog{height:5px;background:var(--ln);border-radius:3px;overflow:hidden;margin-top:6px}
+.prog>i{display:block;height:100%;background:var(--gn);border-radius:3px;transition:width .25s}
+
+/* botões e campos */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:9px;padding:8px 13px;font-size:12px;font-weight:600;white-space:nowrap}
+.btn:hover{filter:brightness(.94)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.pri{background:var(--gn);color:#fff}
+.btn.out{background:var(--pn);color:var(--tx);border-color:var(--ln)}.btn.out:hover{background:var(--pn2)}
+.btn.am{background:var(--am);color:#1a1300}
+.btn.sm{padding:5px 9px;font-size:11px}
+.btn.block{width:100%}
+label{font-size:11.5px;color:var(--t2);font-weight:600;display:block;margin-bottom:4px}
+input:not([type=checkbox]):not([type=radio]),select{background:var(--inp);border:1px solid var(--inpb);border-radius:9px;color:var(--tx);padding:8px 10px;font:inherit;font-size:12.5px;outline:0;width:100%}
+input:focus,select:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(29,111,214,.15)}
+/* busca com largura própria (vem depois da regra geral de campos) */
+.tools input[type=search]{width:240px}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--rd);cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tb{padding:5px 12px;border-radius:99px;border:1px solid var(--ln);background:var(--pn);font-size:12px;color:var(--t2);user-select:none}
+.tb:hover{color:var(--tx)}
+.tb.on{background:var(--tx);color:var(--pn);border-color:var(--tx)}
+.tb.rd{border-color:#f1b9b9;color:var(--rd)}.tb.rd.on{background:var(--rd);color:#fff;border-color:var(--rd)}
+
+/* tabelas */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--pn2);border-bottom:1px solid var(--ln);padding:8px 12px;text-align:left;font-weight:600;color:var(--t2);font-size:11.5px;white-space:nowrap}
+tbody td{border-top:1px solid var(--ln2);padding:9px 12px;vertical-align:middle}
+tbody tr:first-child td{border-top:0}
+tbody tr.clk{cursor:pointer}tbody tr.clk:hover td{background:var(--pn2)}
+td.n,th.n{text-align:center}
+.nf{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;color:var(--bl)}
+tfoot td{border-top:1px solid var(--ln);background:var(--pn2);font-weight:700;padding:9px 12px}
+
+/* selos */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:99px;font-size:11px;font-weight:700;padding:3px 9px;white-space:nowrap}
+.b-gn{background:rgba(47,158,95,.14);color:var(--gn)}
+.b-am{background:rgba(240,165,0,.18);color:#a06a00}body.dark .b-am{color:var(--am)}
+.b-rd{background:rgba(217,59,59,.13);color:var(--rd)}
+.b-bl{background:rgba(29,111,214,.13);color:var(--bl)}
+.b-gy{background:var(--ln2);color:var(--t2)}
+.late{color:var(--rd);font-weight:700}.warn{color:#a06a00;font-weight:600}body.dark .warn{color:var(--am)}
+
+/* modal, aviso, login */
+.mb{position:fixed;inset:0;background:rgba(10,14,22,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:14px}
+.mb.on{display:flex}
+.md{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:14px;width:720px;max-width:100%;max-height:90vh;overflow:auto}
+.md-h{background:var(--sbg);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:14px 14px 0 0;gap:10px}
+.md-h b{font-size:14px}.md-h small{color:#aab2c3;font-size:11.5px;margin-left:8px}
+.md-x{background:none;border:0;color:#fff;font-size:18px;line-height:1}
+.md-b{padding:16px}
+.md-f{padding:10px 16px;border-top:1px solid var(--ln);background:var(--pn2);display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;right:18px;bottom:18px;background:#20242c;color:#fff;border-radius:10px;padding:10px 16px;font-size:12.5px;z-index:999;display:flex;gap:8px;align-items:center;transform:translateY(90px);opacity:0;transition:transform .2s,opacity .2s;max-width:min(420px,calc(100vw - 36px))}
+.toast.on{transform:none;opacity:1}
+.toast.err{background:var(--rd)}
+.ls{position:fixed;inset:0;background:var(--sbg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.ls.off{display:none}
+.ls-box{background:var(--pn);border-radius:14px;padding:26px 24px;width:330px;max-width:100%;display:flex;flex-direction:column;gap:12px}
+.ls-box .logo{color:var(--tx);font-size:20px}
+.ls-err{font-size:12px;color:var(--rd);min-height:16px}
+.empty{text-align:center;padding:34px 16px;color:var(--t2)}
+.empty i{font-size:30px;display:block;margin-bottom:8px;opacity:.5}
+
+@media (max-width:820px){
+  .sb{top:44px;bottom:auto;left:0;right:0;width:auto;height:46px;flex-direction:row;align-items:center;padding:6px 8px;overflow-x:auto}
+  .sb-t{display:none}.nv{width:auto;margin:0 4px 0 0;white-space:nowrap}
+  .sb-f{margin:0 0 0 auto;padding:0;border:0}
+  main{margin-left:0;padding:98px 12px 40px}
+  .tools input[type=search]{width:100%}.tools{width:100%}
+  h1{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* específico do estoque */
+input.num[type=number]{width:78px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;padding:7px 6px!important}
+.num.boa:focus{border-color:var(--gn);box-shadow:0 0 0 3px rgba(47,158,95,.18)}
+.num.ruim:focus{border-color:var(--rd);box-shadow:0 0 0 3px rgba(217,59,59,.16)}
+.rw.salvo td:first-child{box-shadow:inset 3px 0 0 var(--gn)}
+.rw.alta td{background:rgba(217,59,59,.06)}
+.cod{font-family:'DM Mono',ui-monospace,monospace;font-weight:700}
+.troca{display:flex;align-items:center;gap:8px}
+.troca input[type=text]{width:130px;text-transform:uppercase;font-family:'DM Mono',ui-monospace,monospace}
+.strip{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:0;background:var(--pn);border:1px solid var(--ln);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.strip>div{padding:11px 16px;border-left:1px solid var(--ln2)}.strip>div:first-child{border-left:0}
+.strip .l{font-size:12px;color:var(--t2)}.strip .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{position:sticky;bottom:10px;background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:12px;box-shadow:0 -8px 22px rgba(0,0,0,.08);flex-wrap:wrap}
+.bar .msg{font-size:12.5px;color:var(--t2)}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.dgrid>div{border:1px solid var(--ln);border-radius:10px;padding:10px;text-align:center;background:var(--pn2)}
+.dgrid .l{font-size:11.5px;color:var(--t2)}.dgrid .v{font-size:20px;font-weight:700}
+.back{display:inline-flex;align-items:center;gap:6px;margin-bottom:6px}
+@media (max-width:820px){#v-tri table{min-width:780px}.strip{grid-template-columns:1fr 1fr}.strip>div{border-top:1px solid var(--ln2)}.dgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="ls" id="ls">
+  <form class="ls-box" onsubmit="lsLogin();return false">
+    <div><div class="logo">VX <span>CASE</span></div><div class="sub" style="margin-top:2px">Estoque: triagem de capas e películas</div></div>
+    <div><label for="ls-pw">Senha de acesso</label><input type="password" id="ls-pw" autocomplete="current-password" placeholder="Digite a senha"></div>
+    <button class="btn pri block" type="submit">Entrar</button>
+    <div class="ls-err" id="ls-err" role="alert"></div>
+  </form>
+</div>
+
+<header class="hd">
+  <div class="logo">VX <span>CASE</span></div>
+  <div class="hd-r">
+    <button class="ib" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema"><i class="ti ti-moon"></i></button>
+    <div class="chip-h">Estoque</div>
+  </div>
+</header>
+
+<aside class="sb">
+  <div class="sb-t">Triagem</div>
+  <button class="nv on" data-v="pend" onclick="showView('pend')"><span>Para triar</span><span class="nb red" id="nb-pend"></span></button>
+  <button class="nv" data-v="hist" onclick="showView('hist')"><span>Histórico</span></button>
+  <div class="sb-f"><button class="nv" onclick="fazerLogout()"><span><i class="ti ti-logout"></i> Sair</span></button></div>
+</aside>
+
+<main>
+
+  <!-- PARA TRIAR -->
+  <section id="v-pend" class="view on">
+    <div class="ph">
+      <div><h1>Notas para triar</h1><p class="sub" id="pend-sub">Carregando notas...</p></div>
+      <div class="tools">
+        <input type="search" id="q-pend" placeholder="Buscar NF ou fornecedor" oninput="renderPend()" aria-label="Buscar nota">
+        <div class="chips" id="chips-tipo">
+          <button class="tb on" data-t="" onclick="setTipo(this)">Todas</button>
+          <button class="tb" data-t="capa" onclick="setTipo(this)">Capas</button>
+          <button class="tb" data-t="pelicula" onclick="setTipo(this)">Películas</button>
+        </div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="st bl"><div class="l">Notas aguardando</div><div class="v" id="p-notas">0</div><div class="s" id="p-notas-s">&nbsp;</div></div>
+      <div class="st am"><div class="l">Itens a triar</div><div class="v" id="p-itens">0</div><div class="s">códigos sem triagem</div></div>
+      <div class="st"><div class="l">Unidades recebidas</div><div class="v" id="p-un">0</div><div class="s">nas notas abertas</div></div>
+      <div class="st" id="p-velha-box"><div class="l">Mais antiga</div><div class="v" id="p-velha">0</div><div class="s" id="p-velha-s">dias esperando</div></div>
+    </div>
+    <div class="card"><div class="tw" id="pend-lista"><div class="empty"><i class="ti ti-package"></i>Carregando notas...</div></div></div>
+  </section>
+
+  <!-- TRIAGEM DA NOTA -->
+  <section id="v-tri" class="view">
+    <div class="ph">
+      <div>
+        <button class="btn out sm back" onclick="voltar()"><i class="ti ti-arrow-left"></i> Voltar</button>
+        <h1 id="tri-titulo">Nota</h1><p class="sub" id="tri-sub"></p>
+      </div>
+      <div class="tools">
+        <div class="chips" id="chips-lin">
+          <button class="tb on" data-f="todos" onclick="setLin(this)">Todos <span id="c-todos"></span></button>
+          <button class="tb" data-f="pend" onclick="setLin(this)">Pendentes <span id="c-pend"></span></button>
+          <button class="tb rd" data-f="alta" onclick="setLin(this)">Perda alta <span id="c-alta"></span></button>
+        </div>
+        <button class="btn out sm" onclick="tudoBomPendentes()" title="Marca os itens ainda vazios como 100% bons"><i class="ti ti-checks"></i> Pendentes: tudo bom</button>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div><div class="l">Progresso</div><div class="v" id="s-prog">0/0</div><div class="prog"><i id="s-bar" style="width:0%"></i></div></div>
+      <div><div class="l">Recebido</div><div class="v" id="s-rec">0</div></div>
+      <div><div class="l">Boas</div><div class="v" id="s-boa" style="color:var(--gn)">0</div></div>
+      <div><div class="l">Ruins</div><div class="v" id="s-ruim" style="color:var(--rd)">0</div></div>
+      <div><div class="l">Perda</div><div class="v" id="s-perda">0%</div></div>
+    </div>
+
+    <div class="card"><div class="tw">
+      <table>
+        <thead><tr>
+          <th class="n" style="width:44px">#</th><th>Código</th><th class="n">Recebido</th>
+          <th class="n">Boas</th><th class="n">Ruins</th><th class="n">Perda</th>
+          <th id="th-troca">Capa trocada?</th><th>Situação</th><th></th>
+        </tr></thead>
+        <tbody id="tri-body"></tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="n" id="f-rec"></td><td class="n" id="f-boa" style="color:var(--gn)"></td><td class="n" id="f-ruim" style="color:var(--rd)"></td><td colspan="4"></td></tr></tfoot>
+      </table>
+    </div></div>
+
+    <div class="bar">
+      <div class="msg" id="bar-msg"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn out" onclick="voltar()">Cancelar</button>
+        <button class="btn out" id="btn-parcial" onclick="salvar(false)"><i class="ti ti-device-floppy"></i> Salvar parcial</button>
+        <button class="btn pri" id="btn-final" onclick="salvar(true)"><i class="ti ti-circle-check"></i> Concluir triagem</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTÓRICO -->
+  <section id="v-hist" class="view">
+    <div class="ph">
+      <div><h1>Histórico de triagens</h1><p class="sub">Notas já triadas. Clique em uma nota para ver o detalhe.</p></div>
+      <div class="tools">
+        <input type="search" id="q-hist" placeholder="Buscar NF ou fornecedor" oninput="renderHist()" aria-label="Buscar no histórico">
+        <div class="chips" id="chips-st">
+          <button class="tb on" data-s="" onclick="setSt(this)">Todas</button>
+          <button class="tb" data-s="triagem" onclick="setSt(this)">Triagem feita</button>
+          <button class="tb" data-s="tampografia" onclick="setSt(this)">Em tampografia</button>
+          <button class="tb" data-s="concluida" onclick="setSt(this)">Concluídas</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="tw" id="hist-lista"><div class="empty"><i class="ti ti-history"></i>Carregando...</div></div></div>
+  </section>
+
+</main>
+
+<!-- DETALHE DA TRIAGEM -->
+<div class="mb" id="modal-hist" onclick="if(event.target===this)fechaModal()">
+  <div class="md" role="dialog" aria-modal="true" aria-labelledby="mh-t">
+    <div class="md-h"><div><b id="mh-t">Nota</b><small id="mh-s"></small></div><button class="md-x" onclick="fechaModal()" aria-label="Fechar"><i class="ti ti-x"></i></button></div>
+    <div class="md-b">
+      <div class="dgrid">
+        <div><div class="l">Recebido</div><div class="v" id="mh-rec">0</div></div>
+        <div><div class="l">Boas</div><div class="v" id="mh-boa" style="color:var(--gn)">0</div></div>
+        <div><div class="l">Ruins</div><div class="v" id="mh-ruim" style="color:var(--rd)">0</div></div>
+        <div><div class="l">Trocas</div><div class="v" id="mh-troca" style="color:#a06a00">0</div></div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th class="n">#</th><th>Código</th><th class="n">Recebido</th><th class="n">Boas</th><th class="n">Ruins</th><th class="n">Perda</th><th>Troca</th></tr></thead>
+        <tbody id="mh-body"></tbody>
+      </table></div>
+    </div>
+    <div class="md-f"><button class="btn out" onclick="fechaModal()">Fechar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"><i class="ti ti-check"></i><span id="toast-msg"></span></div>
+
+<script>
+/* ===== CONFIGURAÇÃO =====
+   Chave anon do Supabase é pública por natureza (a segurança fica nas políticas RLS).
+   Nenhuma chave do Evolution aqui: o WhatsApp passa pela central (Apps Script). */
+const SB_URL = 'https://llfiwklxinautxoujpre.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsZml3a2x4aW5hdXR4b3VqcHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5MDUzNTAsImV4cCI6MjEwNDQ4MTM1MH0.3dLtdv0Hvf93jXQHy2mjOTr4BJoCMHF_MzwUVEI5o38';
+const CENTRAL = 'https://script.google.com/macros/s/AKfycbwN32_oJlZyA8K77NSm5ZpKU8vYSyU1eo0wyEhWleNi3m8_rMnTc11RDexw_YoS9_TC3w/exec';
+const WA_ANALISTAS = ['5571988220976', '5571993143772'];   // conclusão de triagem
+const SENHA = 'Estoque123', SESSAO = '_estoque';
+const LIMIAR_PERDA = 0.20;
+
+const sb = supabase.createClient(SB_URL, SB_KEY);
+let notaAtiva = null, itens = [], gruposPend = [], gruposHist = [];
+let fTipo = '', fLin = 'todos', fSt = '', salvando = false, rtTimer = null;
+
+/* ===== utilidades ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtData = d => d ? new Date(d).toLocaleDateString('pt-BR') : '-';
+const pct = (a, b) => b > 0 ? a / b : 0;
+const pctTxt = v => (Math.round(v * 1000) / 10).toString().replace('.', ',') + '%';
+function diasDesde(d) { const a = new Date(d), h = new Date(); a.setHours(0, 0, 0, 0); h.setHours(0, 0, 0, 0); return Math.round((h - a) / 86400000); }
+function toast(msg, erro) { const t = $('toast'); $('toast-msg').textContent = msg; t.classList.toggle('err', !!erro); t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), erro ? 5000 : 3200); }
+const tipoBadge = t => t === 'pelicula' ? '<span class="badge b-am">Película</span>' : '<span class="badge b-bl">Capa</span>';
+
+/* ===== WhatsApp pela central =====
+   Padrão das mensagens: ícone + título em negrito, linha em branco, dados curtos, próximo passo.
+   Envio em segundo plano (não trava a tela) e com keepalive (não se perde se fechar a aba). */
+function wa(numero, texto, mencoes) {
+  const body = { number: numero, message: texto };
+  if (mencoes && mencoes.length) body.mentioned = mencoes;
+  try {
+    return fetch(CENTRAL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) }).catch(e => console.warn('WhatsApp:', e));
+  } catch (e) { console.warn('WhatsApp:', e); }
+}
+async function waAnalistas(texto) { for (const n of WA_ANALISTAS) await wa(n, texto); }
+const msgWA = (icone, titulo, linhas) => icone + ' *' + titulo + '*\n\n' + linhas.filter(Boolean).join('\n');
+
+/* ===== login e tema ===== */
+function lsLogin() {
+  if ($('ls-pw').value === SENHA) { try { sessionStorage.setItem(SESSAO, '1'); } catch (e) {} entrar(); }
+  else { $('ls-err').textContent = 'Senha incorreta.'; $('ls-pw').value = ''; $('ls-pw').focus(); }
+}
+function fazerLogout() { try { sessionStorage.removeItem(SESSAO); } catch (e) {} location.reload(); }
+function entrar() { $('ls').classList.add('off'); loadPendentes(); subscribeRealtime(); }
+function toggleTheme() { document.body.classList.toggle('dark'); try { localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {} }
+document.addEventListener('DOMContentLoaded', () => {
+  try { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); } catch (e) {}
+  let ok = false; try { ok = sessionStorage.getItem(SESSAO) === '1'; } catch (e) {}
+  if (ok) entrar(); else $('ls-pw').focus();
+});
+
+/* ===== navegação ===== */
+function showView(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.nv[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $('v-' + v).classList.add('on');
+  if (v !== 'tri') { notaAtiva = null; itens = []; }
+  if (v === 'pend') loadPendentes();
+  if (v === 'hist') loadHistorico();
+}
+function voltar() { showView('pend'); }
+function fechaModal() { $('modal-hist').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fechaModal(); });
+
+/* ===== PARA TRIAR ===== */
+async function loadPendentes() {
+  const { data: notas, error } = await sb.from('notas').select('*').in('status', ['aberta', 'triagem']).order('created_at');
+  if (error) { $('pend-lista').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar as notas. ' + esc(error.message || '') + '</div>'; return; }
+  const grupos = {};
+  (notas || []).forEach(n => { const k = (n.numero || '') + '|' + (n.fornecedor || '').toLowerCase(); (grupos[k] = grupos[k] || []).push(n); });
+
+  const arr = await Promise.all(Object.values(grupos).map(async g => {
+    g.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const p = g[0];
+    // irmãs (mesmo número + fornecedor) em qualquer status, para somar os itens
+    const { data: irmas } = await sb.from('notas').select('*, itens_nota(id, qtd_recebida)').eq('numero', p.numero).eq('fornecedor', p.fornecedor);
+    const todas = (irmas && irmas.length ? irmas : g).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const its = todas.flatMap(n => n.itens_nota || []);
+    const ids = its.map(i => i.id);
+    let triados = 0;
+    if (ids.length) { const { data: tr } = await sb.from('triagem').select('item_id').in('item_id', ids); triados = new Set((tr || []).map(t => t.item_id)).size; }
+    return { principal: todas[0], qtd: todas.length, ids: todas.map(n => n.id), tipo: todas[0].tipo, totalItens: its.length, triados, unidades: its.reduce((s, i) => s + (i.qtd_recebida || 0), 0) };
+  }));
+
+  gruposPend = arr.filter(g => g.totalItens > 0 && g.triados < g.totalItens);
+  renderPend();
+}
+function setTipo(b) { fTipo = b.dataset.t; document.querySelectorAll('#chips-tipo .tb').forEach(x => x.classList.toggle('on', x === b)); renderPend(); }
+function renderPend() {
+  const lista = gruposPend;
+  const faltam = lista.reduce((s, g) => s + (g.totalItens - g.triados), 0);
+  const velha = lista.reduce((m, g) => Math.max(m, diasDesde(g.principal.created_at)), 0);
+  $('p-notas').textContent = lista.length;
+  $('p-notas-s').textContent = lista.filter(g => g.triados > 0).length + ' já iniciada(s)';
+  $('p-itens').textContent = faltam;
+  $('p-un').textContent = lista.reduce((s, g) => s + g.unidades, 0).toLocaleString('pt-BR');
+  $('p-velha').textContent = velha;
+  $('p-velha-s').textContent = velha === 1 ? 'dia esperando' : 'dias esperando';
+  $('p-velha-box').classList.toggle('alerta', velha >= 5);
+  $('nb-pend').textContent = lista.length || '';
+  $('pend-sub').textContent = lista.length ? lista.length + ' nota(s) aguardando triagem. Clique para iniciar.' : 'Nenhuma nota aguardando triagem.';
+
+  const q = $('q-pend').value.trim().toLowerCase();
+  const vis = lista.filter(g => (!fTipo || (g.tipo || 'capa') === fTipo) && (!q || (String(g.principal.numero) + ' ' + (g.principal.fornecedor || '')).toLowerCase().includes(q)))
+    .sort((a, b) => new Date(a.principal.created_at) - new Date(b.principal.created_at));   // a mais antiga primeiro
+  if (!vis.length) { $('pend-lista').innerHTML = '<div class="empty"><i class="ti ti-package-off"></i>' + (lista.length ? 'Nenhuma nota com esse filtro.' : 'Nenhuma nota aguardando triagem.') + '</div>'; return; }
+
+  window._pendVis = vis;
+  $('pend-lista').innerHTML = '<table><thead><tr><th>NF</th><th>Fornecedor</th><th>Produto</th><th style="min-width:150px">Triagem</th><th class="n">Unidades</th><th>Chegou em</th><th></th></tr></thead><tbody>' +
+    vis.map((g, i) => {
+      const d = diasDesde(g.principal.created_at);
+      const idade = d === 0 ? 'hoje' : d === 1 ? 'há 1 dia' : 'há ' + d + ' dias';
+      const cls = d >= 5 ? 'late' : d >= 3 ? 'warn' : 'sub';
+      const p = Math.round(pct(g.triados, g.totalItens) * 100);
+      return `<tr class="clk" onclick="abrirTriagem(window._pendVis[${i}].ids)">
+        <td><span class="nf">${esc(g.principal.numero)}</span>${g.qtd > 1 ? ' <span class="badge b-gy">' + g.qtd + ' entradas</span>' : ''}</td>
+        <td style="font-weight:600">${esc((g.principal.fornecedor || '-').toUpperCase())}</td>
+        <td>${tipoBadge(g.tipo)}</td>
+        <td><span style="font-weight:600">${g.triados}/${g.totalItens}</span> <span class="sub">itens</span><div class="prog"><i style="width:${p}%"></i></div></td>
+        <td class="n">${g.unidades.toLocaleString('pt-BR')}</td>
+        <td>${fmtData(g.principal.created_at)} <span class="${cls}">(${idade})</span></td>
+        <td style="text-align:right"><button class="btn ${g.triados ? 'out' : 'am'} sm" tabindex="-1">${g.triados ? 'Continuar' : 'Triar'}</button></td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
+}
+
+/* ===== TRIAGEM DA NOTA ===== */
+async function abrirTriagem(ids) {
+  if (!ids || !ids.length) return;
+  const { data: nota } = await sb.from('notas').select('*').eq('id', ids[0]).single();
+  if (!nota) { toast('Nota não encontrada', true); return; }
+  const { data: irmas } = await sb.from('notas').select('id').eq('numero', nota.numero).eq('fornecedor', nota.fornecedor);
+  const todos = (irmas || []).map(n => n.id);
+  const { data: its } = await sb.from('itens_nota').select('*').in('nota_id', todos.length ? todos : [nota.id]).order('ordem');
+  const lista = its || [];
+  const { data: tr } = await sb.from('triagem').select('*').in('item_id', lista.map(i => i.id));
+  const tmap = {}; (tr || []).forEach(t => { tmap[t.item_id] = t; });
+
+  notaAtiva = { ...nota, _todosIds: ids };
+  itens = lista.map(it => { const t = tmap[it.id]; return { ...it, input_boa: t?.qtd_boa ?? '', input_ruim: t?.qtd_ruim ?? '', input_trocada: t?.capa_trocada ?? false, input_codigo_trocado: t?.codigo_trocado ?? '', _jaSalvo: !!t, _dirty: false }; });
+
+  const pel = nota.tipo === 'pelicula';
+  $('tri-titulo').innerHTML = 'Nota <span class="nf">' + esc(nota.numero) + '</span> ' + tipoBadge(nota.tipo);
+  $('tri-sub').textContent = (nota.fornecedor || '-').toUpperCase() + ' · ' + itens.length + ' itens' + (todos.length > 1 ? ' (' + todos.length + ' entradas agrupadas)' : '') + ' · chegou em ' + fmtData(nota.created_at);
+  $('th-troca').textContent = pel ? 'Película trocada?' : 'Capa trocada?';
+  $('btn-final').innerHTML = pel ? '<i class="ti ti-circle-check"></i> Finalizar película' : '<i class="ti ti-circle-check"></i> Concluir triagem';
+  fLin = 'todos'; document.querySelectorAll('#chips-lin .tb').forEach(x => x.classList.toggle('on', x.dataset.f === 'todos'));
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on')); $('v-tri').classList.add('on');
+  renderLinhas(); window.scrollTo(0, 0);
+}
+
+const perdaAlta = it => { if (notaAtiva && notaAtiva.tipo === 'pelicula') return false; const r = it.qtd_recebida || 0; return r > 0 && it.input_ruim !== '' && (parseInt(it.input_ruim) || 0) / r >= LIMIAR_PERDA; };
+const preenchido = it => it.input_boa !== '' && it.input_ruim !== '';
+function situacao(it) {
+  if (!preenchido(it)) return '<span class="badge b-gy">Pendente</span>';
+  if ((parseInt(it.input_boa) || 0) + (parseInt(it.input_ruim) || 0) !== (it.qtd_recebida || 0)) return '<span class="badge b-am" title="Boas + ruins é diferente do recebido">Soma difere</span>';
+  if (it._jaSalvo && !it._dirty) return '<span class="badge b-gn"><i class="ti ti-check"></i> Salvo</span>';
+  return '<span class="badge b-bl">Pronto</span>';
+}
+function perdaCelula(it) {
+  if (!preenchido(it)) return '<span class="sub">-</span>';
+  const v = pct(parseInt(it.input_ruim) || 0, it.qtd_recebida || 0);
+  return perdaAlta(it) ? '<span class="badge b-rd" title="Perda acima de 20%">' + pctTxt(v) + '</span>' : '<span class="sub">' + pctTxt(v) + '</span>';
+}
+function linhaHTML(it, i) {
+  return `<tr class="rw ${it._jaSalvo ? 'salvo' : ''} ${perdaAlta(it) ? 'alta' : ''}" data-i="${i}">
+    <td class="n sub">${esc(it.ordem)}</td>
+    <td class="cod">${esc(it.codigo)}</td>
+    <td class="n" style="font-weight:600">${it.qtd_recebida}</td>
+    <td class="n"><input class="num boa" type="number" inputmode="numeric" min="0" max="${it.qtd_recebida}" value="${it.input_boa}" placeholder="0" data-i="${i}" data-k="boa" aria-label="Boas do código ${esc(it.codigo)}"></td>
+    <td class="n"><input class="num ruim" type="number" inputmode="numeric" min="0" max="${it.qtd_recebida}" value="${it.input_ruim}" placeholder="0" data-i="${i}" data-k="ruim" aria-label="Ruins do código ${esc(it.codigo)}"></td>
+    <td class="n c-perda">${perdaCelula(it)}</td>
+    <td><div class="troca"><input type="checkbox" data-i="${i}" data-k="troca" ${it.input_trocada ? 'checked' : ''} aria-label="Trocado"><input type="text" data-i="${i}" data-k="cod" value="${esc(it.input_codigo_trocado)}" placeholder="Código novo" style="display:${it.input_trocada ? 'block' : 'none'}"></div></td>
+    <td class="c-sit">${situacao(it)}</td>
+    <td style="text-align:right"><button class="btn out sm" data-act="bom" data-i="${i}" title="Recebido todo bom, sem perda"><i class="ti ti-check"></i> Tudo bom</button></td>
+  </tr>`;
+}
+function setLin(b) { fLin = b.dataset.f; document.querySelectorAll('#chips-lin .tb').forEach(x => x.classList.toggle('on', x === b)); renderLinhas(); }
+function renderLinhas() {
+  const ok = it => fLin === 'todos' || (fLin === 'pend' && !preenchido(it)) || (fLin === 'alta' && perdaAlta(it));
+  const html = itens.map((it, i) => ok(it) ? linhaHTML(it, i) : '').join('');
+  $('tri-body').innerHTML = html || '<tr><td colspan="9"><div class="empty"><i class="ti ti-filter-off"></i>Nenhum item neste filtro.</div></td></tr>';
+  atualizaTotais();
+}
+function atualizaLinha(i) {
+  const tr = $('tri-body').querySelector('tr[data-i="' + i + '"]'); if (!tr) return;
+  const it = itens[i];
+  tr.classList.toggle('alta', perdaAlta(it));
+  tr.querySelector('.c-perda').innerHTML = perdaCelula(it);
+  tr.querySelector('.c-sit').innerHTML = situacao(it);
+}
+function atualizaTotais() {
+  let rec = 0, boa = 0, ruim = 0, ok = 0, alta = 0;
+  itens.forEach(it => { rec += it.qtd_recebida || 0; boa += parseInt(it.input_boa) || 0; ruim += parseInt(it.input_ruim) || 0; if (preenchido(it)) ok++; if (perdaAlta(it)) alta++; });
+  $('s-prog').textContent = ok + '/' + itens.length; $('s-bar').style.width = (itens.length ? Math.round(ok / itens.length * 100) : 0) + '%';
+  $('s-rec').textContent = rec.toLocaleString('pt-BR'); $('s-boa').textContent = boa.toLocaleString('pt-BR'); $('s-ruim').textContent = ruim.toLocaleString('pt-BR');
+  $('s-perda').textContent = pctTxt(pct(ruim, rec)); $('s-perda').style.color = pct(ruim, rec) >= LIMIAR_PERDA ? 'var(--rd)' : '';
+  $('f-rec').textContent = rec.toLocaleString('pt-BR'); $('f-boa').textContent = boa.toLocaleString('pt-BR'); $('f-ruim').textContent = ruim.toLocaleString('pt-BR');
+  $('c-todos').textContent = itens.length; $('c-pend').textContent = itens.length - ok; $('c-alta').textContent = alta;
+  const falta = itens.length - ok;
+  $('bar-msg').innerHTML = falta ? '<b>' + falta + '</b> item(ns) ainda sem contagem' : '<span style="color:var(--gn);font-weight:700"><i class="ti ti-circle-check"></i> Todos os itens preenchidos</span>';
+  if (alta) $('bar-msg').innerHTML += ' · <span class="late">' + alta + ' com perda acima de 20%</span>';
+}
+
+/* entradas da tabela (delegação: não perde o foco ao digitar) */
+const corpo = $('tri-body');
+corpo.addEventListener('input', e => {
+  const t = e.target, k = t.dataset.k; if (!k) return; const i = +t.dataset.i, it = itens[i];
+  if (k === 'boa' || k === 'ruim') {
+    let v = t.value === '' ? '' : Math.max(0, parseInt(t.value) || 0);
+    if (v !== '' && v > it.qtd_recebida) { v = it.qtd_recebida; t.value = v; }
+    const outro = k === 'boa' ? 'ruim' : 'boa';
+    it['input_' + k] = v; it._dirty = true;
+    // completa o outro lado: boas preenchidas → ruins = recebido - boas (e vice-versa, se o outro estiver vazio)
+    if (v !== '' && (k === 'boa' || it['input_' + outro] === '')) {
+      it['input_' + outro] = it.qtd_recebida - v;
+      const campo = corpo.querySelector('input[data-i="' + i + '"][data-k="' + outro + '"]'); if (campo) campo.value = it['input_' + outro];
+    }
+    atualizaLinha(i); atualizaTotais();
+  } else if (k === 'cod') { it.input_codigo_trocado = t.value.trim().toUpperCase(); it._dirty = true; }
+});
+corpo.addEventListener('change', e => {
+  const t = e.target; if (t.dataset.k !== 'troca') return; const i = +t.dataset.i, it = itens[i];
+  it.input_trocada = t.checked; it._dirty = true;
+  const cod = corpo.querySelector('input[data-i="' + i + '"][data-k="cod"]');
+  if (cod) { cod.style.display = t.checked ? 'block' : 'none'; if (t.checked) cod.focus(); else { cod.value = ''; it.input_codigo_trocado = ''; } }
+  atualizaLinha(i);
+});
+corpo.addEventListener('click', e => { const b = e.target.closest('[data-act="bom"]'); if (b) tudoBom(+b.dataset.i); });
+corpo.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !e.target.matches('input[data-k="boa"],input[data-k="ruim"]')) return;
+  e.preventDefault();
+  const boas = [...corpo.querySelectorAll('input[data-k="boa"]')];
+  const atual = boas.findIndex(x => x.dataset.i === e.target.dataset.i);
+  const prox = boas[atual + 1]; if (prox) { prox.focus(); prox.select(); }
+});
+function tudoBom(i) {
+  const it = itens[i]; it.input_boa = it.qtd_recebida; it.input_ruim = 0; it._dirty = true;
+  const r = corpo.querySelector('tr[data-i="' + i + '"]');
+  if (r) { r.querySelector('[data-k="boa"]').value = it.input_boa; r.querySelector('[data-k="ruim"]').value = 0; }
+  atualizaLinha(i); atualizaTotais();
+}
+function tudoBomPendentes() {
+  const vazios = itens.map((it, i) => preenchido(it) ? -1 : i).filter(i => i >= 0);
+  if (!vazios.length) { toast('Nenhum item pendente'); return; }
+  if (!confirm('Marcar ' + vazios.length + ' item(ns) pendente(s) como 100% bons, sem nenhuma perda?')) return;
+  vazios.forEach(i => { const it = itens[i]; it.input_boa = it.qtd_recebida; it.input_ruim = 0; it._dirty = true; });
+  renderLinhas();
+}
+
+/* ===== salvar ===== */
+function travaBotoes(on) { salvando = on; ['btn-parcial', 'btn-final'].forEach(id => $(id).disabled = on); }
+async function salvar(final) {
+  if (salvando || !notaAtiva) return;
+  const feitos = itens.filter(preenchido);
+  if (!final && !feitos.length) { toast('Nenhum item preenchido para salvar'); return; }
+  if (final) {
+    const falta = itens.filter(it => !preenchido(it));
+    if (falta.length) { toast('Preencha todos os itens (' + falta.length + ' pendentes)', true); const b = document.querySelector('#chips-lin [data-f="pend"]'); if (b) setLin(b); return; }
+  }
+  const lista = final ? itens : feitos;
+  const estouro = lista.find(it => (parseInt(it.input_boa) || 0) + (parseInt(it.input_ruim) || 0) > it.qtd_recebida);
+  if (estouro) { toast('Código ' + estouro.codigo + ': boas + ruins passa do recebido', true); return; }
+  const menor = lista.filter(it => (parseInt(it.input_boa) || 0) + (parseInt(it.input_ruim) || 0) < it.qtd_recebida);
+  if (menor.length && !confirm(menor.length + ' item(ns) com boas + ruins menor que o recebido (ex.: ' + menor[0].codigo + '). Salvar mesmo assim?')) return;
+
+  travaBotoes(true);
+  const linhas = lista.map(it => ({ item_id: it.id, nota_id: notaAtiva.id, qtd_boa: parseInt(it.input_boa) || 0, qtd_ruim: parseInt(it.input_ruim) || 0, capa_trocada: it.input_trocada || false, codigo_trocado: it.input_codigo_trocado || null }));
+  // upsert por item_id: sempre 1 linha por item, nunca duplica. Uma chamada só para a lista inteira.
+  const { error } = await sb.from('triagem').upsert(linhas, { onConflict: 'item_id' });
+  if (error) { toast('Erro ao salvar triagem: ' + (error.message || 'verifique a constraint UNIQUE de item_id'), true); travaBotoes(false); return; }
+
+  if (!final) {
+    toast(lista.length + ' item(ns) salvo(s). A nota continua aberta para os demais.');
+    await abrirTriagem(notaAtiva._todosIds);
+    travaBotoes(false); return;
+  }
+
+  const pel = notaAtiva.tipo === 'pelicula';
+  const novoStatus = pel ? 'concluida' : 'triagem';
+  const { data: irmas } = await sb.from('notas').select('id').eq('numero', notaAtiva.numero).eq('fornecedor', notaAtiva.fornecedor);
+  const idsUp = (irmas || []).map(n => n.id);
+  const { error: eSt } = idsUp.length ? await sb.from('notas').update({ status: novoStatus }).in('id', idsUp) : await sb.from('notas').update({ status: novoStatus }).eq('id', notaAtiva.id);
+  if (eSt) { toast('Triagem salva, mas falhou ao atualizar o status: ' + (eSt.message || ''), true); travaBotoes(false); return; }
+
+  const boas = itens.reduce((s, it) => s + (parseInt(it.input_boa) || 0), 0), ruins = itens.reduce((s, it) => s + (parseInt(it.input_ruim) || 0), 0);
+  const cab = 'Nota ' + notaAtiva.numero + ' (' + (pel ? 'película' : 'capa') + ') · ' + (notaAtiva.fornecedor || '').toUpperCase();
+  const resumo = 'Boas: ' + boas.toLocaleString('pt-BR') + ' | Ruins: ' + ruins.toLocaleString('pt-BR') + ' (' + pctTxt(pct(ruins, boas + ruins)) + ' de perda)';
+  waAnalistas(pel
+    ? msgWA('✅', 'Película finalizada', [cab, resumo, 'Pronta para coleta.'])
+    : msgWA('✅', 'Triagem concluída', [cab, resumo, 'Aguardando envio para a produção.']));
+
+  toast(pel ? 'Película finalizada. Processo concluído.' : 'Triagem concluída com sucesso.');
+  setTimeout(() => { travaBotoes(false); voltar(); }, 700);
+}
+
+/* ===== HISTÓRICO ===== */
+async function loadHistorico() {
+  const { data: notas, error } = await sb.from('notas').select('*').in('status', ['triagem', 'tampografia', 'concluida']).order('created_at', { ascending: false });
+  if (error) { $('hist-lista').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar o histórico.</div>'; return; }
+  const grupos = {};
+  (notas || []).forEach(n => { const k = (n.numero || '') + '|' + (n.fornecedor || '').toLowerCase(); (grupos[k] = grupos[k] || []).push(n); });
+  const prio = { triagem: 3, tampografia: 2, concluida: 1 };
+  gruposHist = Object.values(grupos).map(g => {
+    g.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const p = g[0];
+    const ativo = g.reduce((best, n) => (prio[n.status] || 0) > (prio[best.status] || 0) ? n : best, p);
+    return { principal: p, qtd: g.length, itens: g.reduce((s, n) => s + (n.qtd_itens || 0), 0), status: ativo.status };
+  });
+  renderHist();
+}
+function setSt(b) { fSt = b.dataset.s; document.querySelectorAll('#chips-st .tb').forEach(x => x.classList.toggle('on', x === b)); renderHist(); }
+const ST = { triagem: ['b-bl', 'Triagem feita'], tampografia: ['b-rd', 'Em tampografia'], concluida: ['b-gn', 'Concluída'] };
+function renderHist() {
+  const q = $('q-hist').value.trim().toLowerCase();
+  const vis = gruposHist.filter(g => (!fSt || g.status === fSt) && (!q || (String(g.principal.numero) + ' ' + (g.principal.fornecedor || '')).toLowerCase().includes(q)));
+  if (!vis.length) { $('hist-lista').innerHTML = '<div class="empty"><i class="ti ti-history"></i>' + (gruposHist.length ? 'Nada com esse filtro.' : 'Nenhuma triagem registrada.') + '</div>'; return; }
+  window._histVis = vis;
+  $('hist-lista').innerHTML = '<table><thead><tr><th>NF</th><th>Fornecedor</th><th>Produto</th><th class="n">Itens</th><th>Chegou em</th><th>Situação</th><th></th></tr></thead><tbody>' +
+    vis.map((g, i) => { const [c, l] = ST[g.status] || ['b-gy', g.status];
+      return `<tr class="clk" onclick="verDetalhe(window._histVis[${i}].principal.id)">
+        <td><span class="nf">${esc(g.principal.numero)}</span>${g.qtd > 1 ? ' <span class="badge b-gy">' + g.qtd + ' entradas</span>' : ''}</td>
+        <td style="font-weight:600">${esc((g.principal.fornecedor || '-').toUpperCase())}</td>
+        <td>${tipoBadge(g.principal.tipo)}</td><td class="n">${g.itens}</td><td>${fmtData(g.principal.created_at)}</td>
+        <td><span class="badge ${c}">${l}</span></td><td class="sub" style="text-align:right"><i class="ti ti-chevron-right"></i></td></tr>`; }).join('') + '</tbody></table>';
+}
+async function verDetalhe(notaId) {
+  const { data: nota } = await sb.from('notas').select('*').eq('id', notaId).single(); if (!nota) return;
+  const { data: irmas } = await sb.from('notas').select('id').eq('numero', nota.numero).eq('fornecedor', nota.fornecedor);
+  const todos = (irmas || []).map(n => n.id);
+  const { data: its } = await sb.from('itens_nota').select('*').in('nota_id', todos).order('ordem');
+  const lista = its || [];
+  const { data: tr } = await sb.from('triagem').select('*').in('item_id', lista.map(i => i.id));
+  const tmap = {}; (tr || []).forEach(t => { tmap[t.item_id] = t; });
+  const rec = lista.reduce((s, i) => s + (i.qtd_recebida || 0), 0);
+  const boas = (tr || []).reduce((s, t) => s + (t.qtd_boa || 0), 0), ruins = (tr || []).reduce((s, t) => s + (t.qtd_ruim || 0), 0), trocas = (tr || []).filter(t => t.capa_trocada).length;
+  const datas = (tr || []).map(t => t.created_at).filter(Boolean).sort(); const fim = datas.length ? datas[datas.length - 1] : null;
+  let info = ''; if (fim) { const d = Math.round((new Date(fim) - new Date(nota.created_at)) / 86400000); info = ' · triada em ' + fmtData(fim) + ' (' + (d === 0 ? 'no mesmo dia' : d + ' dia(s) depois') + ')'; }
+  $('mh-t').textContent = 'Nota ' + nota.numero; $('mh-s').textContent = (nota.fornecedor || '-') + ' · aberta em ' + fmtData(nota.created_at) + info;
+  $('mh-rec').textContent = rec; $('mh-boa').textContent = boas; $('mh-ruim').textContent = ruins; $('mh-troca').textContent = trocas;
+  $('mh-body').innerHTML = lista.map(it => { const t = tmap[it.id]; const tem = t && t.qtd_boa !== undefined;
+    const p = tem ? pct(t.qtd_ruim || 0, it.qtd_recebida || 0) : null;
+    return `<tr><td class="n sub">${esc(it.ordem)}</td><td class="cod">${esc(it.codigo)}</td><td class="n">${it.qtd_recebida}</td>
+      <td class="n" style="font-weight:700;color:var(--gn)">${tem ? t.qtd_boa : '-'}</td><td class="n" style="font-weight:700;color:var(--rd)">${tem ? t.qtd_ruim : '-'}</td>
+      <td class="n">${p === null ? '-' : (p >= LIMIAR_PERDA && nota.tipo !== 'pelicula' ? '<span class="badge b-rd">' + pctTxt(p) + '</span>' : '<span class="sub">' + pctTxt(p) + '</span>')}</td>
+      <td>${t && t.capa_trocada ? '<span class="badge b-am">' + esc(t.codigo_trocado || 'sem código') + '</span>' : '<span class="sub">-</span>'}</td></tr>`; }).join('');
+  $('modal-hist').classList.add('on');
+}
+
+/* ===== tempo real (com intervalo para não recarregar a cada gravação) ===== */
+function subscribeRealtime() {
+  sb.channel('estoque-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => {
+    clearTimeout(rtTimer);
+    rtTimer = setTimeout(() => {
+      if ($('v-pend').classList.contains('on')) loadPendentes();
+      if ($('v-hist').classList.contains('on')) loadHistorico();
+    }, 700);
+  }).subscribe();
+}
+</script>
+</body>
+</html>

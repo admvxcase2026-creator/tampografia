@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia | Produção</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI2IiBmaWxsPSIjM2QzZDNkIi8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSI3IiB5PSI3IiB3aWR0aD0iMTQiIGhlaWdodD0iMTIiIHJ4PSIxLjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2YwYTUwMCIvPjwvc3ZnPg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont3.49.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f3f4f6;--pn:#fff;--pn2:#fafbfc;--ln:#e3e6ea;--ln2:#eef0f3;--tx:#1d2330;--t2:#6b7487;--am:#f0a500;--bl:#1d6fd6;--rd:#d93b3b;--gn:#2f9e5f;--sbg:#25282f;--inp:#fff;--inpb:#d5dae2}
+body.dark{--bg:#14171d;--pn:#1c2029;--pn2:#171b23;--ln:#2a3140;--ln2:#232a37;--tx:#e8ecf5;--t2:#8d98ae;--sbg:#101319;--inp:#12161d;--inpb:#323b4d}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font:13px/1.45 'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+h1{font-size:20px;font-weight:700;line-height:1.2}
+.mono{font-family:'DM Mono',ui-monospace,Menlo,monospace}
+.sub{font-size:12px;color:var(--t2)}
+:focus-visible{outline:2px solid var(--bl);outline-offset:2px}
+
+/* cabeçalho e menu */
+.hd{position:fixed;top:0;left:0;right:0;height:44px;background:var(--sbg);display:flex;align-items:center;gap:10px;padding:0 14px;z-index:100;border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{color:#fff;font-weight:700;letter-spacing:.08em;font-size:13px}.logo span{color:var(--am)}
+.hd-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip-h{background:#363b47;color:#e6e9f0;border-radius:7px;padding:4px 10px;font-size:11px}
+.ib{background:#363b47;border:0;color:#fff;border-radius:7px;padding:4px 9px;line-height:1.3}
+.ib:hover{background:#434957}
+.sb{position:fixed;top:44px;bottom:0;left:0;width:176px;background:var(--sbg);padding:10px 8px;display:flex;flex-direction:column;z-index:90}
+.sb-t{font-size:11px;color:#7f889c;padding:10px 10px 4px}
+.nv{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;border:0;background:none;color:#c9ced8;padding:9px 10px;border-radius:8px;margin-bottom:2px;text-align:left;font-size:13px}
+.nv:hover{background:#2f343f;color:#fff}
+.nv.on{background:var(--am);color:#1a1300;font-weight:700}
+.nb{background:#3a3f4b;color:#fff;border-radius:99px;padding:0 7px;font-size:11px;font-weight:600;min-width:20px;text-align:center}
+.nv.on .nb{background:rgba(0,0,0,.18);color:#1a1300}.nb.red{background:var(--rd);color:#fff}.nb:empty{display:none}
+.sb-f{margin-top:auto;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+main{margin-left:176px;padding:62px 22px 40px;max-width:1400px}
+.view{display:none}.view.on{display:block}
+
+/* título da página */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* cartões e números */
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:12px;overflow:hidden}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--ln);font-weight:700;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.st{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+.st .l{font-size:12px;color:var(--t2)}
+.st .v{font-size:26px;font-weight:700;line-height:1.15;margin:2px 0;font-variant-numeric:tabular-nums}
+.st .s{font-size:11.5px;color:var(--t2)}
+.st.alerta{border-color:#f1b9b9;background:rgba(217,59,59,.07)}.st.alerta .s{color:var(--rd);font-weight:700}
+.st.gn .v{color:var(--gn)}.st.rd .v{color:var(--rd)}.st.am .v{color:#a06a00}.st.bl .v{color:var(--bl)}
+body.dark .st.am .v{color:var(--am)}
+.prog{height:5px;background:var(--ln);border-radius:3px;overflow:hidden;margin-top:6px}
+.prog>i{display:block;height:100%;background:var(--gn);border-radius:3px;transition:width .25s}
+
+/* botões e campos */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:9px;padding:8px 13px;font-size:12px;font-weight:600;white-space:nowrap}
+.btn:hover{filter:brightness(.94)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.pri{background:var(--gn);color:#fff}
+.btn.out{background:var(--pn);color:var(--tx);border-color:var(--ln)}.btn.out:hover{background:var(--pn2)}
+.btn.am{background:var(--am);color:#1a1300}
+.btn.sm{padding:5px 9px;font-size:11px}
+.btn.block{width:100%}
+label{font-size:11.5px;color:var(--t2);font-weight:600;display:block;margin-bottom:4px}
+input:not([type=checkbox]):not([type=radio]),select{background:var(--inp);border:1px solid var(--inpb);border-radius:9px;color:var(--tx);padding:8px 10px;font:inherit;font-size:12.5px;outline:0;width:100%}
+input:focus,select:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(29,111,214,.15)}
+/* busca com largura própria (vem depois da regra geral de campos) */
+.tools input[type=search]{width:240px}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--rd);cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tb{padding:5px 12px;border-radius:99px;border:1px solid var(--ln);background:var(--pn);font-size:12px;color:var(--t2);user-select:none}
+.tb:hover{color:var(--tx)}
+.tb.on{background:var(--tx);color:var(--pn);border-color:var(--tx)}
+.tb.rd{border-color:#f1b9b9;color:var(--rd)}.tb.rd.on{background:var(--rd);color:#fff;border-color:var(--rd)}
+
+/* tabelas */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--pn2);border-bottom:1px solid var(--ln);padding:8px 12px;text-align:left;font-weight:600;color:var(--t2);font-size:11.5px;white-space:nowrap}
+tbody td{border-top:1px solid var(--ln2);padding:9px 12px;vertical-align:middle}
+tbody tr:first-child td{border-top:0}
+tbody tr.clk{cursor:pointer}tbody tr.clk:hover td{background:var(--pn2)}
+td.n,th.n{text-align:center}
+.nf{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;color:var(--bl)}
+tfoot td{border-top:1px solid var(--ln);background:var(--pn2);font-weight:700;padding:9px 12px}
+
+/* selos */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:99px;font-size:11px;font-weight:700;padding:3px 9px;white-space:nowrap}
+.b-gn{background:rgba(47,158,95,.14);color:var(--gn)}
+.b-am{background:rgba(240,165,0,.18);color:#a06a00}body.dark .b-am{color:var(--am)}
+.b-rd{background:rgba(217,59,59,.13);color:var(--rd)}
+.b-bl{background:rgba(29,111,214,.13);color:var(--bl)}
+.b-gy{background:var(--ln2);color:var(--t2)}
+.late{color:var(--rd);font-weight:700}.warn{color:#a06a00;font-weight:600}body.dark .warn{color:var(--am)}
+
+/* modal, aviso, login */
+.mb{position:fixed;inset:0;background:rgba(10,14,22,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:14px}
+.mb.on{display:flex}
+.md{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:14px;width:720px;max-width:100%;max-height:90vh;overflow:auto}
+.md-h{background:var(--sbg);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:14px 14px 0 0;gap:10px}
+.md-h b{font-size:14px}.md-h small{color:#aab2c3;font-size:11.5px;margin-left:8px}
+.md-x{background:none;border:0;color:#fff;font-size:18px;line-height:1}
+.md-b{padding:16px}
+.md-f{padding:10px 16px;border-top:1px solid var(--ln);background:var(--pn2);display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;right:18px;bottom:18px;background:#20242c;color:#fff;border-radius:10px;padding:10px 16px;font-size:12.5px;z-index:999;display:flex;gap:8px;align-items:center;transform:translateY(90px);opacity:0;transition:transform .2s,opacity .2s;max-width:min(420px,calc(100vw - 36px))}
+.toast.on{transform:none;opacity:1}
+.toast.err{background:var(--rd)}
+.ls{position:fixed;inset:0;background:var(--sbg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.ls.off{display:none}
+.ls-box{background:var(--pn);border-radius:14px;padding:26px 24px;width:330px;max-width:100%;display:flex;flex-direction:column;gap:12px}
+.ls-box .logo{color:var(--tx);font-size:20px}
+.ls-err{font-size:12px;color:var(--rd);min-height:16px}
+.empty{text-align:center;padding:34px 16px;color:var(--t2)}
+.empty i{font-size:30px;display:block;margin-bottom:8px;opacity:.5}
+
+@media (max-width:820px){
+  .sb{top:44px;bottom:auto;left:0;right:0;width:auto;height:46px;flex-direction:row;align-items:center;padding:6px 8px;overflow-x:auto}
+  .sb-t{display:none}.nv{width:auto;margin:0 4px 0 0;white-space:nowrap}
+  .sb-f{margin:0 0 0 auto;padding:0;border:0}
+  main{margin-left:0;padding:98px 12px 40px}
+  .tools input[type=search]{width:100%}.tools{width:100%}
+  h1{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* específico da tampografia: chamados e checklist */
+.ch{background:var(--pn);border:1px solid var(--ln);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.ch.atraso{border-color:#f1b9b9}
+.ch-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;cursor:pointer;width:100%;border:0;background:none;text-align:left}
+.ch-h:hover{background:var(--pn2)}
+.ch-n{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;color:var(--bl);font-size:13px}
+.ch-m{font-size:12px;color:var(--t2);margin-top:3px}
+.ch-r{display:flex;align-items:center;gap:12px;flex:none}
+.ch-r .p{width:110px}
+.ch-r .p b{font-size:12px;font-variant-numeric:tabular-nums}
+.ch-c{color:var(--t2);transition:transform .2s}
+.ch.open .ch-c{transform:rotate(180deg)}
+.ch-b{display:none;border-top:1px solid var(--ln);padding:14px 16px}
+.ch.open .ch-b{display:block}
+.ck{display:flex;align-items:center;gap:12px;width:100%;border:0;border-top:1px solid var(--ln2);background:none;padding:10px 12px;min-height:54px;text-align:left}
+.ck:first-child{border-top:0}
+.ck:hover{background:var(--pn2)}
+.ck .bx{width:30px;height:30px;border:2px solid var(--inpb);border-radius:8px;display:flex;align-items:center;justify-content:center;color:transparent;font-size:18px;flex:none;transition:background .12s,border-color .12s}
+.ck.ok .bx{background:var(--gn);border-color:var(--gn);color:#fff}
+.ck .cd{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;font-size:14px}
+.ck.ok .cd{color:var(--gn)}
+.ck .q{font-size:12px;color:var(--t2)}
+.ck .sp{flex:1}
+.lista-ck{border:1px solid var(--ln);border-radius:10px;overflow:hidden;margin:12px 0}
+.ch-a{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.ch-a .info{font-size:12.5px;color:var(--t2)}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.dgrid>div{border:1px solid var(--ln);border-radius:10px;padding:10px;text-align:center;background:var(--pn2)}
+.dgrid .l{font-size:11.5px;color:var(--t2)}.dgrid .v{font-size:16px;font-weight:700;margin-top:2px}
+@media (max-width:820px){
+  .ch-r .p{display:none}
+  .dgrid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="ls" id="ls">
+  <form class="ls-box" onsubmit="lsLogin();return false">
+    <div><div class="logo">VX <span>CASE</span></div><div class="sub" style="margin-top:2px">Produção: tampografia</div></div>
+    <div><label for="ls-pw">Senha de acesso</label><input type="password" id="ls-pw" autocomplete="current-password" placeholder="Digite a senha"></div>
+    <button class="btn pri block" type="submit">Entrar</button>
+    <div class="ls-err" id="ls-err" role="alert"></div>
+  </form>
+</div>
+
+<header class="hd">
+  <div class="logo">VX <span>CASE</span></div>
+  <div class="hd-r">
+    <button class="ib" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema"><i class="ti ti-moon"></i></button>
+    <div class="chip-h">Tampografia</div>
+  </div>
+</header>
+
+<aside class="sb">
+  <div class="sb-t">Produção</div>
+  <button class="nv on" data-v="chamados" onclick="showView('chamados')"><span>Chamados</span><span class="nb red" id="nb-ch"></span></button>
+  <button class="nv" data-v="historico" onclick="showView('historico')"><span>Histórico</span></button>
+  <div class="sb-f"><button class="nv" onclick="fazerLogout()"><span><i class="ti ti-logout"></i> Sair</span></button></div>
+</aside>
+
+<main>
+
+  <!-- CHAMADOS -->
+  <section id="v-chamados" class="view on">
+    <div class="ph">
+      <div><h1>Chamados ativos</h1><p class="sub">Marque cada código quando ele sair da produção. Os mais urgentes ficam no topo.</p></div>
+      <div class="tools"><button class="btn out sm" onclick="loadChamados()"><i class="ti ti-refresh"></i> Atualizar</button></div>
+    </div>
+    <div class="stats">
+      <div class="st bl"><div class="l">Chamados abertos</div><div class="v" id="st-abertos">0</div><div class="s" id="st-abertos-s">&nbsp;</div></div>
+      <div class="st am"><div class="l">Itens pendentes</div><div class="v" id="st-pend">0</div><div class="s">para produzir</div></div>
+      <div class="st" id="st-atr-box"><div class="l">Atrasados</div><div class="v" id="st-atr">0</div><div class="s" id="st-atr-s">&nbsp;</div></div>
+      <div class="st gn"><div class="l">Concluídos hoje</div><div class="v" id="st-hoje">0</div><div class="s">chamados finalizados</div></div>
+    </div>
+    <div id="lista"><div class="empty"><i class="ti ti-paint"></i>Carregando chamados...</div></div>
+  </section>
+
+  <!-- HISTÓRICO -->
+  <section id="v-historico" class="view">
+    <div class="ph">
+      <div><h1>Histórico</h1><p class="sub">Chamados finalizados. Clique para ver os itens.</p></div>
+      <div class="tools">
+        <input type="search" id="q-hist" placeholder="Buscar chamado, NF ou fornecedor" oninput="renderHist()" aria-label="Buscar no histórico">
+        <div class="chips" id="chips-res">
+          <button class="tb on" data-r="" onclick="setRes(this)">Todos</button>
+          <button class="tb" data-r="ok" onclick="setRes(this)">No prazo ou antes</button>
+          <button class="tb rd" data-r="atraso" onclick="setRes(this)">Com atraso</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="tw" id="hist-lista"><div class="empty"><i class="ti ti-history"></i>Carregando...</div></div></div>
+  </section>
+
+</main>
+
+<div class="mb" id="modal" onclick="if(event.target===this)fechaModal()">
+  <div class="md" role="dialog" aria-modal="true" aria-labelledby="m-t" style="width:620px">
+    <div class="md-h"><div><b id="m-t">Chamado</b><small id="m-s"></small></div><button class="md-x" onclick="fechaModal()" aria-label="Fechar"><i class="ti ti-x"></i></button></div>
+    <div class="md-b">
+      <div class="dgrid">
+        <div><div class="l">Prazo</div><div class="v" id="m-prazo">-</div></div>
+        <div><div class="l">Concluído em</div><div class="v" id="m-conc">-</div></div>
+        <div><div class="l">Resultado</div><div class="v" id="m-res">-</div></div>
+        <div><div class="l">Itens</div><div class="v" id="m-itens">-</div></div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Código</th><th class="n">Unidades</th><th>Situação</th></tr></thead>
+        <tbody id="m-body"></tbody>
+      </table></div>
+    </div>
+    <div class="md-f"><button class="btn out" onclick="fechaModal()">Fechar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"><i class="ti ti-check"></i><span id="toast-msg"></span></div>
+
+<script>
+/* ===== CONFIGURAÇÃO =====
+   Chave anon do Supabase é pública por natureza (a segurança fica nas políticas RLS).
+   Nenhuma chave do Evolution aqui: o WhatsApp passa pela central (Apps Script). */
+const SB_URL = 'https://llfiwklxinautxoujpre.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsZml3a2x4aW5hdXR4b3VqcHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5MDUzNTAsImV4cCI6MjEwNDQ4MTM1MH0.3dLtdv0Hvf93jXQHy2mjOTr4BJoCMHF_MzwUVEI5o38';
+const CENTRAL = 'https://script.google.com/macros/s/AKfycbwN32_oJlZyA8K77NSm5ZpKU8vYSyU1eo0wyEhWleNi3m8_rMnTc11RDexw_YoS9_TC3w/exec';
+const WA_ANALISTAS = ['5571988220976', '5571993143772'];
+const GRUPO_PRODUCAO = '120363028837269627@g.us';           // Distribuição
+const MENCOES_PRODUCAO = ['5571992583104', '5571996644903'];  // quem coleta
+const SENHA = 'Tampografia321', SESSAO = '_tamp';
+
+const sb = supabase.createClient(SB_URL, SB_KEY);
+let chamados = [], histAll = [], aberto = null, fRes = '', rtTimer = null;
+const ocupado = new Set();
+
+/* ===== utilidades ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtData = d => d ? new Date(d).toLocaleDateString('pt-BR') : '-';
+function toast(msg, erro) { const t = $('toast'); $('toast-msg').textContent = msg; t.classList.toggle('err', !!erro); t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), erro ? 5000 : 3200); }
+/* dia local (sem fuso): 'YYYY-MM-DD' vira meia-noite local; timestamp vira o dia local dele */
+function dia(d) { if (!d) return null; const s = String(d); const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s); const x = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(s); x.setHours(0, 0, 0, 0); return x; }
+const diasEntre = (a, b) => Math.round((dia(a) - dia(b)) / 86400000);   // a - b em dias
+const hojeISO = () => new Date().toISOString();
+
+/* ===== WhatsApp pela central =====
+   Padrão das mensagens: ícone + título em negrito, linha em branco, dados curtos, próximo passo.
+   Envio em segundo plano e com keepalive (não trava a tela e não se perde se fechar a aba). */
+function wa(numero, texto, mencoes) {
+  const body = { number: numero, message: texto };
+  if (mencoes && mencoes.length) body.mentioned = mencoes;
+  try {
+    return fetch(CENTRAL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) }).catch(e => console.warn('WhatsApp:', e));
+  } catch (e) { console.warn('WhatsApp:', e); }
+}
+async function waAnalistas(texto) { for (const n of WA_ANALISTAS) await wa(n, texto); }
+const msgWA = (icone, titulo, linhas) => icone + ' *' + titulo + '*\n\n' + linhas.filter(x => x !== null && x !== undefined && x !== false).join('\n');
+const baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
+
+/* ===== login e tema ===== */
+function lsLogin() {
+  if ($('ls-pw').value === SENHA) { try { sessionStorage.setItem(SESSAO, '1'); } catch (e) {} entrar(); }
+  else { $('ls-err').textContent = 'Senha incorreta.'; $('ls-pw').value = ''; $('ls-pw').focus(); }
+}
+function fazerLogout() { try { sessionStorage.removeItem(SESSAO); } catch (e) {} location.reload(); }
+function entrar() { $('ls').classList.add('off'); loadChamados(); subscribeRealtime(); }
+function toggleTheme() { document.body.classList.toggle('dark'); try { localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {} }
+document.addEventListener('DOMContentLoaded', () => {
+  try { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); } catch (e) {}
+  let ok = false; try { ok = sessionStorage.getItem(SESSAO) === '1'; } catch (e) {}
+  if (ok) entrar(); else $('ls-pw').focus();
+});
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.nv[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $('v-' + v).classList.add('on');
+  if (v === 'chamados') loadChamados();
+  if (v === 'historico') loadHistorico();
+}
+function fechaModal() { $('modal').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fechaModal(); });
+
+/* ===== prazo ===== */
+function prazoInfo(prazo) {
+  if (!prazo) return { cls: 'b-gy', txt: 'Sem prazo', dias: null, icone: 'ti-calendar-off' };
+  const d = diasEntre(prazo, new Date());
+  if (d < 0) return { cls: 'b-rd', txt: 'Atrasado ' + Math.abs(d) + (Math.abs(d) === 1 ? ' dia' : ' dias'), dias: d, icone: 'ti-alert-triangle' };
+  if (d === 0) return { cls: 'b-am', txt: 'Vence hoje', dias: d, icone: 'ti-clock' };
+  if (d === 1) return { cls: 'b-am', txt: 'Vence amanhã', dias: d, icone: 'ti-clock' };
+  return { cls: 'b-gn', txt: 'Faltam ' + d + ' dias', dias: d, icone: 'ti-calendar' };
+}
+
+/* ===== CHAMADOS ===== */
+async function loadChamados() {
+  const inicioHoje = new Date(); inicioHoje.setHours(0, 0, 0, 0);
+  const [{ data, error }, { count: hoje }] = await Promise.all([
+    sb.from('chamados').select('*, notas(numero, fornecedor), chamado_itens(*)').eq('status', 'aberto').order('created_at'),
+    sb.from('chamados').select('id', { count: 'exact', head: true }).eq('status', 'concluido').gte('data_conclusao', inicioHoje.toISOString())
+  ]);
+  if (error) { $('lista').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar os chamados. ' + esc(error.message || '') + '</div>'; return; }
+  // mais urgente primeiro: prazo mais próximo; sem prazo vai para o fim
+  chamados = (data || []).slice().sort((a, b) => {
+    const pa = a.prazo ? dia(a.prazo).getTime() : Infinity, pb = b.prazo ? dia(b.prazo).getTime() : Infinity;
+    return pa - pb || new Date(a.created_at) - new Date(b.created_at);
+  });
+  const pend = chamados.reduce((s, c) => s + (c.chamado_itens || []).filter(i => !i.concluido).length, 0);
+  const atras = chamados.filter(c => c.prazo && diasEntre(c.prazo, new Date()) < 0).length;
+  const lib = chamados.filter(c => c.liberacao_pendente).length;
+  $('st-abertos').textContent = chamados.length; $('st-abertos-s').textContent = lib ? lib + ' aguardando liberação' : 'em produção';
+  $('st-pend').textContent = pend; $('st-hoje').textContent = hoje || 0;
+  $('st-atr').textContent = atras; $('st-atr-s').textContent = atras ? 'passaram do prazo' : 'nenhum atrasado';
+  $('st-atr-box').classList.toggle('alerta', atras > 0);
+  $('nb-ch').textContent = chamados.length || '';
+  renderChamados();
+}
+function renderChamados() {
+  const box = $('lista');
+  if (!chamados.length) { box.innerHTML = '<div class="empty"><i class="ti ti-paint-off"></i>Nenhum chamado ativo no momento.</div>'; return; }
+  box.innerHTML = chamados.map(cardHTML).join('');
+}
+function cardHTML(ch) {
+  const its = (ch.chamado_itens || []).slice().sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  const feitos = its.filter(i => i.concluido).length, p = its.length ? Math.round(feitos / its.length * 100) : 0;
+  const pz = prazoInfo(ch.prazo);
+  const atraso = pz.dias !== null && pz.dias < 0;
+  const estado = ch.liberado ? '<span class="badge b-bl"><i class="ti ti-lock-open"></i> Liberado pela analista</span>' : ch.liberacao_pendente ? '<span class="badge b-am"><i class="ti ti-hourglass"></i> Aguardando liberação</span>' : '';
+  return `<div class="ch ${aberto === ch.id ? 'open' : ''} ${atraso ? 'atraso' : ''}" id="card-${ch.id}">
+    <button class="ch-h" onclick="toggleCard('${ch.id}')" aria-expanded="${aberto === ch.id}">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="ch-n">${esc(ch.numero)}</span><span class="badge ${pz.cls}"><i class="ti ${pz.icone}"></i> ${pz.txt}</span>${estado}</div>
+        <div class="ch-m">Nota ${esc(ch.notas?.numero || '-')} · ${esc((ch.notas?.fornecedor || '').toUpperCase())}${ch.prazo ? ' · prazo ' + fmtData(ch.prazo) : ''}</div>
+      </div>
+      <div class="ch-r"><div class="p"><b><span class="c-feitos">${feitos}</span>/${its.length}</b> <span class="sub">itens</span><div class="prog"><i style="width:${p}%"></i></div></div><i class="ti ti-chevron-down ch-c"></i></div>
+    </button>
+    <div class="ch-b">
+      <div class="lista-ck">${its.map(i => itemHTML(i, ch.id)).join('') || '<div class="empty">Chamado sem itens.</div>'}</div>
+      <div class="ch-a">${acaoHTML(ch, feitos, its.length)}</div>
+    </div>
+  </div>`;
+}
+function itemHTML(i, chId) {
+  return `<button class="ck ${i.concluido ? 'ok' : ''}" id="ci-${i.id}" onclick="toggleItem('${i.id}','${chId}')" aria-pressed="${!!i.concluido}">
+    <span class="bx"><i class="ti ti-check"></i></span>
+    <span><div class="cd">${esc(i.codigo)}</div><div class="q">${i.qtd_enviada} unidades</div></span><span class="sp"></span>
+    <span class="badge ${i.concluido ? 'b-gn' : 'b-am'}">${i.concluido ? 'Concluído' : 'Pendente'}</span></button>`;
+}
+function acaoHTML(ch, feitos, total) {
+  const completo = total > 0 && feitos === total;
+  const pendentes = total - feitos;
+  const marcar = pendentes ? `<button class="btn out" onclick="marcarTodos('${ch.id}')"><i class="ti ti-checks"></i> Marcar todos (${pendentes})</button>` : '<span></span>';
+  let dir;
+  if (completo || ch.liberado) dir = `<button class="btn pri" id="btn-fin-${ch.id}" onclick="finalizarChamado('${ch.id}')"><i class="ti ti-circle-check"></i> Finalizar chamado</button>`;
+  else if (ch.liberacao_pendente) dir = '<span class="info"><i class="ti ti-hourglass"></i> Pedido enviado. Aguarde a analista liberar.</span>';
+  else dir = `<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="info">Faltam ${pendentes} item(ns)</span><button class="btn out" onclick="pedirLiberacao('${ch.id}')"><i class="ti ti-send"></i> Pedir liberação à analista</button></span>`;
+  return marcar + dir;
+}
+function toggleCard(id) { aberto = aberto === id ? null : id; document.querySelectorAll('.ch').forEach(c => { const on = c.id === 'card-' + aberto; c.classList.toggle('open', on); c.querySelector('.ch-h').setAttribute('aria-expanded', on); }); }
+
+/* redesenha só o cartão (mantém os outros abertos/fechados como estão) */
+async function atualizaCard(id) {
+  const { data } = await sb.from('chamados').select('*, notas(numero, fornecedor), chamado_itens(*)').eq('id', id).single();
+  if (!data) return loadChamados();
+  const i = chamados.findIndex(c => c.id === id); if (i >= 0) chamados[i] = data;
+  const el = $('card-' + id); if (el) el.outerHTML = cardHTML(data);
+  const pend = chamados.reduce((s, c) => s + (c.chamado_itens || []).filter(x => !x.concluido).length, 0); $('st-pend').textContent = pend;
+}
+async function toggleItem(ciId, chId) {
+  if (ocupado.has(ciId)) return; ocupado.add(ciId);
+  const ch = chamados.find(c => c.id === chId); const it = ch && (ch.chamado_itens || []).find(x => x.id === ciId);
+  const novo = !(it && it.concluido);
+  const { error } = await sb.from('chamado_itens').update({ concluido: novo }).eq('id', ciId);
+  ocupado.delete(ciId);
+  if (error) { toast('Não consegui salvar esse item. Tente de novo.', true); return; }
+  await atualizaCard(chId);
+}
+async function marcarTodos(chId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  const n = (ch.chamado_itens || []).filter(i => !i.concluido).length;
+  if (!n || !confirm('Marcar os ' + n + ' item(ns) pendentes como concluídos?')) return;
+  const { error } = await sb.from('chamado_itens').update({ concluido: true }).eq('chamado_id', chId).eq('concluido', false);
+  if (error) { toast('Não consegui marcar os itens.', true); return; }
+  await atualizaCard(chId);
+}
+
+/* Itens pendentes: o operador pede liberação e a analista decide no menu Liberações */
+async function pedirLiberacao(chId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  const pend = (ch.chamado_itens || []).filter(i => !i.concluido);
+  if (!pend.length) return;
+  if (!confirm('Pedir à analista para finalizar o chamado ' + ch.numero + ' com ' + pend.length + ' item(ns) pendente(s)?')) return;
+  const { error } = await sb.from('chamados').update({ liberacao_pendente: true }).eq('id', chId);
+  if (error) { toast('Não consegui enviar o pedido.', true); return; }
+  waAnalistas(msgWA('⚠️', 'Liberação solicitada', [
+    'Chamado ' + ch.numero + ' · Nota ' + (ch.notas?.numero || '-'),
+    'Tentou finalizar com ' + pend.length + ' item(ns) pendente(s):',
+    pend.slice(0, 12).map(i => '• ' + i.codigo + ' (' + i.qtd_enviada + ' un.)').join('\n') + (pend.length > 12 ? '\n• e mais ' + (pend.length - 12) : ''), '',
+    'Abra o menu Liberações para autorizar:', baseUrl() + 'analista.html']));
+  toast('Pedido enviado para a analista.');
+  await atualizaCard(chId); loadChamados();
+}
+
+async function finalizarChamado(chId) {
+  if (ocupado.has('fin' + chId)) return; ocupado.add('fin' + chId);
+  const btn = $('btn-fin-' + chId); if (btn) btn.disabled = true;
+  try {
+    const { data: chk } = await sb.from('chamados').select('numero, liberado, chamado_itens(concluido)').eq('id', chId).single();
+    const todos = (chk?.chamado_itens || []).every(i => i.concluido);
+    if (!todos && !chk?.liberado) { toast('Há itens pendentes. Peça a liberação à analista.', true); await atualizaCard(chId); return; }
+    const numero = chk?.numero || '';
+    const agora = hojeISO();
+    const { error: e1 } = await sb.from('chamados').update({ status: 'concluido', data_conclusao: agora }).eq('id', chId);
+    if (e1) { toast('Não consegui finalizar o chamado.', true); return; }
+
+    // a nota só fecha quando todas as levas terminaram e não sobrou item bom sem enviar
+    const { data: atual } = await sb.from('chamados').select('nota_id').eq('id', chId).single();
+    if (atual?.nota_id) {
+      const notaId = atual.nota_id;
+      const { data: todosCh } = await sb.from('chamados').select('id, status').eq('nota_id', notaId);
+      const levasOk = (todosCh || []).every(c => c.status === 'concluido' || c.status === 'coletado');
+      if (levasOk) {
+        const { data: itensNota } = await sb.from('itens_nota').select('id, tipo').eq('nota_id', notaId);
+        const { data: tri } = await sb.from('triagem').select('item_id, qtd_boa').in('item_id', (itensNota || []).map(i => i.id));
+        const tmap = {}; (tri || []).forEach(t => { tmap[t.item_id] = t; });
+        const { data: env } = await sb.from('chamado_itens').select('item_id').in('chamado_id', (todosCh || []).map(c => c.id));
+        const enviados = new Set((env || []).map(e => e.item_id));
+        const sobra = (itensNota || []).filter(it => (it.tipo || 'capa') !== 'pelicula' && !enviados.has(it.id) && tmap[it.id] && (tmap[it.id].qtd_boa || 0) > 0);
+        if (!sobra.length) await sb.from('notas').update({ status: 'concluida' }).eq('id', notaId);
+      }
+    }
+
+    const { data: info } = await sb.from('chamados').select('prazo, data_conclusao, notas(numero, fornecedor)').eq('id', chId).single();
+    const notaNum = info?.notas?.numero || '-';
+    let prazoTxt = null;
+    if (info?.prazo) {
+      const d = diasEntre(info.prazo, info.data_conclusao || agora);
+      prazoTxt = d > 0 ? 'Pronta ' + d + ' dia(s) antes do prazo.' : d === 0 ? 'Entregue no dia do prazo.' : 'Atrasou ' + Math.abs(d) + ' dia(s).';
+    }
+    const cab = 'Chamado ' + numero + ' · Nota ' + notaNum + (info?.notas?.fornecedor ? ' · ' + info.notas.fornecedor.toUpperCase() : '');
+    // grupo da Distribuição (com marcação de quem coleta) e as analistas
+    wa(GRUPO_PRODUCAO, msgWA('✅', 'Produção finalizada', [cab, prazoTxt, 'As capas estão prontas para coleta.', '', MENCOES_PRODUCAO.map(n => '@' + n).join(' ')]), MENCOES_PRODUCAO);
+    waAnalistas(msgWA('✅', 'Produção finalizada', [cab, prazoTxt, 'Pronta para coleta.']));
+
+    toast('Chamado ' + numero + ' finalizado.');
+    aberto = null; setTimeout(loadChamados, 500);
+  } finally { ocupado.delete('fin' + chId); }
+}
+
+/* ===== HISTÓRICO ===== */
+async function loadHistorico() {
+  const { data: chs, error } = await sb.from('chamados').select('*, chamado_itens(*)').in('status', ['concluido', 'coletado']).order('data_conclusao', { ascending: false });
+  if (error) { $('hist-lista').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar o histórico.</div>'; return; }
+  const notaIds = [...new Set((chs || []).map(c => c.nota_id).filter(Boolean))];
+  const nm = {};
+  if (notaIds.length) { const { data: ns } = await sb.from('notas').select('id,numero,fornecedor').in('id', notaIds); (ns || []).forEach(n => { nm[n.id] = n; }); }
+  histAll = (chs || []).map(c => ({ ...c, notas: nm[c.nota_id] || null }));
+  renderHist();
+}
+function resultado(ch) {
+  if (!ch.prazo || !ch.data_conclusao) return { cls: 'b-gy', txt: '-', k: '' };
+  const d = diasEntre(ch.prazo, ch.data_conclusao);
+  if (d > 0) return { cls: 'b-gn', txt: d + (d === 1 ? ' dia antes' : ' dias antes'), k: 'ok' };
+  if (d === 0) return { cls: 'b-bl', txt: 'No prazo', k: 'ok' };
+  return { cls: 'b-rd', txt: Math.abs(d) + (Math.abs(d) === 1 ? ' dia de atraso' : ' dias de atraso'), k: 'atraso' };
+}
+function setRes(b) { fRes = b.dataset.r; document.querySelectorAll('#chips-res .tb').forEach(x => x.classList.toggle('on', x === b)); renderHist(); }
+function renderHist() {
+  const q = $('q-hist').value.trim().toLowerCase();
+  const vis = histAll.filter(c => (!fRes || resultado(c).k === fRes) && (!q || (c.numero + ' ' + (c.notas?.numero || '') + ' ' + (c.notas?.fornecedor || '')).toLowerCase().includes(q)));
+  if (!vis.length) { $('hist-lista').innerHTML = '<div class="empty"><i class="ti ti-history"></i>' + (histAll.length ? 'Nada com esse filtro.' : 'Nenhum chamado finalizado.') + '</div>'; return; }
+  window._hv = vis;
+  $('hist-lista').innerHTML = '<table><thead><tr><th>Chamado</th><th>Nota</th><th>Fornecedor</th><th>Aberto em</th><th>Prazo</th><th>Concluído em</th><th>Resultado</th><th></th></tr></thead><tbody>' +
+    vis.map((c, i) => { const r = resultado(c); return `<tr class="clk" onclick="verDetalhe(${i})">
+      <td><span class="ch-n">${esc(c.numero)}</span></td><td class="nf">${esc(c.notas?.numero || '-')}</td><td>${esc((c.notas?.fornecedor || '-').toUpperCase())}</td>
+      <td>${fmtData(c.created_at)}</td><td>${c.prazo ? fmtData(c.prazo) : '-'}</td><td>${fmtData(c.data_conclusao)}</td>
+      <td><span class="badge ${r.cls}">${r.txt}</span></td><td class="sub" style="text-align:right"><i class="ti ti-chevron-right"></i></td></tr>`; }).join('') + '</tbody></table>';
+}
+function verDetalhe(i) {
+  const ch = window._hv[i]; if (!ch) return;
+  const its = (ch.chamado_itens || []).slice().sort((a, b) => (a.ordem || 0) - (b.ordem || 0)); const r = resultado(ch);
+  $('m-t').textContent = ch.numero; $('m-s').textContent = 'Nota ' + (ch.notas?.numero || '-') + (ch.notas?.fornecedor ? ' · ' + ch.notas.fornecedor : '');
+  $('m-prazo').textContent = ch.prazo ? fmtData(ch.prazo) : '-'; $('m-conc').textContent = fmtData(ch.data_conclusao);
+  $('m-res').innerHTML = '<span class="badge ' + r.cls + '">' + r.txt + '</span>'; $('m-itens').textContent = its.length;
+  // mostra a situação real: item liberado sem concluir não aparece como concluído
+  $('m-body').innerHTML = its.map(x => `<tr><td class="ch-n" style="color:var(--tx)">${esc(x.codigo)}</td><td class="n">${x.qtd_enviada}</td>
+    <td>${x.concluido ? '<span class="badge b-gn"><i class="ti ti-check"></i> Concluído</span>' : '<span class="badge b-am">Liberado sem concluir</span>'}</td></tr>`).join('');
+  $('modal').classList.add('on');
+}
+
+/* ===== tempo real (com intervalo) ===== */
+function subscribeRealtime() {
+  const recarrega = () => { clearTimeout(rtTimer); rtTimer = setTimeout(() => { if ($('v-chamados').classList.contains('on')) loadChamados(); if ($('v-historico').classList.contains('on')) loadHistorico(); }, 700); };
+  sb.channel('chamados-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, recarrega)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamado_itens' }, recarrega)
+    .subscribe();
+}
+</script>
+</body>
+</html>
