@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampografia | Produção</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI2IiBmaWxsPSIjM2QzZDNkIi8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSI3IiB5PSI3IiB3aWR0aD0iMTQiIGhlaWdodD0iMTIiIHJ4PSIxLjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS44IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2YwYTUwMCIvPjwvc3ZnPg==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.49.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f3f4f6;--pn:#fff;--pn2:#fafbfc;--ln:#e3e6ea;--ln2:#eef0f3;--tx:#1d2330;--t2:#6b7487;--am:#f0a500;--bl:#1d6fd6;--rd:#d93b3b;--gn:#2f9e5f;--sbg:#25282f;--inp:#fff;--inpb:#d5dae2}
+body.dark{--bg:#14171d;--pn:#1c2029;--pn2:#171b23;--ln:#2a3140;--ln2:#232a37;--tx:#e8ecf5;--t2:#8d98ae;--sbg:#101319;--inp:#12161d;--inpb:#323b4d}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font:13px/1.45 'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+h1{font-size:20px;font-weight:700;line-height:1.2}
+.mono{font-family:'DM Mono',ui-monospace,Menlo,monospace}
+.sub{font-size:12px;color:var(--t2)}
+:focus-visible{outline:2px solid var(--bl);outline-offset:2px}
+
+/* cabeçalho e menu */
+.hd{position:fixed;top:0;left:0;right:0;height:44px;background:var(--sbg);display:flex;align-items:center;gap:10px;padding:0 14px;z-index:100;border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{color:#fff;font-weight:700;letter-spacing:.08em;font-size:13px}.logo span{color:var(--am)}
+.hd-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip-h{background:#363b47;color:#e6e9f0;border-radius:7px;padding:4px 10px;font-size:11px}
+.ib{background:#363b47;border:0;color:#fff;border-radius:7px;padding:4px 9px;line-height:1.3}
+.ib:hover{background:#434957}
+.sb{position:fixed;top:44px;bottom:0;left:0;width:176px;background:var(--sbg);padding:10px 8px;display:flex;flex-direction:column;z-index:90}
+.sb-t{font-size:11px;color:#7f889c;padding:10px 10px 4px}
+.nv{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;border:0;background:none;color:#c9ced8;padding:9px 10px;border-radius:8px;margin-bottom:2px;text-align:left;font-size:13px}
+.nv:hover{background:#2f343f;color:#fff}
+.nv.on{background:var(--am);color:#1a1300;font-weight:700}
+.nb{background:#3a3f4b;color:#fff;border-radius:99px;padding:0 7px;font-size:11px;font-weight:600;min-width:20px;text-align:center}
+.nv.on .nb{background:rgba(0,0,0,.18);color:#1a1300}.nb.red{background:var(--rd);color:#fff}.nb:empty{display:none}
+.sb-f{margin-top:auto;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+main{margin-left:176px;padding:62px 22px 40px;max-width:1400px}
+.view{display:none}.view.on{display:block}
+
+/* título da página */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* cartões e números */
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:12px;overflow:hidden}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--ln);font-weight:700;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.st{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+.st .l{font-size:12px;color:var(--t2)}
+.st .v{font-size:26px;font-weight:700;line-height:1.15;margin:2px 0;font-variant-numeric:tabular-nums}
+.st .s{font-size:11.5px;color:var(--t2)}
+.st.alerta{border-color:#f1b9b9;background:rgba(217,59,59,.07)}.st.alerta .s{color:var(--rd);font-weight:700}
+.st.gn .v{color:var(--gn)}.st.rd .v{color:var(--rd)}.st.am .v{color:#a06a00}.st.bl .v{color:var(--bl)}
+body.dark .st.am .v{color:var(--am)}
+.prog{height:5px;background:var(--ln);border-radius:3px;overflow:hidden;margin-top:6px}
+.prog>i{display:block;height:100%;background:var(--gn);border-radius:3px;transition:width .25s}
+
+/* botões e campos */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:9px;padding:8px 13px;font-size:12px;font-weight:600;white-space:nowrap}
+.btn:hover{filter:brightness(.94)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.pri{background:var(--gn);color:#fff}
+.btn.out{background:var(--pn);color:var(--tx);border-color:var(--ln)}.btn.out:hover{background:var(--pn2)}
+.btn.am{background:var(--am);color:#1a1300}
+.btn.sm{padding:5px 9px;font-size:11px}
+.btn.block{width:100%}
+label{font-size:11.5px;color:var(--t2);font-weight:600;display:block;margin-bottom:4px}
+input:not([type=checkbox]):not([type=radio]),select{background:var(--inp);border:1px solid var(--inpb);border-radius:9px;color:var(--tx);padding:8px 10px;font:inherit;font-size:12.5px;outline:0;width:100%}
+input:focus,select:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(29,111,214,.15)}
+/* busca com largura própria (vem depois da regra geral de campos) */
+.tools input[type=search]{width:240px}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--rd);cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tb{padding:5px 12px;border-radius:99px;border:1px solid var(--ln);background:var(--pn);font-size:12px;color:var(--t2);user-select:none}
+.tb:hover{color:var(--tx)}
+.tb.on{background:var(--tx);color:var(--pn);border-color:var(--tx)}
+.tb.rd{border-color:#f1b9b9;color:var(--rd)}.tb.rd.on{background:var(--rd);color:#fff;border-color:var(--rd)}
+
+/* tabelas */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--pn2);border-bottom:1px solid var(--ln);padding:8px 12px;text-align:left;font-weight:600;color:var(--t2);font-size:11.5px;white-space:nowrap}
+tbody td{border-top:1px solid var(--ln2);padding:9px 12px;vertical-align:middle}
+tbody tr:first-child td{border-top:0}
+tbody tr.clk{cursor:pointer}tbody tr.clk:hover td{background:var(--pn2)}
+td.n,th.n{text-align:center}
+.nf{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;color:var(--bl)}
+tfoot td{border-top:1px solid var(--ln);background:var(--pn2);font-weight:700;padding:9px 12px}
+
+/* selos */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:99px;font-size:11px;font-weight:700;padding:3px 9px;white-space:nowrap}
+.b-gn{background:rgba(47,158,95,.14);color:var(--gn)}
+.b-am{background:rgba(240,165,0,.18);color:#a06a00}body.dark .b-am{color:var(--am)}
+.b-rd{background:rgba(217,59,59,.13);color:var(--rd)}
+.b-bl{background:rgba(29,111,214,.13);color:var(--bl)}
+.b-gy{background:var(--ln2);color:var(--t2)}
+.late{color:var(--rd);font-weight:700}.warn{color:#a06a00;font-weight:600}body.dark .warn{color:var(--am)}
+
+/* modal, aviso, login */
+.mb{position:fixed;inset:0;background:rgba(10,14,22,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:14px}
+.mb.on{display:flex}
+.md{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:14px;width:720px;max-width:100%;max-height:90vh;overflow:auto}
+.md-h{background:var(--sbg);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:14px 14px 0 0;gap:10px}
+.md-h b{font-size:14px}.md-h small{color:#aab2c3;font-size:11.5px;margin-left:8px}
+.md-x{background:none;border:0;color:#fff;font-size:18px;line-height:1}
+.md-b{padding:16px}
+.md-f{padding:10px 16px;border-top:1px solid var(--ln);background:var(--pn2);display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;right:18px;bottom:18px;background:#20242c;color:#fff;border-radius:10px;padding:10px 16px;font-size:12.5px;z-index:999;display:flex;gap:8px;align-items:center;transform:translateY(90px);opacity:0;transition:transform .2s,opacity .2s;max-width:min(420px,calc(100vw - 36px))}
+.toast.on{transform:none;opacity:1}
+.toast.err{background:var(--rd)}
+.ls{position:fixed;inset:0;background:var(--sbg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.ls.off{display:none}
+.ls-box{background:var(--pn);border-radius:14px;padding:26px 24px;width:330px;max-width:100%;display:flex;flex-direction:column;gap:12px}
+.ls-box .logo{color:var(--tx);font-size:20px}
+.ls-err{font-size:12px;color:var(--rd);min-height:16px}
+.empty{text-align:center;padding:34px 16px;color:var(--t2)}
+.empty i{font-size:30px;display:block;margin-bottom:8px;opacity:.5}
+
+@media (max-width:820px){
+  .sb{top:44px;bottom:auto;left:0;right:0;width:auto;height:46px;flex-direction:row;align-items:center;padding:6px 8px;overflow-x:auto}
+  .sb-t{display:none}.nv{width:auto;margin:0 4px 0 0;white-space:nowrap}
+  .sb-f{margin:0 0 0 auto;padding:0;border:0}
+  main{margin-left:0;padding:98px 12px 40px}
+  .tools input[type=search]{width:100%}.tools{width:100%}
+  h1{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* específico da tampografia: chamados e checklist */
+.ch{background:var(--pn);border:1px solid var(--ln);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.ch.atraso{border-color:#f1b9b9}
+.ch-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;cursor:pointer;width:100%;border:0;background:none;text-align:left}
+.ch-h:hover{background:var(--pn2)}
+.ch-n{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;color:var(--bl);font-size:13px}
+.ch-m{font-size:12px;color:var(--t2);margin-top:3px}
+.ch-r{display:flex;align-items:center;gap:12px;flex:none}
+.ch-r .p{width:110px}
+.ch-r .p b{font-size:12px;font-variant-numeric:tabular-nums}
+.ch-c{color:var(--t2);transition:transform .2s}
+.ch.open .ch-c{transform:rotate(180deg)}
+.ch-b{display:none;border-top:1px solid var(--ln);padding:14px 16px}
+.ch.open .ch-b{display:block}
+.ck{display:flex;align-items:center;gap:12px;width:100%;border:0;border-top:1px solid var(--ln2);background:none;padding:10px 12px;min-height:54px;text-align:left}
+.ck:first-child{border-top:0}
+.ck:hover{background:var(--pn2)}
+.ck .bx{width:30px;height:30px;border:2px solid var(--inpb);border-radius:8px;display:flex;align-items:center;justify-content:center;color:transparent;font-size:18px;flex:none;transition:background .12s,border-color .12s}
+.ck.ok .bx{background:var(--gn);border-color:var(--gn);color:#fff}
+.ck .cd{font-family:'DM Mono',ui-monospace,monospace;font-weight:700;font-size:14px}
+.ck.ok .cd{color:var(--gn)}
+.ck .q{font-size:12px;color:var(--t2)}
+.ck .sp{flex:1}
+.lista-ck{border:1px solid var(--ln);border-radius:10px;overflow:hidden;margin:12px 0}
+.ch-a{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.ch-a .info{font-size:12.5px;color:var(--t2)}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.dgrid>div{border:1px solid var(--ln);border-radius:10px;padding:10px;text-align:center;background:var(--pn2)}
+.dgrid .l{font-size:11.5px;color:var(--t2)}.dgrid .v{font-size:16px;font-weight:700;margin-top:2px}
+/* controle de tempo da leva */
+.pb{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--ln);border-radius:10px;background:var(--pn2);margin-bottom:12px}
+.pb.run{border-color:var(--gn);background:rgba(47,158,95,.08)}
+.pb.pz{border-color:var(--am);background:rgba(240,165,0,.09)}
+.pb .t{font-size:12.5px;color:var(--t2)}.pb .t b{color:var(--tx)}
+.cron{font-family:'DM Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;font-weight:700}
+.ck.trava{opacity:.5}
+.mb.av{z-index:300}
+.av-b{width:440px}
+.av-i{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(240,165,0,.18);color:#a06a00;margin:0 auto 10px}
+.av-i.gn{background:rgba(47,158,95,.14);color:var(--gn)}.av-i.rd{background:rgba(217,59,59,.13);color:var(--rd)}.av-i.bl{background:rgba(29,111,214,.13);color:var(--bl)}
+.av-t{font-size:16px;font-weight:700;text-align:center;margin-bottom:6px}
+.av-c{font-size:13px;color:var(--t2);text-align:center;line-height:1.55;white-space:pre-line}
+.av-f{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 16px 16px}
+.st .d{font-size:11.5px;margin-top:2px;color:var(--t2)}.st .d.up{color:var(--gn);font-weight:700}.st .d.dn{color:var(--rd);font-weight:700}
+.nota-sm{font-size:11.5px;color:var(--t2);margin:2px 0 12px}
+@media (max-width:820px){
+  .ch-r .p{display:none}
+  .dgrid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="ls" id="ls">
+  <form class="ls-box" onsubmit="lsLogin();return false">
+    <div><div class="logo">VX <span>CASE</span></div><div class="sub" style="margin-top:2px">Produção: tampografia</div></div>
+    <div><label for="ls-pw">Senha de acesso</label><input type="password" id="ls-pw" autocomplete="current-password" placeholder="Digite a senha"></div>
+    <button class="btn pri block" type="submit">Entrar</button>
+    <div class="ls-err" id="ls-err" role="alert"></div>
+  </form>
+</div>
+
+<header class="hd">
+  <div class="logo">VX <span>CASE</span></div>
+  <div class="hd-r">
+    <button class="ib" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema"><i class="ti ti-moon"></i></button>
+    <div class="chip-h">Tampografia</div>
+  </div>
+</header>
+
+<aside class="sb">
+  <div class="sb-t">Produção</div>
+  <button class="nv on" data-v="chamados" onclick="showView('chamados')"><span>Chamados</span><span class="nb red" id="nb-ch"></span></button>
+  <button class="nv" data-v="historico" onclick="showView('historico')"><span>Histórico</span></button>
+  <button class="nv" data-v="producao" onclick="showView('producao')"><span>Produção do mês</span></button>
+  <div class="sb-f"><button class="nv" onclick="fazerLogout()"><span><i class="ti ti-logout"></i> Sair</span></button></div>
+</aside>
+
+<main>
+
+  <!-- CHAMADOS -->
+  <section id="v-chamados" class="view on">
+    <div class="ph">
+      <div><h1>Chamados ativos</h1><p class="sub">Marque cada código quando ele sair da produção. Os mais urgentes ficam no topo.</p></div>
+      <div class="tools"><button class="btn out sm" onclick="loadChamados()"><i class="ti ti-refresh"></i> Atualizar</button></div>
+    </div>
+    <div class="stats">
+      <div class="st bl"><div class="l">Chamados abertos</div><div class="v" id="st-abertos">0</div><div class="s" id="st-abertos-s">&nbsp;</div></div>
+      <div class="st am"><div class="l">Itens pendentes</div><div class="v" id="st-pend">0</div><div class="s">para produzir</div></div>
+      <div class="st" id="st-atr-box"><div class="l">Atrasados</div><div class="v" id="st-atr">0</div><div class="s" id="st-atr-s">&nbsp;</div></div>
+      <div class="st gn"><div class="l">Concluídos hoje</div><div class="v" id="st-hoje">0</div><div class="s">chamados finalizados</div></div>
+    </div>
+    <div id="lista"><div class="empty"><i class="ti ti-paint"></i>Carregando chamados...</div></div>
+  </section>
+
+  <!-- HISTÓRICO -->
+  <section id="v-historico" class="view">
+    <div class="ph">
+      <div><h1>Histórico</h1><p class="sub">Chamados finalizados. Clique para ver os itens.</p></div>
+      <div class="tools">
+        <input type="search" id="q-hist" placeholder="Buscar chamado, NF ou fornecedor" oninput="renderHist()" aria-label="Buscar no histórico">
+        <div class="chips" id="chips-res">
+          <button class="tb on" data-r="" onclick="setRes(this)">Todos</button>
+          <button class="tb" data-r="ok" onclick="setRes(this)">No prazo ou antes</button>
+          <button class="tb rd" data-r="atraso" onclick="setRes(this)">Com atraso</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="tw" id="hist-lista"><div class="empty"><i class="ti ti-history"></i>Carregando...</div></div></div>
+  </section>
+
+  <!-- PRODUÇÃO DO MÊS -->
+  <section id="v-producao" class="view">
+    <div class="ph">
+      <div><h1>Produção do mês</h1><p class="sub">Contado pela data em que o chamado foi finalizado.</p></div>
+      <div class="tools">
+        <input type="month" id="mes-prod" onchange="loadProducao()" aria-label="Mês" style="width:170px">
+        <button class="btn pri" onclick="baixarExcel()"><i class="ti ti-file-spreadsheet"></i> Baixar Excel</button>
+      </div>
+    </div>
+    <div id="prod-corpo"><div class="empty"><i class="ti ti-chart-bar"></i>Carregando...</div></div>
+  </section>
+
+</main>
+
+<div class="mb av" id="modal-av">
+  <div class="md av-b" role="alertdialog" aria-modal="true" aria-labelledby="av-t" style="padding-top:22px">
+    <div class="av-i" id="av-i"></div>
+    <div class="av-t" id="av-t"></div>
+    <div class="md-b av-c" id="av-c"></div>
+    <div class="av-f" id="av-f"></div>
+  </div>
+</div>
+
+<div class="mb" id="modal" onclick="if(event.target===this)fechaModal()">
+  <div class="md" role="dialog" aria-modal="true" aria-labelledby="m-t" style="width:620px">
+    <div class="md-h"><div><b id="m-t">Chamado</b><small id="m-s"></small></div><button class="md-x" onclick="fechaModal()" aria-label="Fechar"><i class="ti ti-x"></i></button></div>
+    <div class="md-b">
+      <div class="dgrid">
+        <div><div class="l">Prazo</div><div class="v" id="m-prazo">-</div></div>
+        <div><div class="l">Concluído em</div><div class="v" id="m-conc">-</div></div>
+        <div><div class="l">Resultado</div><div class="v" id="m-res">-</div></div>
+        <div><div class="l">Itens</div><div class="v" id="m-itens">-</div></div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Código</th><th class="n">Unidades</th><th>Situação</th></tr></thead>
+        <tbody id="m-body"></tbody>
+      </table></div>
+    </div>
+    <div class="md-f"><button class="btn out" onclick="fechaModal()">Fechar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"><i class="ti ti-check"></i><span id="toast-msg"></span></div>
+
+<script>
+/* ===== CONFIGURAÇÃO =====
+   Chave anon do Supabase é pública por natureza (a segurança fica nas políticas RLS).
+   Nenhuma chave do Evolution aqui: o WhatsApp passa pela central (Apps Script). */
+const SB_URL = 'https://llfiwklxinautxoujpre.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsZml3a2x4aW5hdXR4b3VqcHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5MDUzNTAsImV4cCI6MjEwNDQ4MTM1MH0.3dLtdv0Hvf93jXQHy2mjOTr4BJoCMHF_MzwUVEI5o38';
+const CENTRAL = 'https://script.google.com/macros/s/AKfycbwN32_oJlZyA8K77NSm5ZpKU8vYSyU1eo0wyEhWleNi3m8_rMnTc11RDexw_YoS9_TC3w/exec';
+const WA_ANALISTAS = ['5571988220976', '5571993143772'];
+const GRUPO_PRODUCAO = '120363028837269627@g.us';           // Distribuição
+const MENCOES_PRODUCAO = ['5571992583104', '5571996644903'];  // quem coleta
+const SENHA = 'Tampografia321', SESSAO = '_tamp';
+
+/* Controle de tempo da produção (horários em minutos do dia, hora local) */
+const OPERADOR = 'Jadson';
+const HORA_AVISO_INICIO = 15 * 60;       // a partir daqui avisa que pode não dar tempo
+const HORA_PAUSA_AUTO = 16 * 60 + 30;    // pausa automática (jornada termina às 17:00)
+const MIN_CHECK_PRODUCAO = 60;           // de quanto em quanto tempo pergunta se ainda está produzindo
+
+const sb = supabase.createClient(SB_URL, SB_KEY);
+let semTempos = false;                   // true se a tabela chamado_tempos ainda não existe
+const proxPergunta = {};
+let avisoAberto = false, verifBusy = false, tickN = 0;
+const SEL = () => '*, notas(numero, fornecedor), chamado_itens(*)' + (semTempos ? '' : ', chamado_tempos(*)');
+const erroTempos = e => !!e && /chamado_tempos|relationship|schema cache/i.test((e.message || '') + ' ' + (e.details || ''));
+let chamados = [], histAll = [], aberto = null, fRes = '', rtTimer = null;
+const ocupado = new Set();
+
+/* ===== utilidades ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtData = d => d ? new Date(d).toLocaleDateString('pt-BR') : '-';
+function toast(msg, erro) { const t = $('toast'); $('toast-msg').textContent = msg; t.classList.toggle('err', !!erro); t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), erro ? 5000 : 3200); }
+/* dia local (sem fuso): 'YYYY-MM-DD' vira meia-noite local; timestamp vira o dia local dele */
+function dia(d) { if (!d) return null; const s = String(d); const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s); const x = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(s); x.setHours(0, 0, 0, 0); return x; }
+const diasEntre = (a, b) => Math.round((dia(a) - dia(b)) / 86400000);   // a - b em dias
+const hojeISO = () => new Date().toISOString();
+
+/* ===== WhatsApp pela central =====
+   Padrão das mensagens: ícone + título em negrito, linha em branco, dados curtos, próximo passo.
+   Envio em segundo plano e com keepalive (não trava a tela e não se perde se fechar a aba). */
+function wa(numero, texto, mencoes) {
+  const body = { number: numero, message: texto };
+  if (mencoes && mencoes.length) body.mentioned = mencoes;
+  try {
+    return fetch(CENTRAL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) }).catch(e => console.warn('WhatsApp:', e));
+  } catch (e) { console.warn('WhatsApp:', e); }
+}
+async function waAnalistas(texto) { for (const n of WA_ANALISTAS) await wa(n, texto); }
+const msgWA = (icone, titulo, linhas) => icone + ' *' + titulo + '*\n\n' + linhas.filter(x => x !== null && x !== undefined && x !== false).join('\n');
+const baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
+
+/* ===== login e tema ===== */
+function lsLogin() {
+  if ($('ls-pw').value === SENHA) { try { sessionStorage.setItem(SESSAO, '1'); } catch (e) {} entrar(); }
+  else { $('ls-err').textContent = 'Senha incorreta.'; $('ls-pw').value = ''; $('ls-pw').focus(); }
+}
+function fazerLogout() { try { sessionStorage.removeItem(SESSAO); } catch (e) {} location.reload(); }
+function entrar() { $('ls').classList.add('off'); loadChamados(); subscribeRealtime(); setInterval(tick, 1000); }
+function toggleTheme() { document.body.classList.toggle('dark'); try { localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {} }
+document.addEventListener('DOMContentLoaded', () => {
+  try { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); } catch (e) {}
+  let ok = false; try { ok = sessionStorage.getItem(SESSAO) === '1'; } catch (e) {}
+  if (ok) entrar(); else $('ls-pw').focus();
+});
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.nv[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $('v-' + v).classList.add('on');
+  if (v === 'chamados') loadChamados();
+  if (v === 'historico') loadHistorico();
+  if (v === 'producao') { if (!$('mes-prod').value) $('mes-prod').value = mesAtual(); loadProducao(); }
+}
+function fechaModal() { $('modal').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fechaModal(); });
+
+/* ===== prazo ===== */
+function prazoInfo(prazo) {
+  if (!prazo) return { cls: 'b-gy', txt: 'Sem prazo', dias: null, icone: 'ti-calendar-off' };
+  const d = diasEntre(prazo, new Date());
+  if (d < 0) return { cls: 'b-rd', txt: 'Atrasado ' + Math.abs(d) + (Math.abs(d) === 1 ? ' dia' : ' dias'), dias: d, icone: 'ti-alert-triangle' };
+  if (d === 0) return { cls: 'b-am', txt: 'Vence hoje', dias: d, icone: 'ti-clock' };
+  if (d === 1) return { cls: 'b-am', txt: 'Vence amanhã', dias: d, icone: 'ti-clock' };
+  return { cls: 'b-gn', txt: 'Faltam ' + d + ' dias', dias: d, icone: 'ti-calendar' };
+}
+
+/* ===== CHAMADOS ===== */
+async function loadChamados() {
+  const inicioHoje = new Date(); inicioHoje.setHours(0, 0, 0, 0);
+  const busca = () => sb.from('chamados').select(SEL()).eq('status', 'aberto').order('created_at');
+  let [res, { count: hoje }] = await Promise.all([
+    busca(),
+    sb.from('chamados').select('id', { count: 'exact', head: true }).eq('status', 'concluido').gte('data_conclusao', inicioHoje.toISOString())
+  ]);
+  if (res.error && !semTempos && erroTempos(res.error)) { semTempos = true; res = await busca(); }
+  const { data, error } = res;
+  if (error) { $('lista').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar os chamados. ' + esc(error.message || '') + '</div>'; return; }
+  // mais urgente primeiro: prazo mais próximo; sem prazo vai para o fim
+  chamados = (data || []).slice().sort((a, b) => {
+    const pa = a.prazo ? dia(a.prazo).getTime() : Infinity, pb = b.prazo ? dia(b.prazo).getTime() : Infinity;
+    return pa - pb || new Date(a.created_at) - new Date(b.created_at);
+  });
+  const pend = chamados.reduce((s, c) => s + (c.chamado_itens || []).filter(i => !i.concluido).length, 0);
+  const atras = chamados.filter(c => c.prazo && diasEntre(c.prazo, new Date()) < 0).length;
+  const lib = chamados.filter(c => c.liberacao_pendente).length;
+  $('st-abertos').textContent = chamados.length; $('st-abertos-s').textContent = lib ? lib + ' aguardando liberação' : 'em produção';
+  $('st-pend').textContent = pend; $('st-hoje').textContent = hoje || 0;
+  $('st-atr').textContent = atras; $('st-atr-s').textContent = atras ? 'passaram do prazo' : 'nenhum atrasado';
+  $('st-atr-box').classList.toggle('alerta', atras > 0);
+  $('nb-ch').textContent = chamados.length || '';
+  renderChamados();
+  verificaTempos();
+}
+function renderChamados() {
+  const box = $('lista');
+  if (!chamados.length) { box.innerHTML = '<div class="empty"><i class="ti ti-paint-off"></i>Nenhum chamado ativo no momento.</div>'; return; }
+  box.innerHTML = chamados.map(cardHTML).join('');
+}
+function cardHTML(ch) {
+  const its = (ch.chamado_itens || []).slice().sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  const feitos = its.filter(i => i.concluido).length, p = its.length ? Math.round(feitos / its.length * 100) : 0;
+  const pz = prazoInfo(ch.prazo);
+  const atraso = pz.dias !== null && pz.dias < 0;
+  const estado = ch.liberado ? '<span class="badge b-bl"><i class="ti ti-lock-open"></i> Liberado pela analista</span>' : ch.liberacao_pendente ? '<span class="badge b-am"><i class="ti ti-hourglass"></i> Aguardando liberação</span>' : '';
+  return `<div class="ch ${aberto === ch.id ? 'open' : ''} ${atraso ? 'atraso' : ''}" id="card-${ch.id}">
+    <button class="ch-h" onclick="toggleCard('${ch.id}')" aria-expanded="${aberto === ch.id}">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="ch-n">${esc(ch.numero)}</span><span class="badge ${pz.cls}"><i class="ti ${pz.icone}"></i> ${pz.txt}</span>${estado}${estadoBadge(ch)}</div>
+        <div class="ch-m">Nota ${esc(ch.notas?.numero || '-')} · ${esc((ch.notas?.fornecedor || '').toUpperCase())}${ch.prazo ? ' · prazo ' + fmtData(ch.prazo) : ''}</div>
+      </div>
+      <div class="ch-r"><div class="p"><b><span class="c-feitos">${feitos}</span>/${its.length}</b> <span class="sub">itens</span><div class="prog"><i style="width:${p}%"></i></div></div><i class="ti ti-chevron-down ch-c"></i></div>
+    </button>
+    <div class="ch-b">
+      ${barraProd(ch)}
+      <div class="lista-ck">${its.map(i => itemHTML(i, ch.id, ch)).join('') || '<div class="empty">Chamado sem itens.</div>'}</div>
+      <div class="ch-a">${acaoHTML(ch, feitos, its.length)}</div>
+    </div>
+  </div>`;
+}
+function itemHTML(i, chId, ch) {
+  const trava = ch && estadoLeva(ch) !== 'andamento' && estadoLeva(ch) !== 'legado';
+  return `<button class="ck ${i.concluido ? 'ok' : ''} ${trava ? 'trava' : ''}" id="ci-${i.id}" onclick="toggleItem('${i.id}','${chId}')" aria-pressed="${!!i.concluido}">
+    <span class="bx"><i class="ti ti-check"></i></span>
+    <span><div class="cd">${esc(i.codigo)}</div><div class="q">${i.qtd_enviada} unidades</div></span><span class="sp"></span>
+    <span class="badge ${i.concluido ? 'b-gn' : 'b-am'}">${i.concluido ? 'Concluído' : 'Pendente'}</span></button>`;
+}
+function acaoHTML(ch, feitos, total) {
+  const completo = total > 0 && feitos === total;
+  const pendentes = total - feitos;
+  const marcar = pendentes ? `<button class="btn out" onclick="marcarTodos('${ch.id}')"><i class="ti ti-checks"></i> Marcar todos (${pendentes})</button>` : '<span></span>';
+  let dir;
+  const est = estadoLeva(ch);
+  if (completo && est === 'nova') dir = '<span class="info">Inicie a produção para finalizar.</span>';
+  else if (completo) dir = `<button class="btn pri" id="btn-fin-${ch.id}" onclick="finalizarChamado('${ch.id}')"><i class="ti ti-circle-check"></i> Finalizar chamado</button>`;
+  else dir = `<span class="info"><i class="ti ti-lock"></i> Faltam ${pendentes} item(ns). Só finaliza com todos concluídos.</span>`;
+  return marcar + dir;
+}
+function toggleCard(id) { aberto = aberto === id ? null : id; document.querySelectorAll('.ch').forEach(c => { const on = c.id === 'card-' + aberto; c.classList.toggle('open', on); c.querySelector('.ch-h').setAttribute('aria-expanded', on); }); }
+
+/* redesenha só o cartão (mantém os outros abertos/fechados como estão) */
+async function atualizaCard(id) {
+  const { data } = await sb.from('chamados').select(SEL()).eq('id', id).single();
+  if (!data) return loadChamados();
+  const i = chamados.findIndex(c => c.id === id); if (i >= 0) chamados[i] = data;
+  const el = $('card-' + id); if (el) el.outerHTML = cardHTML(data);
+  const pend = chamados.reduce((s, c) => s + (c.chamado_itens || []).filter(x => !x.concluido).length, 0); $('st-pend').textContent = pend;
+}
+async function toggleItem(ciId, chId) {
+  if (ocupado.has(ciId)) return;
+  const ch = chamados.find(c => c.id === chId); const it = ch && (ch.chamado_itens || []).find(x => x.id === ciId);
+  if (ch && !podeMarcar(ch)) return;
+  ocupado.add(ciId);
+  const novo = !(it && it.concluido);
+  const { error } = await sb.from('chamado_itens').update({ concluido: novo }).eq('id', ciId);
+  ocupado.delete(ciId);
+  if (error) { toast('Não consegui salvar esse item. Tente de novo.', true); return; }
+  await atualizaCard(chId);
+}
+async function marcarTodos(chId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  const n = (ch.chamado_itens || []).filter(i => !i.concluido).length;
+  if (!podeMarcar(ch)) return;
+  if (!n || !confirm('Marcar os ' + n + ' item(ns) pendentes como concluídos?')) return;
+  const { error } = await sb.from('chamado_itens').update({ concluido: true }).eq('chamado_id', chId).eq('concluido', false);
+  if (error) { toast('Não consegui marcar os itens.', true); return; }
+  await atualizaCard(chId);
+}
+
+/* Itens pendentes: o operador pede liberação e a analista decide no menu Liberações */
+async function pedirLiberacao(chId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  const pend = (ch.chamado_itens || []).filter(i => !i.concluido);
+  if (!pend.length) return;
+  if (!confirm('Pedir à analista para finalizar o chamado ' + ch.numero + ' com ' + pend.length + ' item(ns) pendente(s)?')) return;
+  await fecharIntervalo(ch, 'pausa', new Date());
+  const { error } = await sb.from('chamados').update({ liberacao_pendente: true }).eq('id', chId);
+  if (error) { toast('Não consegui enviar o pedido.', true); return; }
+  waAnalistas(msgWA('⚠️', 'Liberação solicitada', [
+    'Chamado ' + ch.numero + ' · Nota ' + (ch.notas?.numero || '-'),
+    'Tentou finalizar com ' + pend.length + ' item(ns) pendente(s):',
+    pend.slice(0, 12).map(i => '• ' + i.codigo + ' (' + i.qtd_enviada + ' un.)').join('\n') + (pend.length > 12 ? '\n• e mais ' + (pend.length - 12) : ''), '',
+    'Abra o menu Liberações para autorizar:', baseUrl() + 'analista.html']));
+  toast('Pedido enviado para a analista.');
+  await atualizaCard(chId); loadChamados();
+}
+
+async function finalizarChamado(chId) {
+  if (ocupado.has('fin' + chId)) return; ocupado.add('fin' + chId);
+  const btn = $('btn-fin-' + chId); if (btn) btn.disabled = true;
+  try {
+    const { data: chk } = await sb.from('chamados').select('numero, liberado, chamado_itens(concluido)').eq('id', chId).single();
+    const todos = (chk?.chamado_itens || []).every(i => i.concluido);
+    if (!todos) { toast('Há itens pendentes. Só finaliza com todos concluídos.', true); await atualizaCard(chId); return; }
+    const numero = chk?.numero || '';
+    const agora = hojeISO();
+    const chLocal = chamados.find(c => c.id === chId);
+    if (chLocal && estadoLeva(chLocal) === 'nova') { toast('Inicie a produção da leva antes de finalizar.', true); return; }
+    const msTotal = chLocal ? tempoMs(chLocal, new Date(agora)) : 0;
+    if (chLocal) await fecharIntervalo(chLocal, 'finalizado', new Date(agora));
+    const { error: e1 } = await sb.from('chamados').update({ status: 'concluido', data_conclusao: agora }).eq('id', chId);
+    if (e1) { toast('Não consegui finalizar o chamado.', true); return; }
+
+    // a nota só fecha quando todas as levas terminaram e não sobrou item bom sem enviar
+    const { data: atual } = await sb.from('chamados').select('nota_id').eq('id', chId).single();
+    if (atual?.nota_id) {
+      const notaId = atual.nota_id;
+      const { data: todosCh } = await sb.from('chamados').select('id, status').eq('nota_id', notaId);
+      const levasOk = (todosCh || []).every(c => c.status === 'concluido' || c.status === 'coletado');
+      if (levasOk) {
+        const { data: itensNota } = await sb.from('itens_nota').select('id, tipo').eq('nota_id', notaId);
+        const { data: tri } = await sb.from('triagem').select('item_id, qtd_boa').in('item_id', (itensNota || []).map(i => i.id));
+        const tmap = {}; (tri || []).forEach(t => { tmap[t.item_id] = t; });
+        const { data: env } = await sb.from('chamado_itens').select('item_id').in('chamado_id', (todosCh || []).map(c => c.id));
+        const enviados = new Set((env || []).map(e => e.item_id));
+        const sobra = (itensNota || []).filter(it => (it.tipo || 'capa') !== 'pelicula' && !enviados.has(it.id) && tmap[it.id] && (tmap[it.id].qtd_boa || 0) > 0);
+        if (!sobra.length) await sb.from('notas').update({ status: 'concluida' }).eq('id', notaId);
+      }
+    }
+
+    const { data: info } = await sb.from('chamados').select('prazo, data_conclusao, notas(numero, fornecedor)').eq('id', chId).single();
+    const notaNum = info?.notas?.numero || '-';
+    let prazoTxt = null;
+    if (info?.prazo) {
+      const d = diasEntre(info.prazo, info.data_conclusao || agora);
+      prazoTxt = d > 0 ? 'Pronta ' + d + ' dia(s) antes do prazo.' : d === 0 ? 'Entregue no dia do prazo.' : 'Atrasou ' + Math.abs(d) + ' dia(s).';
+    }
+    const cab = 'Chamado ' + numero + ' · Nota ' + notaNum + (info?.notas?.fornecedor ? ' · ' + info.notas.fornecedor.toUpperCase() : '');
+    // grupo da Distribuição (com marcação de quem coleta) e as analistas
+    const tempoTxt = msTotal >= 60000 ? 'Tempo de produção: ' + fmtDur(msTotal) + '.' : null;
+    wa(GRUPO_PRODUCAO, msgWA('✅', 'Produção finalizada', [cab, prazoTxt, tempoTxt, 'As capas estão prontas para coleta.', '', MENCOES_PRODUCAO.map(n => '@' + n).join(' ')]), MENCOES_PRODUCAO);
+    waAnalistas(msgWA('✅', 'Produção finalizada', [cab, prazoTxt, tempoTxt, 'Pronta para coleta.']));
+
+    toast('Chamado ' + numero + ' finalizado.');
+    aberto = null; setTimeout(loadChamados, 500);
+  } finally { ocupado.delete('fin' + chId); }
+}
+
+/* ===== HISTÓRICO ===== */
+async function loadHistorico() {
+  const { data: chs, error } = await sb.from('chamados').select('*, chamado_itens(*)').in('status', ['concluido', 'coletado']).order('data_conclusao', { ascending: false });
+  if (error) { $('hist-lista').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar o histórico.</div>'; return; }
+  const notaIds = [...new Set((chs || []).map(c => c.nota_id).filter(Boolean))];
+  const nm = {};
+  if (notaIds.length) { const { data: ns } = await sb.from('notas').select('id,numero,fornecedor').in('id', notaIds); (ns || []).forEach(n => { nm[n.id] = n; }); }
+  histAll = (chs || []).map(c => ({ ...c, notas: nm[c.nota_id] || null }));
+  renderHist();
+}
+function resultado(ch) {
+  if (!ch.prazo || !ch.data_conclusao) return { cls: 'b-gy', txt: '-', k: '' };
+  const d = diasEntre(ch.prazo, ch.data_conclusao);
+  if (d > 0) return { cls: 'b-gn', txt: d + (d === 1 ? ' dia antes' : ' dias antes'), k: 'ok' };
+  if (d === 0) return { cls: 'b-bl', txt: 'No prazo', k: 'ok' };
+  return { cls: 'b-rd', txt: Math.abs(d) + (Math.abs(d) === 1 ? ' dia de atraso' : ' dias de atraso'), k: 'atraso' };
+}
+function setRes(b) { fRes = b.dataset.r; document.querySelectorAll('#chips-res .tb').forEach(x => x.classList.toggle('on', x === b)); renderHist(); }
+function renderHist() {
+  const q = $('q-hist').value.trim().toLowerCase();
+  const vis = histAll.filter(c => (!fRes || resultado(c).k === fRes) && (!q || (c.numero + ' ' + (c.notas?.numero || '') + ' ' + (c.notas?.fornecedor || '')).toLowerCase().includes(q)));
+  if (!vis.length) { $('hist-lista').innerHTML = '<div class="empty"><i class="ti ti-history"></i>' + (histAll.length ? 'Nada com esse filtro.' : 'Nenhum chamado finalizado.') + '</div>'; return; }
+  window._hv = vis;
+  $('hist-lista').innerHTML = '<table><thead><tr><th>Chamado</th><th>Nota</th><th>Fornecedor</th><th>Aberto em</th><th>Prazo</th><th>Concluído em</th><th>Resultado</th><th></th></tr></thead><tbody>' +
+    vis.map((c, i) => { const r = resultado(c); return `<tr class="clk" onclick="verDetalhe(${i})">
+      <td><span class="ch-n">${esc(c.numero)}</span></td><td class="nf">${esc(c.notas?.numero || '-')}</td><td>${esc((c.notas?.fornecedor || '-').toUpperCase())}</td>
+      <td>${fmtData(c.created_at)}</td><td>${c.prazo ? fmtData(c.prazo) : '-'}</td><td>${fmtData(c.data_conclusao)}</td>
+      <td><span class="badge ${r.cls}">${r.txt}</span></td><td class="sub" style="text-align:right"><i class="ti ti-chevron-right"></i></td></tr>`; }).join('') + '</tbody></table>';
+}
+function verDetalhe(i) {
+  const ch = window._hv[i]; if (!ch) return;
+  const its = (ch.chamado_itens || []).slice().sort((a, b) => (a.ordem || 0) - (b.ordem || 0)); const r = resultado(ch);
+  $('m-t').textContent = ch.numero; $('m-s').textContent = 'Nota ' + (ch.notas?.numero || '-') + (ch.notas?.fornecedor ? ' · ' + ch.notas.fornecedor : '');
+  $('m-prazo').textContent = ch.prazo ? fmtData(ch.prazo) : '-'; $('m-conc').textContent = fmtData(ch.data_conclusao);
+  $('m-res').innerHTML = '<span class="badge ' + r.cls + '">' + r.txt + '</span>'; $('m-itens').textContent = its.length;
+  // mostra a situação real: item liberado sem concluir não aparece como concluído
+  $('m-body').innerHTML = its.map(x => `<tr><td class="ch-n" style="color:var(--tx)">${esc(x.codigo)}</td><td class="n">${x.qtd_enviada}</td>
+    <td>${x.concluido ? '<span class="badge b-gn"><i class="ti ti-check"></i> Concluído</span>' : '<span class="badge b-am">Liberado sem concluir</span>'}</td></tr>`).join('');
+  $('modal').classList.add('on');
+}
+
+/* ===== CONTROLE DE TEMPO DA LEVA =====
+   Cada leva (chamado) tem intervalos de produção em chamado_tempos: iniciar abre um, pausar/finalizar fecha.
+   O tempo contado é a soma dos intervalos e nunca passa das 16:30 do dia em que o intervalo começou. */
+const minDoDia = d => d.getHours() * 60 + d.getMinutes();
+const limiteDe = d => { const x = new Date(d); x.setHours(Math.floor(HORA_PAUSA_AUTO / 60), HORA_PAUSA_AUTO % 60, 0, 0); return x; };
+const hhmm = d => new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const temposDe = ch => (ch.chamado_tempos || []).slice().sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+const abertoDe = ch => temposDe(ch).find(t => !t.fim) || null;
+function estadoLeva(ch) {
+  if (semTempos) return 'legado';
+  const ts = temposDe(ch);
+  if (!ts.length) return 'nova';
+  return ts.some(t => !t.fim) ? 'andamento' : 'pausada';
+}
+function durMs(t, agora) {
+  const ini = new Date(t.inicio); let fim = t.fim ? new Date(t.fim) : agora;
+  const lim = limiteDe(ini); if (fim > lim) fim = lim;
+  return Math.max(0, fim - ini);
+}
+const tempoMs = (ch, agora) => temposDe(ch).reduce((s, t) => s + durMs(t, agora || new Date()), 0);
+const p2 = n => String(n).padStart(2, '0');
+function fmtCron(ms) { const s = Math.floor(ms / 1000); return p2(Math.floor(s / 3600)) + ':' + p2(Math.floor(s % 3600 / 60)) + ':' + p2(s % 60); }
+function fmtDur(ms) { const m = Math.round(ms / 60000); return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h' + p2(m % 60); }
+const notaDe = ch => ch.notas?.numero || '-';
+
+function estadoBadge(ch) {
+  const e = estadoLeva(ch);
+  if (e === 'andamento') return `<span class="badge b-gn"><i class="ti ti-player-play"></i> Em produção · <span class="cron" data-ch="${ch.id}">${fmtCron(tempoMs(ch))}</span></span>`;
+  if (e === 'pausada') return `<span class="badge b-am"><i class="ti ti-player-pause"></i> Pausada · ${fmtDur(tempoMs(ch))}</span>`;
+  return '';
+}
+function barraProd(ch) {
+  const e = estadoLeva(ch);
+  if (e === 'legado' || ch.liberacao_pendente) return '';
+  if (e === 'nova') return `<div class="pb"><span class="t">Leva ainda não iniciada. Clique em iniciar para começar a contar o tempo.</span><button class="btn am" onclick="iniciarLeva('${ch.id}')"><i class="ti ti-player-play"></i> Iniciar produção</button></div>`;
+  if (e === 'andamento') { const t = abertoDe(ch); return `<div class="pb run"><span class="t">Em produção desde <b>${hhmm(t.inicio)}</b> · tempo da leva <b class="cron" data-ch="${ch.id}">${fmtCron(tempoMs(ch))}</b></span><button class="btn out" onclick="pausarLeva('${ch.id}')"><i class="ti ti-player-pause"></i> Pausar</button></div>`; }
+  return `<div class="pb pz"><span class="t">Leva pausada · tempo até agora <b>${fmtDur(tempoMs(ch))}</b></span><button class="btn am" onclick="iniciarLeva('${ch.id}')"><i class="ti ti-player-play"></i> Retomar produção</button></div>`;
+}
+function podeMarcar(ch) {
+  const e = estadoLeva(ch);
+  if (e === 'legado' || e === 'andamento') return true;
+  toast(e === 'nova' ? 'Inicie a produção da leva para marcar os itens.' : 'Retome a produção da leva para marcar os itens.', true);
+  return false;
+}
+
+/* janela de aviso (substitui alert/confirm nas mensagens do operador) */
+function aviso({ icone, titulo, corpo, botoes, tom }) {
+  $('av-i').className = 'av-i ' + (tom || ''); $('av-i').innerHTML = '<i class="ti ' + icone + '"></i>';
+  $('av-t').textContent = titulo; $('av-c').textContent = corpo; $('av-f').innerHTML = '';
+  botoes.forEach(b => {
+    const el = document.createElement('button'); el.className = 'btn ' + (b.cls || 'out'); el.textContent = b.txt;
+    el.onclick = () => { fechaAviso(); if (b.fn) b.fn(); };
+    $('av-f').appendChild(el);
+  });
+  $('modal-av').classList.add('on'); avisoAberto = true;
+}
+function fechaAviso() { $('modal-av').classList.remove('on'); avisoAberto = false; }
+
+async function fecharIntervalo(ch, motivo, quando) {
+  if (semTempos) return true;
+  const t = abertoDe(ch); if (!t) return true;
+  const { error } = await sb.from('chamado_tempos').update({ fim: quando.toISOString(), motivo }).eq('id', t.id);
+  return !error;
+}
+function outraAtiva(chId) { return chamados.find(c => c.id !== chId && !c.liberacao_pendente && ['andamento', 'pausada'].includes(estadoLeva(c))); }
+
+async function iniciarLeva(chId, confirmado) {
+  if (semTempos || ocupado.has('ini' + chId)) return;
+  const ch = chamados.find(c => c.id === chId); if (!ch || estadoLeva(ch) === 'andamento') return;
+  const o = outraAtiva(chId);
+  if (o) { aviso({ icone: 'ti-lock', tom: 'bl', titulo: 'Finalize a leva ' + o.numero + ' antes', corpo: 'Só pode haver uma leva em produção por vez.\nFinalize a leva ' + o.numero + ' (nota ' + notaDe(o) + ') para iniciar outra.', botoes: [{ txt: 'Entendi', cls: 'pri' }] }); return; }
+  const agora = new Date(), m = minDoDia(agora);
+  if (m >= HORA_PAUSA_AUTO) { aviso({ icone: 'ti-moon', tom: 'bl', titulo: 'Já passou do horário de produção', corpo: 'Olá, ' + OPERADOR + '. Depois das ' + p2(Math.floor(HORA_PAUSA_AUTO / 60)) + ':' + p2(HORA_PAUSA_AUTO % 60) + ' a produção não inicia.\nInicie a leva amanhã.', botoes: [{ txt: 'Entendi', cls: 'pri' }] }); return; }
+  if (m >= HORA_AVISO_INICIO && !confirmado) {
+    aviso({ icone: 'ti-clock', titulo: 'Horário apertado para concluir hoje', corpo: 'Olá, ' + OPERADOR + ', o horário em que você está iniciando pode não ser suficiente para concluir a leva ' + ch.numero + ' ainda hoje.\nA produção será pausada automaticamente às ' + p2(Math.floor(HORA_PAUSA_AUTO / 60)) + ':' + p2(HORA_PAUSA_AUTO % 60) + ' e você retoma amanhã.\nDeseja iniciar mesmo assim?',
+      botoes: [{ txt: 'Agora não', cls: 'out' }, { txt: 'Iniciar mesmo assim', cls: 'am', fn: () => iniciarLeva(chId, true) }] });
+    return;
+  }
+  ocupado.add('ini' + chId);
+  try {
+    const { error } = await sb.from('chamado_tempos').insert({ chamado_id: chId, inicio: agora.toISOString() });
+    if (error) { toast('Não consegui iniciar a leva. Tente de novo.', true); return; }
+    toast('Produção da leva ' + ch.numero + ' iniciada.');
+    await atualizaCard(chId);
+  } finally { ocupado.delete('ini' + chId); }
+}
+async function pausarLeva(chId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  const ok = await fecharIntervalo(ch, 'pausa', new Date());
+  if (!ok) { toast('Não consegui pausar a leva.', true); return; }
+  toast('Leva ' + ch.numero + ' pausada.');
+  await atualizaCard(chId);
+}
+
+/* a cada segundo: atualiza cronômetros; a cada 15 s: confere pausa automática e pergunta de 1 hora */
+function tick() {
+  const agora = new Date();
+  document.querySelectorAll('.cron[data-ch]').forEach(el => { const ch = chamados.find(c => c.id === el.dataset.ch); if (ch) el.textContent = fmtCron(tempoMs(ch, agora)); });
+  if (++tickN % 15 === 0) verificaTempos();
+}
+async function verificaTempos() {
+  if (semTempos || verifBusy) return; verifBusy = true;
+  try {
+    for (const ch of chamados.slice()) {
+      const t = abertoDe(ch); if (!t) continue;
+      const agora = new Date(), lim = limiteDe(t.inicio);
+      if (agora >= lim) {
+        const ok = await fecharIntervalo(ch, 'pausa_auto', lim);
+        if (ok) { mostraPausaAuto(ch, dia(t.inicio).getTime() !== dia(agora).getTime()); await atualizaCard(ch.id); }
+        continue;
+      }
+      if (!proxPergunta[t.id]) proxPergunta[t.id] = new Date(t.inicio).getTime() + MIN_CHECK_PRODUCAO * 60000;
+      if (agora.getTime() >= proxPergunta[t.id] && !avisoAberto) perguntaHora(ch.id, t.id);
+    }
+  } finally { verifBusy = false; }
+}
+function mostraPausaAuto(ch, deOntem) {
+  const h = p2(Math.floor(HORA_PAUSA_AUTO / 60)) + ':' + p2(HORA_PAUSA_AUTO % 60);
+  aviso({ icone: 'ti-player-pause', titulo: 'Produção pausada',
+    corpo: deOntem
+      ? 'Olá, ' + OPERADOR + ', a leva ' + ch.numero + ' (nota ' + notaDe(ch) + ') ficou aberta sem finalizar ontem.\nContei o tempo só até as ' + h + ' e deixei a leva pausada. Para continuar, clique em Retomar produção.'
+      : 'Olá, ' + OPERADOR + ', sua produção foi pausada às ' + h + ' para não passar da jornada.\nA leva ' + ch.numero + ' (nota ' + notaDe(ch) + ') continua aberta. Amanhã é só clicar em Retomar produção.',
+    botoes: [{ txt: 'Entendi', cls: 'pri' }] });
+}
+function perguntaHora(chId, tId) {
+  const ch = chamados.find(c => c.id === chId); const t = ch && (ch.chamado_tempos || []).find(x => x.id === tId);
+  if (!ch || !t || t.fim) return;
+  proxPergunta[tId] = Date.now() + MIN_CHECK_PRODUCAO * 60000;
+  aviso({ icone: 'ti-clock', titulo: 'Você ainda está em produção?',
+    corpo: 'Olá, ' + OPERADOR + '! A leva ' + ch.numero + ' (nota ' + notaDe(ch) + ') foi iniciada às ' + hhmm(t.inicio) + ', há ' + fmtDur(Date.now() - new Date(t.inicio)) + ', e ainda não foi finalizada.\nVocê ainda está nesse processo?',
+    botoes: [{ txt: 'Não, quero fechar', cls: 'out', fn: () => confirmaFechar(chId, tId) }, { txt: 'Sim, continuar', cls: 'pri' }] });
+}
+function confirmaFechar(chId, tId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  aviso({ icone: 'ti-alert-triangle', tom: 'rd', titulo: 'Fechar a leva ' + ch.numero + '?',
+    corpo: 'Deseja fechar de fato o processo?\nSe todos os itens estiverem concluídos, a leva será finalizada. Se faltar item, ela fica pausada.',
+    botoes: [{ txt: 'Voltar', cls: 'out', fn: () => perguntaHora(chId, tId) }, { txt: 'Sim, fechar', cls: 'pri', fn: () => fechaDeVez(chId) }] });
+}
+async function fechaDeVez(chId) {
+  const ch = chamados.find(c => c.id === chId); if (!ch) return;
+  const its = ch.chamado_itens || [];
+  if (its.length && its.every(i => i.concluido)) { await finalizarChamado(chId); return; }
+  await pausarLeva(chId);
+  aberto = chId; toast('Leva pausada. Marque os itens que faltam para finalizar.', true);
+  await atualizaCard(chId); const el = $('card-' + chId); if (el) el.classList.add('open');
+}
+
+/* ===== PRODUÇÃO DO MÊS ===== */
+const mesAtual = () => { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1); };
+const nPt = n => (n == null || isNaN(n)) ? '-' : Math.round(n).toLocaleString('pt-BR');
+let prodDados = null;
+function resumoChamado(c, nm) {
+  const its = c.chamado_itens || [];
+  const ts = (c.chamado_tempos || []).slice().sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+  const ms = ts.length ? ts.reduce((s, t) => s + durMs(t, new Date(c.data_conclusao || Date.now())), 0) : null;
+  const ini = ts.length ? new Date(ts[0].inicio) : null;
+  let fim = null; if (ts.length) { const u = ts[ts.length - 1]; const f = u.fim ? new Date(u.fim) : new Date(c.data_conclusao); const l = limiteDe(u.inicio); fim = f > l ? l : f; }
+  const nota = nm[c.nota_id] || null;
+  return { ch: c, nota, concl: new Date(c.data_conclusao), itens: its,
+    prod: its.filter(i => i.concluido).reduce((s, i) => s + (i.qtd_enviada || 0), 0),
+    nao: its.filter(i => !i.concluido).reduce((s, i) => s + (i.qtd_enviada || 0), 0),
+    ms: ms && ms > 0 ? ms : null, ini, fim };
+}
+function statsMes(rs) {
+  const un = rs.reduce((s, r) => s + r.prod, 0), nao = rs.reduce((s, r) => s + r.nao, 0);
+  const med = rs.filter(r => r.ms);
+  const porNota = {}; med.forEach(r => { const k = r.ch.nota_id || r.ch.id; porNota[k] = (porNota[k] || 0) + r.ms; });
+  const nn = Object.values(porNota);
+  return { un, nao, taxa: (un + nao) ? un / (un + nao) * 100 : null, chamados: rs.length,
+    mediaLeva: med.length ? med.reduce((s, r) => s + r.ms, 0) / med.length : null, nLevas: med.length,
+    mediaNota: nn.length ? nn.reduce((s, x) => s + x, 0) / nn.length : null, nNotas: nn.length };
+}
+async function loadProducao() {
+  const mes = $('mes-prod').value || mesAtual(); const [a, m] = mes.split('-').map(Number);
+  const ini = new Date(a, m - 1, 1), fim = new Date(a, m, 1), ant = new Date(a, m - 2, 1);
+  const busca = () => sb.from('chamados').select('*, chamado_itens(*)' + (semTempos ? '' : ', chamado_tempos(*)')).in('status', ['concluido', 'coletado']).gte('data_conclusao', ant.toISOString()).lt('data_conclusao', fim.toISOString()).order('data_conclusao');
+  let r = await busca();
+  if (r.error && !semTempos && erroTempos(r.error)) { semTempos = true; r = await busca(); }
+  if (r.error) { $('prod-corpo').innerHTML = '<div class="empty"><i class="ti ti-alert-circle"></i>Não consegui carregar a produção do mês.</div>'; return; }
+  const chs = r.data || [];
+  const ids = [...new Set(chs.map(c => c.nota_id).filter(Boolean))]; const nm = {};
+  if (ids.length) { const { data: ns } = await sb.from('notas').select('id,numero,fornecedor').in('id', ids); (ns || []).forEach(n => { nm[n.id] = n; }); }
+  const todos = chs.map(c => resumoChamado(c, nm));
+  const atual = todos.filter(x => x.concl >= ini && x.concl < fim), antes = todos.filter(x => x.concl < ini);
+  prodDados = { mes, ini, atual, antes, s: statsMes(atual), sa: statsMes(antes) };
+  renderProducao();
+}
+function varHtml(v, antes, un) {
+  if (!antes) return '<div class="d">sem produção no mês anterior</div>';
+  const pct = (v - antes) / antes * 100;
+  return '<div class="d ' + (pct >= 0 ? 'up' : 'dn') + '">' + (pct >= 0 ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(1).replace('.', ',') + '% vs mês anterior (' + nPt(antes) + ')</div>';
+}
+function renderProducao() {
+  const d = prodDados; if (!d) return; const s = d.s, sa = d.sa;
+  const nome = d.ini.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const liberadas = d.atual.reduce((x, r) => x + (r.nao > 0 ? 1 : 0), 0);
+  const cards = `<div class="stats">
+    <div class="st gn"><div class="l">Unidades produzidas</div><div class="v">${nPt(s.un)}</div>${varHtml(s.un, sa.un)}</div>
+    <div class="st bl"><div class="l">Taxa de conclusão</div><div class="v">${s.taxa == null ? '-' : s.taxa.toFixed(1).replace('.', ',') + '%'}</div><div class="d">${nPt(s.nao)} un. liberadas sem concluir${sa.taxa != null ? ' · mês anterior ' + sa.taxa.toFixed(1).replace('.', ',') + '%' : ''}</div></div>
+    <div class="st"><div class="l">Chamados finalizados</div><div class="v">${s.chamados}</div><div class="d">${liberadas} com item liberado sem concluir</div></div>
+    <div class="st am"><div class="l">Tempo médio por leva</div><div class="v">${s.mediaLeva ? fmtDur(s.mediaLeva) : '-'}</div><div class="d">${s.nLevas} leva(s) com horário${sa.mediaLeva ? ' · mês anterior ' + fmtDur(sa.mediaLeva) : ''}</div></div>
+    <div class="st am"><div class="l">Tempo médio por nota fiscal</div><div class="v">${s.mediaNota ? fmtDur(s.mediaNota) : '-'}</div><div class="d">${s.nNotas} nota(s) com horário${sa.mediaNota ? ' · mês anterior ' + fmtDur(sa.mediaNota) : ''}</div></div>
+  </div>`;
+  const semHora = d.atual.filter(r => !r.ms).length;
+  const aviso2 = semHora ? `<p class="nota-sm">${semHora} chamado(s) de ${esc(nome)} não têm horário (finalizados antes do controle de tempo). Entram nas unidades, não nos tempos.</p>` : '';
+  const linhas = d.atual.length ? '<div class="card"><div class="tw"><table><thead><tr><th>Chamado</th><th>Nota</th><th>Fornecedor</th><th class="n">Produzidas</th><th class="n">Sem concluir</th><th>Início</th><th>Fim</th><th>Tempo</th><th>Concluído em</th></tr></thead><tbody>' +
+    d.atual.map(r => `<tr><td><span class="ch-n">${esc(r.ch.numero)}</span></td><td class="nf">${esc(r.nota?.numero || '-')}</td><td>${esc((r.nota?.fornecedor || '-').toUpperCase())}</td>
+      <td class="n">${nPt(r.prod)}</td><td class="n">${r.nao ? '<span class="badge b-am">' + nPt(r.nao) + '</span>' : '-'}</td>
+      <td>${r.ini ? fmtData(r.ini) + ' ' + hhmm(r.ini) : '-'}</td><td>${r.fim ? hhmm(r.fim) : '-'}</td><td>${r.ms ? fmtDur(r.ms) : '-'}</td><td>${fmtData(r.concl)}</td></tr>`).join('') + '</tbody></table></div></div>'
+    : '<div class="card"><div class="empty"><i class="ti ti-chart-bar-off"></i>Nenhum chamado finalizado em ' + esc(nome) + '.</div></div>';
+  $('prod-corpo').innerHTML = cards + aviso2 + linhas;
+}
+
+/* ===== EXCEL ===== */
+function baixarExcel() {
+  const d = prodDados;
+  if (!d) { toast('Aguarde o carregamento do mês.', true); return; }
+  if (typeof XLSX === 'undefined') { toast('Biblioteca do Excel não carregou. Confira a internet e recarregue.', true); return; }
+  const mesTxt = d.mes.split('-').reverse().join('/');
+  const dt = x => x ? dia(x).toLocaleDateString('pt-BR') : '';
+  const hm = ms => ms ? p2(Math.floor(ms / 3600000)) + ':' + p2(Math.floor(ms % 3600000 / 60000)) : '';
+  const itens = [['Mês', 'Nota fiscal', 'Fornecedor', 'Chamado', 'Código', 'Quantidade', 'Situação', 'Concluído em']];
+  d.atual.forEach(r => (r.itens.slice().sort((a, b) => (a.ordem || 0) - (b.ordem || 0))).forEach(i => itens.push([mesTxt, r.nota?.numero || '', (r.nota?.fornecedor || '').toUpperCase(), r.ch.numero, i.codigo, i.qtd_enviada || 0, i.concluido ? 'Concluído' : 'Liberado sem concluir', dt(r.concl)])));
+  const porNota = {};
+  d.atual.forEach(r => { const k = r.ch.nota_id || r.ch.id; const o = porNota[k] || (porNota[k] = { nota: r.nota?.numero || '', forn: (r.nota?.fornecedor || '').toUpperCase(), ch: 0, un: 0, nao: 0, ms: 0, tem: false, ini: null, fim: null });
+    o.ch++; o.un += r.prod; o.nao += r.nao; if (r.ms) { o.ms += r.ms; o.tem = true; } if (r.ini && (!o.ini || r.ini < o.ini)) o.ini = r.ini; if (r.fim && (!o.fim || r.fim > o.fim)) o.fim = r.fim; });
+  const notas = [['Nota fiscal', 'Fornecedor', 'Chamados', 'Unidades produzidas', 'Unidades liberadas sem concluir', 'Início', 'Fim', 'Tempo (hh:mm)', 'Minutos']];
+  Object.values(porNota).forEach(o => notas.push([o.nota, o.forn, o.ch, o.un, o.nao, o.ini ? dt(o.ini) + ' ' + hhmm(o.ini) : '', o.fim ? dt(o.fim) + ' ' + hhmm(o.fim) : '', o.tem ? hm(o.ms) : '', o.tem ? Math.round(o.ms / 60000) : '']));
+  const levas = [['Chamado', 'Nota fiscal', 'Fornecedor', 'Prazo', 'Concluído em', 'Resultado do prazo', 'Início', 'Fim', 'Tempo (hh:mm)', 'Minutos', 'Unidades produzidas']];
+  d.atual.forEach(r => levas.push([r.ch.numero, r.nota?.numero || '', (r.nota?.fornecedor || '').toUpperCase(), dt(r.ch.prazo), dt(r.concl), resultado(r.ch).txt, r.ini ? dt(r.ini) + ' ' + hhmm(r.ini) : '', r.fim ? hhmm(r.fim) : '', hm(r.ms), r.ms ? Math.round(r.ms / 60000) : '', r.prod]));
+  const s = d.s, sa = d.sa, pct = x => x == null ? '' : Math.round(x * 10) / 10;
+  const resumo = [['Indicador', 'Mês ' + mesTxt, 'Mês anterior'],
+    ['Unidades produzidas', s.un, sa.un],
+    ['Variação de unidades vs mês anterior (%)', sa.un ? pct((s.un - sa.un) / sa.un * 100) : '', ''],
+    ['Unidades liberadas sem concluir', s.nao, sa.nao],
+    ['Taxa de conclusão (%)', pct(s.taxa), pct(sa.taxa)],
+    ['Chamados finalizados', s.chamados, sa.chamados],
+    ['Tempo médio por leva (hh:mm)', hm(s.mediaLeva), hm(sa.mediaLeva)],
+    ['Tempo médio por nota fiscal (hh:mm)', hm(s.mediaNota), hm(sa.mediaNota)],
+    ['Levas com horário registrado', s.nLevas, sa.nLevas],
+    [], ['Taxa de conclusão = produzidas / (produzidas + liberadas sem concluir).'], ['Tempo = soma dos intervalos de produção, até 16:30 de cada dia. Chamados sem horário não entram nos tempos.']];
+  const wb = XLSX.utils.book_new();
+  const add = (nome, aoa, larg) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = larg.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, nome); };
+  add('Resumo', resumo, [44, 16, 16]);
+  add('Produção', itens, [10, 14, 26, 12, 16, 12, 22, 14]);
+  add('Por nota fiscal', notas, [14, 26, 10, 20, 28, 18, 18, 14, 10]);
+  add('Por leva', levas, [12, 14, 26, 12, 14, 18, 18, 8, 14, 10, 18]);
+  XLSX.writeFile(wb, 'Producao-tampografia-' + d.mes + '.xlsx');
+  toast('Excel gerado.');
+}
+
+/* ===== tempo real (com intervalo) ===== */
+function subscribeRealtime() {
+  const recarrega = () => { clearTimeout(rtTimer); rtTimer = setTimeout(() => { if ($('v-chamados').classList.contains('on')) loadChamados(); if ($('v-historico').classList.contains('on')) loadHistorico(); }, 700); };
+  sb.channel('chamados-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, recarrega)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamado_itens' }, recarrega)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chamado_tempos' }, recarrega)
+    .subscribe();
+}
+</script>
+</body>
+</html>
